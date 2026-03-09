@@ -187,7 +187,7 @@ class JZSA_Renderer {
 			$styles[] = 'height: ' . intval( $config['height'] ) . 'px';
 		}
 
-		if ( ! empty( $config['background-color'] ) && $config['background-color'] !== 'transparent' ) {
+		if ( ! empty( $config['background-color'] ) ) {
 			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
 		}
 
