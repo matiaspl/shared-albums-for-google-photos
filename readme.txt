@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 1.0.7
+Stable tag: 1.0.8
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -22,6 +22,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 
 * **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
+* **Gallery with Mosaic Preview** - Display a mosaic of preview images next to the big preview (left or right)
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
 * **Touch Gestures** - Swipe navigation on touch devices
 * **Fullscreen Mode** - Click to view photos in fullscreen
@@ -131,6 +132,12 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **show-counter** - Show the photo counter (e.g., "4 / 50" or "Trip to Bali: 4 / 50"): "true" or "false" (default: true)
 * **show-link-button** - Show external link button to open album in Google Photos: "true" or "false" (default: false)
 * **show-download-button** - Show download button to save current photo: "true" or "false" (default: false)
+* **show-filename** - Show the photo filename as a label: "true" or "false" (default: false)
+
+**Gallery Preview (Mosaic):**
+
+* **mosaic** - Show a mosaic of preview images next to the big preview: "true" or "false" (default: false)
+* **mosaic-position** - Position of the mosaic preview: "left" or "right" (default: right)
 
 **Gallery Mode:**
 
@@ -233,8 +240,15 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 1.0.8 =
+* New feature: Gallery with Mosaic Preview (mosaic="true").
+* Added mosaic-position parameter (left/right) to control placement of preview images.
+* New feature: Show filename labels below photos (show-filename="true").
+* Updated Settings page with mosaic preview and filename label documentation.
+
 = 1.0.7 =
-* ...
+* Improved image sizing and responsiveness
+* Fixed minor display issues in fullscreen mode
 
 = 1.0.6 =
 * New animated logo

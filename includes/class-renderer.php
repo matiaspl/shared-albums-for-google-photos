@@ -102,11 +102,24 @@ class JZSA_Renderer {
 		$styles = $this->build_container_styles( $config );
 		$attrs  = $this->build_data_attributes( $config );
 
-		$html = sprintf(
+		$mosaic_enabled = ! empty( $config['mosaic'] );
+		$mosaic_pos     = ! empty( $config['mosaic-position'] ) ? $config['mosaic-position'] : 'right';
+
+		$html = '';
+
+		if ( $mosaic_enabled ) {
+			$html .= sprintf(
+				'<div class="jzsa-gallery-wrapper jzsa-mosaic-%s" style="%s">',
+				esc_attr( $mosaic_pos ),
+				esc_attr( $styles )
+			);
+		}
+
+		$html .= sprintf(
 			'<div id="%s" class="jzsa-album swiper" %s style="%s">',
 			esc_attr( $gallery_id ),
 			$attrs,
-			esc_attr( $styles )
+			$mosaic_enabled ? '' : esc_attr( $styles )
 		);
 
 		$html .= '<div class="swiper-wrapper"></div>';
@@ -138,6 +151,16 @@ class JZSA_Renderer {
 
 		$html .= '<div class="swiper-button-fullscreen"></div>';
 		$html .= '</div>';
+
+		if ( $mosaic_enabled ) {
+			$html .= sprintf(
+				'<div class="jzsa-mosaic swiper" id="%s-mosaic">',
+				esc_attr( $gallery_id )
+			);
+			$html .= '<div class="swiper-wrapper"></div>';
+			$html .= '</div>';
+			$html .= '</div>'; // Close jzsa-gallery-wrapper
+		}
 
 		return $html;
 	}
@@ -189,6 +212,8 @@ class JZSA_Renderer {
 			'show-counter'         => 'data-show-counter',
 			'show-link-button'     => 'data-show-link-button',
 			'show-download-button' => 'data-show-download-button',
+			'show-filename'        => 'data-show-filename',
+			'mosaic'               => 'data-mosaic',
 		);
 
 		foreach ( $boolean_attrs as $key => $attr_name ) {
@@ -198,6 +223,10 @@ class JZSA_Renderer {
 		}
 
 		// Numeric/string attributes
+		if ( ! empty( $config['mosaic-position'] ) ) {
+			$attrs[] = sprintf( 'data-mosaic-position="%s"', esc_attr( $config['mosaic-position'] ) );
+		}
+
 		if ( isset( $config['autoplay-delay'] ) ) {
 			$attrs[] = sprintf( 'data-autoplay-delay="%s"', esc_attr( $config['autoplay-delay'] ) );
 		}

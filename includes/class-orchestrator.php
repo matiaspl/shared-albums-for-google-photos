@@ -330,12 +330,37 @@ class JZSA_Shared_Albums {
 			'show-counter'           => $this->parse_show_counter( $atts ),
 			'show-link-button'       => $this->parse_bool( $atts, 'show-link-button', false ),
 			'show-download-button'   => $this->parse_bool( $atts, 'show-download-button', false ),
+			'show-filename'          => $this->parse_bool( $atts, 'show-filename', false ),
+
+			// Mosaic/Gallery Preview
+			'mosaic'          => $this->parse_bool( $atts, 'mosaic', false ),
+			'mosaic-position' => $this->parse_mosaic_position( $atts ),
 
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
 		);
 
 		return $config;
+	}
+
+	/**
+	 * Parse mosaic position attribute.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string 'left' or 'right'.
+	 */
+	private function parse_mosaic_position( $atts ) {
+		if ( ! isset( $atts['mosaic-position'] ) ) {
+			return 'right';
+		}
+
+		$value = strtolower( trim( (string) $atts['mosaic-position'] ) );
+
+		if ( in_array( $value, array( 'left', 'right' ), true ) ) {
+			return $value;
+		}
+
+		return 'right';
 	}
 
 	/**
@@ -620,9 +645,14 @@ class JZSA_Shared_Albums {
 		$base_urls = array_slice( $base_urls, 0, $limit );
 
 		$photos = array();
-		foreach ( $base_urls as $base ) {
+		foreach ( $base_urls as $item ) {
+			// Handle both new array structure and old string structure (for backward compatibility with transients)
+			$base     = is_array( $item ) ? $item['url'] : $item;
+			$filename = is_array( $item ) ? ( isset( $item['filename'] ) ? $item['filename'] : '' ) : '';
+
 			$photo = array(
-				'full' => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
+				'full'     => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
+				'filename' => $filename,
 			);
 
 			// Add preview URL if dimensions provided.

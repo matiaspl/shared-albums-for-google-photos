@@ -266,20 +266,26 @@
     }
 
     // Helper: Build slides HTML structure (for photo array)
-    function buildSlidesHtml(photos) {
+    function buildSlidesHtml(photos, showFilename) {
         var html = '';
         photos.forEach(function(photo) {
             // Photo format: object with preview and full URLs
             var previewUrl = photo.preview || photo.full;
             var fullUrl = photo.full;
+            var filename = photo.filename || '';
 
             html += '<div class="swiper-slide">' +
                 '<div class="swiper-zoom-container">' +
                 '<img src="' + previewUrl + '" ' +
                 (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
                 'alt="Photo" class="jzsa-progressive-image" />' +
-                '</div>' +
                 '</div>';
+            
+            if (showFilename && filename) {
+                html += '<div class="jzsa-filename-label">' + filename + '</div>';
+            }
+            
+            html += '</div>';
         });
         return html;
     }
@@ -1239,8 +1245,13 @@
             startAt: $container.attr('data-start-at') || 'random',
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
+            showFilename: $container.attr('data-show-filename') === 'true',
             albumTitle: $container.attr('data-album-title') || '',
-            initialSlide: 0
+            initialSlide: 0,
+            
+            // Mosaic settings
+            mosaic: $container.attr('data-mosaic') === 'true',
+            mosaicPosition: $container.attr('data-mosaic-position') || 'right'
         };
 
         // Calculate initial slide based on startAt setting
@@ -1271,24 +1282,55 @@
         var startAt = config.startAt;
         var showTitle = config.showTitle;
         var showCounter = config.showCounter;
+        var showFilename = config.showFilename;
         var albumTitle = config.albumTitle;
         var initialSlide = config.initialSlide;
+        var mosaic = config.mosaic;
+        var mosaicPosition = config.mosaicPosition;
 
         console.log('📸 Initializing Swiper for gallery:', galleryId);
         console.log('  - Mode:', mode);
         console.log('  - Total photos:', totalCount);
         console.log('  - Initial photos loaded:', allPhotos.length);
         console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
-
-        // Debug: Log configuration values
-        console.log('🔍 Configuration debug:');
-        console.log('  - data-full-screen-autoplay-delay attribute:', $container.attr('data-full-screen-autoplay-delay'));
-        console.log('  - fullScreenAutoplayDelay parsed:', fullScreenAutoplayDelay);
-        console.log('  - fullScreenAutoplayDelay in ms:', fullScreenAutoplayDelay * MILLISECONDS_PER_SECOND);
+        console.log('  - Mosaic enabled:', mosaic, 'Position:', mosaicPosition);
+        console.log('  - Show filename:', showFilename);
 
         // Build and insert slides HTML
-        var slidesHtml = buildSlidesHtml(allPhotos);
+        var slidesHtml = buildSlidesHtml(allPhotos, showFilename);
         $container.find('.swiper-wrapper').html(slidesHtml);
+
+        // Handle mosaic
+        var mosaicSwiper = null;
+        if (mosaic) {
+            var $mosaicContainer = $('#' + galleryId + '-mosaic');
+            if ($mosaicContainer.length) {
+                $mosaicContainer.find('.swiper-wrapper').html(slidesHtml);
+                mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', {
+                    direction: (window.innerWidth > 480) ? 'vertical' : 'horizontal',
+                    slidesPerView: (window.innerWidth > 480) ? 4 : 'auto',
+                    spaceBetween: 10,
+                    freeMode: true,
+                    watchSlidesProgress: true,
+                    slideToClickedSlide: true,
+                    loop: true,
+                    initialSlide: initialSlide
+                });
+
+                // Update mosaic direction on resize
+                $(window).on('resize', function() {
+                    if (mosaicSwiper) {
+                        var newDirection = (window.innerWidth > 480) ? 'vertical' : 'horizontal';
+                        var newSlidesPerView = (window.innerWidth > 480) ? 4 : 'auto';
+                        if (mosaicSwiper.params.direction !== newDirection || mosaicSwiper.params.slidesPerView !== newSlidesPerView) {
+                            mosaicSwiper.params.direction = newDirection;
+                            mosaicSwiper.params.slidesPerView = newSlidesPerView;
+                            mosaicSwiper.update();
+                        }
+                    }
+                });
+            }
+        }
 
         // --------------------------------------------------------------------
         // Loading overlay: show a subtle loader until the first image is ready
@@ -1360,6 +1402,13 @@
             fullScreenSwitch: fullScreenSwitch,
             fullScreenNavigation: fullScreenNavigation
         });
+
+        // Add thumbs config if mosaic is enabled
+        if (mosaicSwiper) {
+            swiperConfig.thumbs = {
+                swiper: mosaicSwiper
+            };
+        }
 
         // Initialize Swiper
         var swiper = new Swiper('#' + galleryId, swiperConfig);

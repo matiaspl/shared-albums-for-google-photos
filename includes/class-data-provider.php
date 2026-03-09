@@ -135,7 +135,7 @@ class JZSA_Data_Provider {
 			'is_deprecated' => $validation['is_deprecated'],
 			'data'          => array(
 				'title'  => $title,
-				'photos' => $photos,
+				'photos' => $photos, // Array of ['url' => ..., 'filename' => ...]
 				'count'  => count( $photos ),
 			),
 			'error'         => null,
@@ -217,48 +217,55 @@ class JZSA_Data_Provider {
 	}
 
 	/**
-	 * Extract photo base URLs from HTML content
+	 * Extract photo data from HTML content
 	 * Uses multiple extraction strategies for robustness
 	 *
 	 * @param string $html HTML content
-	 * @return array Photo base URLs
+	 * @return array Photo data objects [['url' => ..., 'filename' => ...], ...]
 	 */
 	private function extract_photos( $html ) {
 		$photos = array();
 
-		// Primary strategy: Extract URLs followed by numeric dimensions
-		// Pattern matches: "https://url.com/photo=params",width,height
-		// We need to capture URLs that may already have parameters
-		if ( preg_match_all( '/\"(https?:\/\/[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches ) ) {
-			$photos = $matches[1];
-		}
-
-		// Fallback: Extract URLs in array format if primary strategy fails
-		if ( empty( $photos ) && preg_match_all( '/\[\"(https?:\/\/[^\"]+)\"\]/i', $html, $matches ) ) {
-			$photos = $matches[1];
-		}
-
-		// Filter: Keep only valid Google user content URLs
-		$photos = array_filter(
-			$photos,
-			function( $url ) {
-				return false !== strpos( $url, 'googleusercontent.com' );
+		// Strategy 1: Look for JSON blocks that contain photo data including filenames
+		// Pattern matches: ["ID", "filename.jpg", timestamp, width, height, "url", ...]
+		if ( preg_match_all( '/\[\"[^\"]+\"\s*,\s*\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\b\"\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"/i', $html, $matches ) ) {
+			foreach ( $matches[1] as $index => $filename ) {
+				$url = $matches[2][ $index ];
+				$url = preg_replace( '/=[^&]*$/', '', $url );
+				$photos[ $url ] = array(
+					'url'      => $url,
+					'filename' => $filename,
+				);
 			}
-		);
+		}
 
-		// Clean URLs: Remove any existing width/height parameters (=w123-h456 or similar)
-		// Google Photos URLs often have these appended, we need base URLs
-		$photos = array_map(
-			function( $url ) {
-				// Remove trailing parameters like =w800-h600 or =s1600 etc.
-				return preg_replace( '/=[^&]*$/', '', $url );
-			},
-			$photos
-		);
+		// Strategy 2: Extract URLs followed by numeric dimensions (original robust method)
+		if ( preg_match_all( '/\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches ) ) {
+			foreach ( $matches[1] as $url ) {
+				$url = preg_replace( '/=[^&]*$/', '', $url );
+				if ( ! isset( $photos[ $url ] ) ) {
+					$photos[ $url ] = array(
+						'url'      => $url,
+						'filename' => '', // No filename found for this URL
+					);
+				}
+			}
+		}
 
-		// Remove duplicates and reindex
-		$photos = array_unique( $photos );
+		// Fallback: Extract URLs in array format if other strategies fail
+		if ( empty( $photos ) && preg_match_all( '/\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\]/i', $html, $matches ) ) {
+			foreach ( $matches[1] as $url ) {
+				$url = preg_replace( '/=[^&]*$/', '', $url );
+				if ( ! isset( $photos[ $url ] ) ) {
+					$photos[ $url ] = array(
+						'url'      => $url,
+						'filename' => '',
+					);
+				}
+			}
+		}
 
+		// Final cleaning and reindexing
 		return array_values( $photos );
 	}
 }

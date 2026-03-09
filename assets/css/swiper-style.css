@@ -347,8 +347,33 @@ body.jzsa-no-scroll {
     transition: opacity 0.3s ease-in-out;
 }
 
-.jzsa-album .jzsa-progressive-image.jzsa-full-loaded {
+.jzsa-progressive-image.jzsa-full-loaded {
     opacity: 1;
+}
+
+/* Filename label */
+.jzsa-filename-label {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    z-index: 10;
+    pointer-events: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    max-width: 80%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Move filename label up in fullscreen to avoid overlapping with pagination/progress */
+.jzsa-album.jzsa-is-fullscreen .jzsa-filename-label {
+    bottom: 80px;
 }
 
 /* Image error placeholder */
@@ -550,4 +575,66 @@ body.jzsa-no-scroll {
     /* Keep cursor feedback for clickability but avoid any dimming/fog effect */
     opacity: 1;
     transition: opacity 0.2s ease;
+}
+
+/* ============================================================================
+   Mosaic / Gallery Preview styles
+   ============================================================================ */
+
+.jzsa-gallery-wrapper {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    height: 100%;
+}
+
+.jzsa-gallery-wrapper.jzsa-mosaic-left {
+    flex-direction: row-reverse;
+}
+
+.jzsa-gallery-wrapper.jzsa-mosaic-right {
+    flex-direction: row;
+}
+
+.jzsa-gallery-wrapper .jzsa-album {
+    flex: 1;
+    min-width: 0; /* Allow flex item to shrink below content size */
+}
+
+.jzsa-mosaic {
+    width: 25%;
+    height: 100%;
+    flex-shrink: 0;
+}
+
+.jzsa-mosaic .swiper-slide {
+    width: 100%;
+    height: auto;
+    cursor: pointer;
+    opacity: 0.4;
+    transition: opacity 0.3s ease;
+}
+
+.jzsa-mosaic .swiper-slide-thumb-active {
+    opacity: 1;
+}
+
+.jzsa-mosaic .swiper-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+/* On mobile, stack them vertically or hide mosaic? 
+   Let's keep it side by side but maybe adjust width or hide on very small screens.
+*/
+@media (max-width: 480px) {
+    .jzsa-gallery-wrapper {
+        flex-direction: column !important;
+    }
+    .jzsa-mosaic {
+        width: 100%;
+        height: 60px;
+    }
 }
