@@ -771,6 +771,11 @@ class JZSA_Settings_Page {
 								<td>Show the photo filename as a label: "true" or "false"</td>
 								<td>false</td>
 							</tr>
+							<tr>
+								<td><code>show-info</code></td>
+								<td>Show the photo information panel (filename, date, camera): "true" or "false"</td>
+								<td>false</td>
+							</tr>
 						</tbody>
 					</table>
 

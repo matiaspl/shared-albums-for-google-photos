@@ -266,13 +266,15 @@
     }
 
     // Helper: Build slides HTML structure (for photo array)
-    function buildSlidesHtml(photos, showFilename) {
+    function buildSlidesHtml(photos, showFilename, showInfo) {
         var html = '';
         photos.forEach(function(photo) {
             // Photo format: object with preview and full URLs
             var previewUrl = photo.preview || photo.full;
             var fullUrl = photo.full;
             var filename = photo.filename || '';
+            var timestamp = photo.timestamp || '';
+            var camera = photo.camera || '';
 
             html += '<div class="swiper-slide">' +
                 '<div class="swiper-zoom-container">' +
@@ -283,6 +285,20 @@
             
             if (showFilename && filename) {
                 html += '<div class="jzsa-filename-label">' + filename + '</div>';
+            }
+
+            if (showInfo && (filename || timestamp || camera)) {
+                html += '<div class="jzsa-photo-info">';
+                if (filename) html += '<div class="jzsa-info-filename"><strong>' + filename + '</strong></div>';
+                
+                if (timestamp) {
+                    var date = new Date(parseInt(timestamp));
+                    var dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                    html += '<div class="jzsa-info-date">' + dateStr + '</div>';
+                }
+                
+                if (camera) html += '<div class="jzsa-info-camera">' + camera + '</div>';
+                html += '</div>';
             }
             
             html += '</div>';
@@ -1246,6 +1262,7 @@
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
             showFilename: $container.attr('data-show-filename') === 'true',
+            showInfo: $container.attr('data-show-info') === 'true',
             albumTitle: $container.attr('data-album-title') || '',
             initialSlide: 0,
             
@@ -1283,6 +1300,7 @@
         var showTitle = config.showTitle;
         var showCounter = config.showCounter;
         var showFilename = config.showFilename;
+        var showInfo = config.showInfo;
         var albumTitle = config.albumTitle;
         var initialSlide = config.initialSlide;
         var mosaic = config.mosaic;
@@ -1295,9 +1313,10 @@
         console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
         console.log('  - Mosaic enabled:', mosaic, 'Position:', mosaicPosition);
         console.log('  - Show filename:', showFilename);
+        console.log('  - Show info:', showInfo);
 
         // Build and insert slides HTML
-        var slidesHtml = buildSlidesHtml(allPhotos, showFilename);
+        var slidesHtml = buildSlidesHtml(allPhotos, showFilename, showInfo);
         $container.find('.swiper-wrapper').html(slidesHtml);
 
         // Handle mosaic

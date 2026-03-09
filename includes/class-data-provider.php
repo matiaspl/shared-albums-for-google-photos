@@ -226,50 +226,73 @@ class JZSA_Data_Provider {
 	private function extract_photos( $html ) {
 		$photos = array();
 
-		// Strategy 1: Extract from JSON-like structure in AF_initDataCallback
-		// Updated pattern to match the observed data structure: ["ID", ["URL", width, height, ...], timestamp, "short_id", ...]
-		if ( preg_match_all( '/\[\"([^\"]+)\"\s*,\s*\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches ) ) {
+		// Stage 1: Extract basic photo objects (URL, Timestamp, ID) from ds:1
+		if ( preg_match_all( '/\[\"([^\"]+)\"\s*,\s*\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*(\d+)\s*,\s*(\d+)[^\]]*\]\s*,\s*(\d+)/i', $html, $matches ) ) {
 			foreach ( $matches[1] as $index => $id ) {
-				$url = $matches[2][ $index ];
-				$url = preg_replace( '/=[^&]*$/', '', $url );
+				$url       = $matches[2][ $index ];
+				$timestamp = $matches[5][ $index ];
+				$url       = preg_replace( '/=[^&]*$/', '', $url );
 				
-				// Try to find a filename-like string in the surrounding context of this ID
-				// Often filenames appear later in the structure or as separate entries
-				$filename = '';
-				if ( preg_match( '/\[\"' . preg_quote( $id, '/' ) . '\"\s*,\s*\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"/i', $html, $fn_match ) ) {
-					$filename = $fn_match[1];
-				}
-
 				if ( ! isset( $photos[ $url ] ) ) {
 					$photos[ $url ] = array(
-						'url'      => $url,
-						'filename' => $filename,
+						'url'       => $url,
+						'timestamp' => $timestamp,
+						'id'        => $id,
+						'filename'  => '',
+						'camera'    => '',
 					);
 				}
 			}
 		}
 
-		// Strategy 2: Original robust method for URLs followed by dimensions
+		// Stage 2: Extract filenames associated with IDs
+		// Pattern: ["ID", "filename.jpg", ...]
+		if ( preg_match_all( '/\[\"([^\"]+)\"\s*,\s*\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"/i', $html, $matches ) ) {
+			$id_to_filename = array();
+			foreach ( $matches[1] as $index => $id ) {
+				$id_to_filename[ $id ] = $matches[2][ $index ];
+			}
+			
+			foreach ( $photos as &$photo ) {
+				if ( ! empty( $photo['id'] ) && isset( $id_to_filename[ $photo['id'] ] ) ) {
+					$photo['filename'] = $id_to_filename[ $photo['id'] ];
+				}
+			}
+		}
+
+		// Stage 3: Extract camera metadata associated with IDs
+		// Camera info is often in a block like [w,h,1,null,["Make","Model"]]
+		// We look for the ID and then the next occurrence of this camera block
+		foreach ( $photos as &$photo ) {
+			if ( ! empty( $photo['id'] ) ) {
+				$id_quoted = preg_quote( $photo['id'], '/' );
+				// Look for camera info within 5000 characters after the ID
+				if ( preg_match( '/' . $id_quoted . '.{1,5000}?\[\d+,\d+,1,null,\[\"([^\"]+)\",\"([^\"]+)\"/s', $html, $cam_match ) ) {
+					$photo['camera'] = trim( $cam_match[1] . ' ' . $cam_match[2] );
+				}
+			}
+		}
+
+		// Stage 4: Fallback for filenames if still empty
+		// Sometimes they are in a simpler structure: ["filename.jpg", "ID"]
+		foreach ( $photos as &$photo ) {
+			if ( empty( $photo['filename'] ) && ! empty( $photo['id'] ) ) {
+				if ( preg_match( '/\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"\s*,\s*\"' . preg_quote( $photo['id'], '/' ) . '\"/i', $html, $fn_match ) ) {
+					$photo['filename'] = $fn_match[1];
+				}
+			}
+		}
+
+		// Strategy 5: Original robust method for URLs followed by dimensions (backup for missing IDs)
 		if ( preg_match_all( '/\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches ) ) {
 			foreach ( $matches[1] as $url ) {
 				$url = preg_replace( '/=[^&]*$/', '', $url );
 				if ( ! isset( $photos[ $url ] ) ) {
 					$photos[ $url ] = array(
-						'url'      => $url,
-						'filename' => '',
-					);
-				}
-			}
-		}
-
-		// Fallback for simple URL extraction
-		if ( empty( $photos ) && preg_match_all( '/\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\]/i', $html, $matches ) ) {
-			foreach ( $matches[1] as $url ) {
-				$url = preg_replace( '/=[^&]*$/', '', $url );
-				if ( ! isset( $photos[ $url ] ) ) {
-					$photos[ $url ] = array(
-						'url'      => $url,
-						'filename' => '',
+						'url'       => $url,
+						'filename'  => '',
+						'timestamp' => '',
+						'camera'    => '',
 					);
 				}
 			}

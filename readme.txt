@@ -133,6 +133,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **show-link-button** - Show external link button to open album in Google Photos: "true" or "false" (default: false)
 * **show-download-button** - Show download button to save current photo: "true" or "false" (default: false)
 * **show-filename** - Show the photo filename as a label: "true" or "false" (default: false)
+* **show-info** - Show the photo information panel (filename, date, camera): "true" or "false" (default: false)
 
 **Gallery Preview (Mosaic):**
 
@@ -244,7 +245,8 @@ The plugin provides clear feedback:
 * New feature: Gallery with Mosaic Preview (mosaic="true").
 * Added mosaic-position parameter (left/right) to control placement of preview images.
 * New feature: Show filename labels below photos (show-filename="true").
-* Updated Settings page with mosaic preview and filename label documentation.
+* New feature: Photo Information panel with date/time and camera metadata (show-info="true").
+* Updated Settings page with mosaic preview and info panel documentation.
 
 = 1.0.7 =
 * Improved image sizing and responsiveness

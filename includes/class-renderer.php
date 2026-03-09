@@ -213,6 +213,7 @@ class JZSA_Renderer {
 			'show-link-button'     => 'data-show-link-button',
 			'show-download-button' => 'data-show-download-button',
 			'show-filename'        => 'data-show-filename',
+			'show-info'            => 'data-show-info',
 			'mosaic'               => 'data-mosaic',
 		);
 

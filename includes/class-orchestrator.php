@@ -331,6 +331,7 @@ class JZSA_Shared_Albums {
 			'show-link-button'       => $this->parse_bool( $atts, 'show-link-button', false ),
 			'show-download-button'   => $this->parse_bool( $atts, 'show-download-button', false ),
 			'show-filename'          => $this->parse_bool( $atts, 'show-filename', false ),
+			'show-info'              => $this->parse_bool( $atts, 'show-info', false ),
 
 			// Mosaic/Gallery Preview
 			'mosaic'          => $this->parse_bool( $atts, 'mosaic', false ),
@@ -647,12 +648,16 @@ class JZSA_Shared_Albums {
 		$photos = array();
 		foreach ( $base_urls as $item ) {
 			// Handle both new array structure and old string structure (for backward compatibility with transients)
-			$base     = is_array( $item ) ? $item['url'] : $item;
-			$filename = is_array( $item ) ? ( isset( $item['filename'] ) ? $item['filename'] : '' ) : '';
+			$base      = is_array( $item ) ? $item['url'] : $item;
+			$filename  = is_array( $item ) ? ( isset( $item['filename'] ) ? $item['filename'] : '' ) : '';
+			$timestamp = is_array( $item ) ? ( isset( $item['timestamp'] ) ? $item['timestamp'] : '' ) : '';
+			$camera    = is_array( $item ) ? ( isset( $item['camera'] ) ? $item['camera'] : '' ) : '';
 
 			$photo = array(
-				'full'     => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
-				'filename' => $filename,
+				'full'      => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
+				'filename'  => $filename,
+				'timestamp' => $timestamp,
+				'camera'    => $camera,
 			);
 
 			// Add preview URL if dimensions provided.
