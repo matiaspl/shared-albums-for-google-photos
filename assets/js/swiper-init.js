@@ -1363,26 +1363,41 @@
                 
                 var mosaicConfig = {
                     direction: isMobile ? 'horizontal' : 'vertical',
-                    slidesPerView: isMobile ? 'auto' : mosaicRows,
-                    slidesPerGroup: 1,
-                    spaceBetween: 10,
-                    freeMode: true,
+                    spaceBetween: 8,
+                    freeMode: false, // Strict alignment requires freeMode: false
                     watchSlidesProgress: true,
                     slideToClickedSlide: true,
-                    initialSlide: initialSlide
+                    initialSlide: initialSlide,
+                    watchOverflow: true,
+                    // If columns=1, it's just a simple list. If > 1, it's a grid.
+                    slidesPerView: isMobile ? 'auto' : mosaicRows,
+                    slidesPerGroup: 1
                 };
 
-                // For horizontal (mobile) or single column vertical, we don't need grid
-                // For true grid (columns > 1), we use the grid module
-                if (!isMobile && mosaicColumns > 1) {
+                // Swiper Grid logic: 
+                // Vertical direction: grid.rows = columns across, slidesPerView = rows visible.
+                // Horizontal direction: grid.rows = rows across, slidesPerView = columns visible.
+                if (mosaicColumns > 1 || mosaicRows > 1) {
                     mosaicConfig.grid = {
-                        rows: mosaicRows,
-                        fill: 'column'
+                        rows: isMobile ? mosaicRows : mosaicColumns,
+                        fill: isMobile ? 'row' : 'column'
                     };
-                    mosaicConfig.slidesPerView = mosaicColumns;
+                    
+                    if (isMobile) {
+                        mosaicConfig.slidesPerView = mosaicColumns;
+                    }
                 }
 
                 mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', mosaicConfig);
+
+                // Auto-follow: sync mosaic with main swiper
+                if (swiper) {
+                    swiper.on('slideChange', function() {
+                        if (mosaicSwiper && !mosaicSwiper.destroyed) {
+                            mosaicSwiper.slideTo(swiper.activeIndex);
+                        }
+                    });
+                }
 
                 // Update mosaic on resize
                 $(window).on('resize', function() {
@@ -1397,20 +1412,35 @@
                             
                             var newConfig = {
                                 direction: newDirection,
-                                slidesPerView: isMobileNow ? 'auto' : (mosaicColumns > 1 ? mosaicColumns : mosaicRows),
-                                spaceBetween: 10,
-                                freeMode: true,
+                                spaceBetween: 8,
+                                freeMode: false,
                                 watchSlidesProgress: true,
                                 slideToClickedSlide: true,
-                                initialSlide: currentSlide
+                                initialSlide: currentSlide,
+                                watchOverflow: true,
+                                slidesPerView: isMobileNow ? 'auto' : mosaicRows,
+                                slidesPerGroup: 1
                             };
                             
-                            if (!isMobileNow && mosaicColumns > 1) {
-                                newConfig.grid = { rows: mosaicRows, fill: 'column' };
+                            if (mosaicColumns > 1 || mosaicRows > 1) {
+                                newConfig.grid = {
+                                    rows: isMobileNow ? mosaicRows : mosaicColumns,
+                                    fill: isMobileNow ? 'row' : 'column'
+                                };
+                                if (isMobileNow) newConfig.slidesPerView = mosaicColumns;
                             }
                             
                             mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', newConfig);
-                            if (swiper) swiper.thumbs.swiper = mosaicSwiper;
+                            
+                            if (swiper) {
+                                swiper.thumbs.swiper = mosaicSwiper;
+                                // Re-attach auto-follow
+                                swiper.on('slideChange', function() {
+                                    if (mosaicSwiper && !mosaicSwiper.destroyed) {
+                                        mosaicSwiper.slideTo(swiper.activeIndex);
+                                    }
+                                });
+                            }
                         }
                     }
                 });

@@ -623,7 +623,7 @@ body.jzsa-no-scroll {
 
 .jzsa-gallery-wrapper {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     width: 100%;
     height: 100%;
 }
@@ -638,69 +638,73 @@ body.jzsa-no-scroll {
 
 .jzsa-gallery-wrapper .jzsa-album {
     flex: 1;
-    min-width: 0; /* Allow flex item to shrink below content size */
+    min-width: 0;
 }
 
 .jzsa-mosaic {
-    width: var(--mosaic-width, 25%);
+    width: var(--mosaic-width, 250px);
     height: 100%;
     max-height: 100%;
     flex-shrink: 0;
     overflow: hidden;
-}
-.jzsa-mosaic .swiper-wrapper {
-    display: grid;
-    grid-template-columns: repeat(var(--mosaic-cols, 1), 1fr);
-    grid-template-rows: repeat(var(--mosaic-rows, 4), 1fr);
-    gap: 10px;
-    height: 100%;
+    position: relative;
+    background: rgba(0,0,0,0.05);
+    border-radius: 8px;
 }
 
-/* Swiper vertical mode doesn't play well with CSS grid, so we adjust */
-.jzsa-mosaic.swiper-vertical .swiper-wrapper {
-    flex-direction: column;
-    display: flex;
-}
-
-/* If grid is active (columns > 1), we override Swiper's internal positioning */
-.jzsa-mosaic[style*="--mosaic-cols"] .swiper-wrapper {
-    display: grid !important;
-}
-
+/* Let Swiper handle the grid layout via JS, but provide basic slide structure */
 .jzsa-mosaic .swiper-slide {
-...
     width: 100%;
-    height: auto;
+    aspect-ratio: 1 / 1;
     cursor: pointer;
-    opacity: 0.4;
-    transition: opacity 0.3s ease;
+    opacity: 0.5;
+    transition: all 0.3s ease;
     box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+    border-radius: 4px;
+}
+
+.jzsa-mosaic .swiper-slide:hover {
+    opacity: 0.8;
+    transform: scale(1.02);
 }
 
 .jzsa-mosaic .swiper-slide-thumb-active {
     opacity: 1;
+    outline: 3px solid #0b57d0;
+    outline-offset: -3px;
 }
 
 .jzsa-mosaic .swiper-slide img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 4px;
     display: block;
 }
 
-/* On mobile, stack them vertically or hide mosaic? 
-   Let's keep it side by side but maybe adjust width or hide on very small screens.
-*/
+/* On mobile, stack them vertically or hide mosaic? */
 @media (max-width: 480px) {
     .jzsa-gallery-wrapper {
         flex-direction: column !important;
     }
     .jzsa-mosaic {
         width: 100%;
-        height: 60px;
+        height: 80px;
     }
+    .jzsa-mosaic .swiper-wrapper {
+        display: flex !important;
+        flex-direction: row;
+        grid-template-columns: none;
+        grid-template-rows: none;
+        overflow-x: auto;
+    }
+    .jzsa-mosaic .swiper-slide {
+        width: 60px !important;
+        height: 60px !important;
+        flex-shrink: 0;
+    }
+    .jzsa-mosaic::before, .jzsa-mosaic::after { display: none; }
 }
