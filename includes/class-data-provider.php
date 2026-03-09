@@ -226,33 +226,43 @@ class JZSA_Data_Provider {
 	private function extract_photos( $html ) {
 		$photos = array();
 
-		// Strategy 1: Look for JSON blocks that contain photo data including filenames
-		// Pattern matches: ["ID", "filename.jpg", timestamp, width, height, "url", ...]
-		if ( preg_match_all( '/\[\"[^\"]+\"\s*,\s*\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\b\"\s*,\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"/i', $html, $matches ) ) {
-			foreach ( $matches[1] as $index => $filename ) {
+		// Strategy 1: Extract from JSON-like structure in AF_initDataCallback
+		// Updated pattern to match the observed data structure: ["ID", ["URL", width, height, ...], timestamp, "short_id", ...]
+		if ( preg_match_all( '/\[\"([^\"]+)\"\s*,\s*\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches ) ) {
+			foreach ( $matches[1] as $index => $id ) {
 				$url = $matches[2][ $index ];
 				$url = preg_replace( '/=[^&]*$/', '', $url );
-				$photos[ $url ] = array(
-					'url'      => $url,
-					'filename' => $filename,
-				);
+				
+				// Try to find a filename-like string in the surrounding context of this ID
+				// Often filenames appear later in the structure or as separate entries
+				$filename = '';
+				if ( preg_match( '/\[\"' . preg_quote( $id, '/' ) . '\"\s*,\s*\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"/i', $html, $fn_match ) ) {
+					$filename = $fn_match[1];
+				}
+
+				if ( ! isset( $photos[ $url ] ) ) {
+					$photos[ $url ] = array(
+						'url'      => $url,
+						'filename' => $filename,
+					);
+				}
 			}
 		}
 
-		// Strategy 2: Extract URLs followed by numeric dimensions (original robust method)
+		// Strategy 2: Original robust method for URLs followed by dimensions
 		if ( preg_match_all( '/\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches ) ) {
 			foreach ( $matches[1] as $url ) {
 				$url = preg_replace( '/=[^&]*$/', '', $url );
 				if ( ! isset( $photos[ $url ] ) ) {
 					$photos[ $url ] = array(
 						'url'      => $url,
-						'filename' => '', // No filename found for this URL
+						'filename' => '',
 					);
 				}
 			}
 		}
 
-		// Fallback: Extract URLs in array format if other strategies fail
+		// Fallback for simple URL extraction
 		if ( empty( $photos ) && preg_match_all( '/\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\]/i', $html, $matches ) ) {
 			foreach ( $matches[1] as $url ) {
 				$url = preg_replace( '/=[^&]*$/', '', $url );
@@ -265,7 +275,6 @@ class JZSA_Data_Provider {
 			}
 		}
 
-		// Final cleaning and reindexing
 		return array_values( $photos );
 	}
 }
