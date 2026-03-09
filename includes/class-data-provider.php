@@ -226,18 +226,18 @@ class JZSA_Data_Provider {
 	private function extract_photos( $html ) {
 		$photos = array();
 
-		// Stage 1: Robust extraction from ds:1 data structure
-		// Each item is typically: ["ID", ["URL", W, H, ...], TIMESTAMP, "DEDUP_KEY", TZ_OFFSET, ...]
-		if ( preg_match_all( '/\[\"([^\"]+)\"\s*,\s*\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*(\d+)\s*,\s*(\d+)[^\]]*\]\s*,\s*(\d+)\s*,\s*\"[^\"]*\"\s*,\s*(\d+)/i', $html, $matches ) ) {
+		// Stage 1: Extract basic photo objects (URL, Timestamp, ID) from ds:1
+		// Pattern matches: ["ID", ["URL", width, height, ...], timestamp, "DEDUP", TZ_OFFSET, ...]
+		if ( preg_match_all( '/\[\"(AF1Qip[^\"]+)\"\s*,\s*\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"[^\]]*\]\s*,\s*(\d+)\s*,\s*\"[^\"]*\"\s*,\s*(\d+)/is', $html, $matches ) ) {
 			foreach ( $matches[1] as $index => $id ) {
 				$url       = $matches[2][ $index ];
-				$timestamp = $matches[5][ $index ];
-				$tz_offset = $matches[6][ $index ];
+				$timestamp = $matches[3][ $index ];
+				$tz_offset = $matches[4][ $index ];
 				$url       = preg_replace( '/=[^&]*$/', '', $url );
 				
 				if ( ! isset( $photos[ $url ] ) ) {
 					// Apply timezone offset to timestamp (Google provides UTC + offset in ms)
-					$adjusted_ts = $timestamp + intval($tz_offset);
+					$adjusted_ts = floatval($timestamp) + floatval($tz_offset);
 
 					$photos[ $url ] = array(
 						'url'       => $url,
@@ -245,68 +245,82 @@ class JZSA_Data_Provider {
 						'timestamp' => $adjusted_ts,
 						'filename'  => '',
 						'camera'    => '',
+						'exif'      => '',
+						'owner_id'  => '',
 					);
 				}
 			}
 		}
 
-		// Stage 2: Attempt to find owner information (Shared by)
-		// Usually at the end of ds:1: [..., ["OWNER_ID", "123...", null, null, null, ["OWNER_ID", "123..."], null, null, null, null, null, ["NAME", ...]]]
-		$owner_name = '';
-		if ( preg_match( '/\[\"[^\"]+\"\s*,\s*\"[^\"]+\"\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*\[\"[^\"]+\"\s*,\s*\"[^\"]+\"\]\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*\[\"([^\"]+)\"/i', $html, $owner_match ) ) {
-			$owner_name = $owner_match[1];
-		}
-
-		// Stage 3: Robust Filename / Description Extraction
-		// Filenames sometimes appear in "101428965":[0,"filename"] or similar structures
+		// Stage 2: Deep Extraction for EXIF, Filenames and Owner References
+		// We look for each ID and then scan its surrounding context in the raw HTML
 		foreach ( $photos as &$photo ) {
-			if ( ! empty( $photo['id'] ) ) {
-				$id_quoted = preg_quote( $photo['id'], '/' );
-				
-				// Try to find filename or description near the ID
-				if ( preg_match( '/' . $id_quoted . '.*?\"101428965\"\s*:\s*\[\d+\s*,\s*\"([^\"]+)\"\]/s', $html, $desc_match ) ) {
-					$photo['filename'] = $desc_match[1];
-				}
-				
-				// Fallback to searching for anything that looks like a filename near the ID
-				if ( empty( $photo['filename'] ) ) {
-					if ( preg_match( '/' . $id_quoted . '.{1,500}?\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"/is', $html, $fn_match ) ) {
-						$photo['filename'] = $fn_match[1];
-					}
-				}
+			if ( empty( $photo['id'] ) ) continue;
+			
+			$id_quoted = preg_quote( $photo['id'], '/' );
+			
+			// Extract specific photo data block
+			if ( preg_match( '/' . $id_quoted . '.*?(?=\s*,\s*\[\"AF1Qip|$)/is', $html, $data_block ) ) {
+				$block = $data_block[0];
 
-				// Append owner info if found
-				if ( ! empty( $owner_name ) ) {
-					$photo['camera'] = ( ! empty( $photo['camera'] ) ? $photo['camera'] . ' • ' : '' ) . 'Shared by ' . $owner_name;
-				}
-			}
-		}
-
-		// Stage 4: Robust Camera Extraction
-		foreach ( $photos as &$photo ) {
-			if ( ! empty( $photo['id'] ) ) {
-				$id_quoted = preg_quote( $photo['id'], '/' );
-				if ( preg_match( '/' . $id_quoted . '.{1,10000}?\[\d+\s*,\s*\d+\s*,\s*1\s*,\s*null\s*,\s*\[\"([^\"]+)\"\s*,\s*\"([^\"]+)\"/s', $html, $cam_match ) ) {
-					$cam_info = trim( $cam_match[1] . ' ' . $cam_match[2] );
-					// Don't overwrite owner info, prepend instead
-					$photo['camera'] = $cam_info . ( ! empty( $photo['camera'] ) ? ' • ' . $photo['camera'] : '' );
-				}
-			}
-		}
-
-		// Stage 5: Final cleanup and backup
-		if ( empty($photos) && preg_match_all( '/\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches ) ) {
-			foreach ( $matches[1] as $url ) {
-				$url = preg_replace( '/=[^&]*$/', '', $url );
-				if ( ! isset( $photos[ $url ] ) ) {
-					$photos[ $url ] = array(
-						'url'       => $url,
-						'filename'  => '',
-						'timestamp' => '',
-						'camera'    => '',
+				// 1. EXIF Data: [width, height, 1, null, ["Make", "Model", null, focal, aperture, iso, shutter, ...]]
+				if ( preg_match( '/\[\d+\s*,\s*\d+\s*,\s*1\s*,\s*null\s*,\s*\[\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*null\s*,\s*([\d\.]+)\s*,\s*([\d\.]+)\s*,\s*(\d+)\s*,\s*([\d\.]+)/is', $block, $exif_parts ) ) {
+					$make     = $exif_parts[1];
+					$model    = $exif_parts[2];
+					$focal    = $exif_parts[3];
+					$aperture = $exif_parts[4];
+					$iso      = $exif_parts[5];
+					$shutter  = floatval($exif_parts[6]);
+					
+					$photo['camera'] = trim( $make . ' ' . $model );
+					
+					// Format shutter speed (e.g. 0.002024 -> 1/494)
+					$shutter_display = $shutter < 1 ? '1/' . round(1 / $shutter) : round($shutter, 1) . 's';
+					
+					$photo['exif'] = sprintf(
+						'ƒ/%s • %s • %smm • ISO%d',
+						$aperture,
+						$shutter_display,
+						$focal,
+						$iso
 					);
 				}
+
+				// 2. Filename/Description from "101428965" key
+				if ( preg_match( '/\"101428965\"\s*:\s*\[\d+\s*,\s*\"([^\"]+)\"\]/s', $block, $fn_match ) ) {
+					$photo['filename'] = $fn_match[1];
+				}
+
+				// 3. Owner ID Reference
+				if ( preg_match( '/\[\"(AF1QipNY[^\"]+)\"\]/', $block, $owner_ref ) ) {
+					$photo['owner_id'] = $owner_ref[1];
+				}
 			}
+
+			// Generate filename from timestamp if still missing
+			if ( empty($photo['filename']) && !empty($photo['timestamp']) ) {
+				$photo['filename'] = date('Ymd_His', $photo['timestamp'] / 1000) . '.jpg';
+			}
+		}
+
+		// Stage 3: Extract owner names and map them
+		if ( preg_match_all( '/\[\"(AF1QipNY[^\"]+)\"\s*,\s*\"[^\"]+\"\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*\[\"[^\"]+\"\s*,\s*\"[^\"]+\"\]\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*\[\"([^\"]+)\"/i', $html, $owner_matches ) ) {
+			$owner_map = array_combine( $owner_matches[1], $owner_matches[2] );
+			foreach ( $photos as &$photo ) {
+				if ( ! empty( $photo['owner_id'] ) && isset( $owner_map[ $photo['owner_id'] ] ) ) {
+					$photo['owner'] = 'Shared by ' . $owner_map[ $photo['owner_id'] ];
+				}
+			}
+		}
+
+		// Stage 4: Combine info fields
+		foreach ( $photos as &$photo ) {
+			$info = array();
+			if ( ! empty( $photo['camera'] ) ) $info[] = $photo['camera'];
+			if ( ! empty( $photo['exif'] ) ) $info[] = $photo['exif'];
+			if ( ! empty( $photo['owner'] ) ) $info[] = $photo['owner'];
+			
+			$photo['info_combined'] = implode(' • ', $info);
 		}
 
 		return array_values( $photos );

@@ -232,6 +232,10 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-mosaic-columns="%d"', intval( $config['mosaic-columns'] ) );
 		}
 
+		if ( isset( $config['mosaic-rows'] ) ) {
+			$attrs[] = sprintf( 'data-mosaic-rows="%d"', intval( $config['mosaic-rows'] ) );
+		}
+
 		if ( isset( $config['autoplay-delay'] ) ) {
 			$attrs[] = sprintf( 'data-autoplay-delay="%s"', esc_attr( $config['autoplay-delay'] ) );
 		}

@@ -807,6 +807,16 @@ class JZSA_Settings_Page {
 								<td>Position of the mosaic preview: "left" or "right"</td>
 								<td>right</td>
 							</tr>
+							<tr>
+								<td><code>mosaic-columns</code></td>
+								<td>Number of columns in the mosaic preview</td>
+								<td>4</td>
+							</tr>
+							<tr>
+								<td><code>mosaic-rows</code></td>
+								<td>Number of rows in the mosaic preview</td>
+								<td>1</td>
+							</tr>
 						</tbody>
 					</table>
 				</div>

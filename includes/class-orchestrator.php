@@ -403,6 +403,7 @@ class JZSA_Shared_Albums {
 			'mosaic'          => $this->parse_bool( $atts, 'mosaic', false ),
 			'mosaic-position' => $this->parse_mosaic_position( $atts ),
 			'mosaic-columns'  => isset( $atts['mosaic-columns'] ) ? intval( $atts['mosaic-columns'] ) : 4,
+			'mosaic-rows'     => isset( $atts['mosaic-rows'] ) ? intval( $atts['mosaic-rows'] ) : 1,
 
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
@@ -725,6 +726,7 @@ class JZSA_Shared_Albums {
 				'filename'  => $filename,
 				'timestamp' => $timestamp,
 				'camera'    => $camera,
+				'info'      => is_array( $item ) ? ( isset( $item['info_combined'] ) ? $item['info_combined'] : '' ) : '',
 				'thumb'     => sprintf( '%s=w%d-h%d-c', $base, self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
 			);
 

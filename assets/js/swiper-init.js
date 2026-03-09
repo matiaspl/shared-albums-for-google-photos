@@ -275,6 +275,7 @@
             var filename = photo.filename || '';
             var timestamp = photo.timestamp || '';
             var camera = photo.camera || '';
+            var info = photo.info || '';
 
             html += '<div class="swiper-slide">' +
                 '<div class="swiper-zoom-container">' +
@@ -287,7 +288,7 @@
                 html += '<div class="jzsa-filename-label">' + filename + '</div>';
             }
 
-            if (showInfo && (filename || timestamp || camera)) {
+            if (showInfo && (filename || timestamp || camera || info)) {
                 html += '<div class="jzsa-photo-info">';
                 if (filename) html += '<div class="jzsa-info-filename"><strong>' + filename + '</strong></div>';
                 
@@ -297,7 +298,11 @@
                     html += '<div class="jzsa-info-date">' + dateStr + '</div>';
                 }
                 
-                if (camera) html += '<div class="jzsa-info-camera">' + camera + '</div>';
+                if (info) {
+                    html += '<div class="jzsa-info-exif">' + info + '</div>';
+                } else if (camera) {
+                    html += '<div class="jzsa-info-camera">' + camera + '</div>';
+                }
                 html += '</div>';
             }
             
@@ -1269,7 +1274,8 @@
             // Mosaic settings
             mosaic: $container.attr('data-mosaic') === 'true',
             mosaicPosition: $container.attr('data-mosaic-position') || 'right',
-            mosaicColumns: parseInt($container.attr('data-mosaic-columns')) || 4
+            mosaicColumns: parseInt($container.attr('data-mosaic-columns')) || 4,
+            mosaicRows: parseInt($container.attr('data-mosaic-rows')) || 1
         };
 
         // Calculate initial slide based on startAt setting
@@ -1307,13 +1313,14 @@
         var mosaic = config.mosaic;
         var mosaicPosition = config.mosaicPosition;
         var mosaicColumns = config.mosaicColumns;
+        var mosaicRows = config.mosaicRows;
 
         console.log('📸 Initializing Swiper for gallery:', galleryId);
         console.log('  - Mode:', mode);
         console.log('  - Total photos:', totalCount);
         console.log('  - Initial photos loaded:', allPhotos.length);
         console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
-        console.log('  - Mosaic enabled:', mosaic, 'Position:', mosaicPosition, 'Columns:', mosaicColumns);
+        console.log('  - Mosaic enabled:', mosaic, 'Position:', mosaicPosition, 'Columns:', mosaicColumns, 'Rows:', mosaicRows);
         console.log('  - Show filename:', showFilename);
         console.log('  - Show info:', showInfo);
         
@@ -1349,27 +1356,56 @@
                 });
                 $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
 
-                mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', {
-                    direction: (window.innerWidth > 480) ? 'vertical' : 'horizontal',
-                    slidesPerView: (window.innerWidth > 480) ? mosaicColumns : 'auto',
+                var isMobile = window.innerWidth <= 480;
+                
+                var mosaicConfig = {
+                    direction: isMobile ? 'horizontal' : 'vertical',
+                    slidesPerView: isMobile ? 'auto' : mosaicRows,
                     spaceBetween: 10,
                     freeMode: true,
                     watchSlidesProgress: true,
                     slideToClickedSlide: true,
-                    loop: true,
                     initialSlide: initialSlide
-                });
+                };
+
+                // Add grid config if columns > 1 and not mobile
+                if (!isMobile && mosaicColumns > 1) {
+                    mosaicConfig.grid = {
+                        rows: mosaicRows,
+                        fill: 'column'
+                    };
+                    mosaicConfig.slidesPerView = mosaicColumns;
+                }
+
+                mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', mosaicConfig);
 
                 // Update mosaic direction on resize
                 $(window).on('resize', function() {
                     if (mosaicSwiper) {
-                        var isMobile = window.innerWidth <= 480;
-                        var newDirection = isMobile ? 'horizontal' : 'vertical';
-                        var newSlidesPerView = isMobile ? 'auto' : mosaicColumns;
-                        if (mosaicSwiper.params.direction !== newDirection || mosaicSwiper.params.slidesPerView !== newSlidesPerView) {
-                            mosaicSwiper.params.direction = newDirection;
-                            mosaicSwiper.params.slidesPerView = newSlidesPerView;
-                            mosaicSwiper.update();
+                        var isMobileNow = window.innerWidth <= 480;
+                        var newDirection = isMobileNow ? 'horizontal' : 'vertical';
+                        
+                        if (mosaicSwiper.params.direction !== newDirection) {
+                            // Re-initialize Swiper on major breakpoint change to toggle grid
+                            var currentSlide = mosaicSwiper.activeIndex;
+                            mosaicSwiper.destroy(true, true);
+                            
+                            var newConfig = {
+                                direction: newDirection,
+                                slidesPerView: isMobileNow ? 'auto' : (mosaicColumns > 1 ? mosaicColumns : mosaicRows),
+                                spaceBetween: 10,
+                                freeMode: true,
+                                watchSlidesProgress: true,
+                                slideToClickedSlide: true,
+                                initialSlide: currentSlide
+                            };
+                            
+                            if (!isMobileNow && mosaicColumns > 1) {
+                                newConfig.grid = { rows: mosaicRows, fill: 'column' };
+                            }
+                            
+                            mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', newConfig);
+                            if (swiper) swiper.thumbs.swiper = mosaicSwiper;
                         }
                     }
                 });
