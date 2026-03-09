@@ -226,64 +226,69 @@ class JZSA_Data_Provider {
 	private function extract_photos( $html ) {
 		$photos = array();
 
-		// Stage 1: Extract basic photo objects (URL, Timestamp, ID) from ds:1
-		if ( preg_match_all( '/\[\"([^\"]+)\"\s*,\s*\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*(\d+)\s*,\s*(\d+)[^\]]*\]\s*,\s*(\d+)/i', $html, $matches ) ) {
+		// Stage 1: Extract all potential IDs and their URLs from the main data block
+		// Pattern matches: ["ID", ["URL", width, height, ...], timestamp, ...]
+		if ( preg_match_all( '/\[\"([^\"]+)\"\s*,\s*\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*(\d+)\s*,\s*(\d+)/i', $html, $matches ) ) {
 			foreach ( $matches[1] as $index => $id ) {
-				$url       = $matches[2][ $index ];
-				$timestamp = $matches[5][ $index ];
-				$url       = preg_replace( '/=[^&]*$/', '', $url );
+				$url = $matches[2][ $index ];
+				$url = preg_replace( '/=[^&]*$/', '', $url );
 				
 				if ( ! isset( $photos[ $url ] ) ) {
 					$photos[ $url ] = array(
 						'url'       => $url,
-						'timestamp' => $timestamp,
 						'id'        => $id,
 						'filename'  => '',
+						'timestamp' => '',
 						'camera'    => '',
 					);
 				}
 			}
 		}
 
-		// Stage 2: Extract filenames associated with IDs
-		// Pattern: ["ID", "filename.jpg", ...]
-		if ( preg_match_all( '/\[\"([^\"]+)\"\s*,\s*\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"/i', $html, $matches ) ) {
-			$id_to_filename = array();
-			foreach ( $matches[1] as $index => $id ) {
-				$id_to_filename[ $id ] = $matches[2][ $index ];
-			}
-			
-			foreach ( $photos as &$photo ) {
-				if ( ! empty( $photo['id'] ) && isset( $id_to_filename[ $photo['id'] ] ) ) {
-					$photo['filename'] = $id_to_filename[ $photo['id'] ];
+		// Stage 2: Extract timestamps
+		// Timestamps are often the first large number after the ID array block
+		foreach ( $photos as &$photo ) {
+			if ( ! empty( $photo['id'] ) ) {
+				$id_quoted = preg_quote( $photo['id'], '/' );
+				// Pattern: ["ID", [URL...], TIMESTAMP, "SHORT_ID"
+				if ( preg_match( '/\[\"' . $id_quoted . '\"\s*,\s*\[\"https?:\/\/[^\"]+\"\]\s*,\s*(\d{10,13})/i', $html, $ts_match ) ) {
+					$photo['timestamp'] = $ts_match[1];
 				}
 			}
 		}
 
-		// Stage 3: Extract camera metadata associated with IDs
-		// Camera info is often in a block like [w,h,1,null,["Make","Model"]]
-		// We look for the ID and then the next occurrence of this camera block
+		// Stage 3: Robust Filename Extraction
+		// Filenames appear in blocks like: ["AF1Qip...", "IMG_1234.JPG"] or ["IMG_1234.JPG", "AF1Qip..."]
+		if ( preg_match_all( '/\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"\s*,\s*\"([^\"]+)\"/i', $html, $matches ) ) {
+			foreach ( $matches[1] as $index => $val1 ) {
+				$val2 = $matches[2][ $index ];
+				// Check if either value is one of our IDs
+				foreach ( $photos as &$photo ) {
+					if ( empty( $photo['filename'] ) && ! empty( $photo['id'] ) ) {
+						if ( $photo['id'] === $val1 ) {
+							$photo['filename'] = $val2;
+						} elseif ( $photo['id'] === $val2 ) {
+							$photo['filename'] = $val1;
+						}
+					}
+				}
+			}
+		}
+
+		// Stage 4: Robust Camera Extraction
+		// Camera info is in a block like [width, height, 1, null, ["Make", "Model", ...]]
+		// We search for this block in the vicinity of each ID
 		foreach ( $photos as &$photo ) {
 			if ( ! empty( $photo['id'] ) ) {
 				$id_quoted = preg_quote( $photo['id'], '/' );
-				// Look for camera info within 5000 characters after the ID
-				if ( preg_match( '/' . $id_quoted . '.{1,5000}?\[\d+,\d+,1,null,\[\"([^\"]+)\",\"([^\"]+)\"/s', $html, $cam_match ) ) {
+				// Look for camera info within 10KB of the ID (it can be quite far in large JSONs)
+				if ( preg_match( '/' . $id_quoted . '.{1,10000}?\[\d+\s*,\s*\d+\s*,\s*1\s*,\s*null\s*,\s*\[\"([^\"]+)\"\s*,\s*\"([^\"]+)\"/s', $html, $cam_match ) ) {
 					$photo['camera'] = trim( $cam_match[1] . ' ' . $cam_match[2] );
 				}
 			}
 		}
 
-		// Stage 4: Fallback for filenames if still empty
-		// Sometimes they are in a simpler structure: ["filename.jpg", "ID"]
-		foreach ( $photos as &$photo ) {
-			if ( empty( $photo['filename'] ) && ! empty( $photo['id'] ) ) {
-				if ( preg_match( '/\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"\s*,\s*\"' . preg_quote( $photo['id'], '/' ) . '\"/i', $html, $fn_match ) ) {
-					$photo['filename'] = $fn_match[1];
-				}
-			}
-		}
-
-		// Strategy 5: Original robust method for URLs followed by dimensions (backup for missing IDs)
+		// Stage 5: Final cleanup and backup
 		if ( preg_match_all( '/\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*\d+\s*,\s*\d+/i', $html, $matches ) ) {
 			foreach ( $matches[1] as $url ) {
 				$url = preg_replace( '/=[^&]*$/', '', $url );
