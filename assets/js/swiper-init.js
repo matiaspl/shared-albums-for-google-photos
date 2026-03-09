@@ -1348,6 +1348,9 @@
         if (mosaic) {
             var $mosaicContainer = $('#' + galleryId + '-mosaic');
             if ($mosaicContainer.length) {
+                // Set column count as CSS variable for width calculation if needed
+                $mosaicContainer.css('--mosaic-cols', mosaicColumns);
+                
                 // Build specific thumb slides for mosaic
                 var thumbSlidesHtml = '';
                 allPhotos.forEach(function(photo) {
@@ -1361,6 +1364,7 @@
                 var mosaicConfig = {
                     direction: isMobile ? 'horizontal' : 'vertical',
                     slidesPerView: isMobile ? 'auto' : mosaicRows,
+                    slidesPerGroup: 1,
                     spaceBetween: 10,
                     freeMode: true,
                     watchSlidesProgress: true,
@@ -1368,7 +1372,8 @@
                     initialSlide: initialSlide
                 };
 
-                // Add grid config if columns > 1 and not mobile
+                // For horizontal (mobile) or single column vertical, we don't need grid
+                // For true grid (columns > 1), we use the grid module
                 if (!isMobile && mosaicColumns > 1) {
                     mosaicConfig.grid = {
                         rows: mosaicRows,
@@ -1379,15 +1384,15 @@
 
                 mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', mosaicConfig);
 
-                // Update mosaic direction on resize
+                // Update mosaic on resize
                 $(window).on('resize', function() {
                     if (mosaicSwiper) {
                         var isMobileNow = window.innerWidth <= 480;
                         var newDirection = isMobileNow ? 'horizontal' : 'vertical';
                         
+                        // If direction changed, we MUST re-initialize because Swiper Grid doesn't support live changes well
                         if (mosaicSwiper.params.direction !== newDirection) {
-                            // Re-initialize Swiper on major breakpoint change to toggle grid
-                            var currentSlide = mosaicSwiper.activeIndex;
+                            var currentSlide = swiper ? swiper.activeIndex : mosaicSwiper.activeIndex;
                             mosaicSwiper.destroy(true, true);
                             
                             var newConfig = {

@@ -648,8 +648,27 @@ body.jzsa-no-scroll {
     flex-shrink: 0;
     overflow: hidden;
 }
+.jzsa-mosaic .swiper-wrapper {
+    display: grid;
+    grid-template-columns: repeat(var(--mosaic-cols, 1), 1fr);
+    grid-template-rows: repeat(var(--mosaic-rows, 4), 1fr);
+    gap: 10px;
+    height: 100%;
+}
+
+/* Swiper vertical mode doesn't play well with CSS grid, so we adjust */
+.jzsa-mosaic.swiper-vertical .swiper-wrapper {
+    flex-direction: column;
+    display: flex;
+}
+
+/* If grid is active (columns > 1), we override Swiper's internal positioning */
+.jzsa-mosaic[style*="--mosaic-cols"] .swiper-wrapper {
+    display: grid !important;
+}
 
 .jzsa-mosaic .swiper-slide {
+...
     width: 100%;
     height: auto;
     cursor: pointer;
