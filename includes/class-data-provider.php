@@ -250,27 +250,30 @@ class JZSA_Data_Provider {
 		foreach ( $photos as &$photo ) {
 			if ( ! empty( $photo['id'] ) ) {
 				$id_quoted = preg_quote( $photo['id'], '/' );
-				// Pattern: ["ID", [URL...], TIMESTAMP, "SHORT_ID"
-				if ( preg_match( '/\[\"' . $id_quoted . '\"\s*,\s*\[\"https?:\/\/[^\"]+\"\]\s*,\s*(\d{10,13})/i', $html, $ts_match ) ) {
+				// More flexible pattern for URL array: ["ID", ["URL", ...], TIMESTAMP, "SHORT_ID"
+				if ( preg_match( '/\[\"' . $id_quoted . '\"\s*,\s*\[\"https?:\/\/[^\"]+\"[^\]]*\]\s*,\s*(\d{10,13})/i', $html, $ts_match ) ) {
 					$photo['timestamp'] = $ts_match[1];
 				}
 			}
 		}
 
 		// Stage 3: Robust Filename Extraction
-		// Filenames appear in blocks like: ["AF1Qip...", "IMG_1234.JPG"] or ["IMG_1234.JPG", "AF1Qip..."]
-		if ( preg_match_all( '/\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"\s*,\s*\"([^\"]+)\"/i', $html, $matches ) ) {
-			foreach ( $matches[1] as $index => $val1 ) {
-				$val2 = $matches[2][ $index ];
-				// Check if either value is one of our IDs
-				foreach ( $photos as &$photo ) {
-					if ( empty( $photo['filename'] ) && ! empty( $photo['id'] ) ) {
-						if ( $photo['id'] === $val1 ) {
-							$photo['filename'] = $val2;
-						} elseif ( $photo['id'] === $val2 ) {
-							$photo['filename'] = $val1;
-						}
-					}
+		// Try multiple patterns for filenames near the ID
+		foreach ( $photos as &$photo ) {
+			if ( ! empty( $photo['id'] ) ) {
+				$id_quoted = preg_quote( $photo['id'], '/' );
+				
+				// Pattern 1: ["ID", "filename.jpg"]
+				if ( preg_match( '/\[\"' . $id_quoted . '\"\s*,\s*\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"/i', $html, $fn_match ) ) {
+					$photo['filename'] = $fn_match[1];
+				}
+				// Pattern 2: ["filename.jpg", "ID"]
+				elseif ( preg_match( '/\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"\s*,\s*\"' . $id_quoted . '\"/i', $html, $fn_match ) ) {
+					$photo['filename'] = $fn_match[1];
+				}
+				// Pattern 3: Search for any filename within 1000 chars of ID
+				elseif ( preg_match( '/' . $id_quoted . '.{1,1000}?\"([^\"]+\.(?:jpg|jpeg|png|gif|webp|mp4|mov|heic))\"/is', $html, $fn_match ) ) {
+					$photo['filename'] = $fn_match[1];
 				}
 			}
 		}
