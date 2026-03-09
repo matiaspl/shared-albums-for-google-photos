@@ -1,0 +1,38 @@
+.jzsa-editor-placeholder {
+    background: #f1f1f1;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 15px;
+    margin: 10px 0;
+    cursor: pointer;
+}
+
+.jzsa-editor-placeholder:hover {
+    background: #e9e9e9;
+    border-color: #999;
+}
+
+.jzsa-placeholder-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.jzsa-placeholder-content .dashicons {
+    font-size: 30px;
+    width: 30px;
+    height: 30px;
+    color: #555;
+}
+
+.jzsa-placeholder-content strong {
+    font-size: 14px;
+}
+
+.jzsa-placeholder-content code {
+    background: #fff;
+    padding: 2px 6px;
+    border-radius: 3px;
+    color: #666;
+    margin-left: auto;
+}

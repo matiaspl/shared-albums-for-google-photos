@@ -1268,7 +1268,8 @@
             
             // Mosaic settings
             mosaic: $container.attr('data-mosaic') === 'true',
-            mosaicPosition: $container.attr('data-mosaic-position') || 'right'
+            mosaicPosition: $container.attr('data-mosaic-position') || 'right',
+            mosaicColumns: parseInt($container.attr('data-mosaic-columns')) || 4
         };
 
         // Calculate initial slide based on startAt setting
@@ -1305,15 +1306,31 @@
         var initialSlide = config.initialSlide;
         var mosaic = config.mosaic;
         var mosaicPosition = config.mosaicPosition;
+        var mosaicColumns = config.mosaicColumns;
 
         console.log('📸 Initializing Swiper for gallery:', galleryId);
         console.log('  - Mode:', mode);
         console.log('  - Total photos:', totalCount);
         console.log('  - Initial photos loaded:', allPhotos.length);
         console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
-        console.log('  - Mosaic enabled:', mosaic, 'Position:', mosaicPosition);
+        console.log('  - Mosaic enabled:', mosaic, 'Position:', mosaicPosition, 'Columns:', mosaicColumns);
         console.log('  - Show filename:', showFilename);
         console.log('  - Show info:', showInfo);
+        
+        // Debug: Log the first few photos to see if they have metadata
+        if (allPhotos.length > 0) {
+            console.log('🔍 First 3 photos metadata debug:');
+            allPhotos.slice(0, 3).forEach(function(p, i) {
+                console.log('  Photo ' + i + ':', {
+                    filename: p.filename,
+                    timestamp: p.timestamp,
+                    camera: p.camera,
+                    hasUrl: !!p.url || !!p.full
+                });
+            });
+        } else {
+            console.warn('⚠️ No photos found in allPhotos array!');
+        }
 
         // Build and insert slides HTML
         var slidesHtml = buildSlidesHtml(allPhotos, showFilename, showInfo);
@@ -1324,10 +1341,17 @@
         if (mosaic) {
             var $mosaicContainer = $('#' + galleryId + '-mosaic');
             if ($mosaicContainer.length) {
-                $mosaicContainer.find('.swiper-wrapper').html(slidesHtml);
+                // Build specific thumb slides for mosaic
+                var thumbSlidesHtml = '';
+                allPhotos.forEach(function(photo) {
+                    var thumbUrl = photo.thumb || photo.preview || photo.full;
+                    thumbSlidesHtml += '<div class="swiper-slide"><img src="' + thumbUrl + '" alt="Thumb" /></div>';
+                });
+                $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
+
                 mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', {
                     direction: (window.innerWidth > 480) ? 'vertical' : 'horizontal',
-                    slidesPerView: (window.innerWidth > 480) ? 4 : 'auto',
+                    slidesPerView: (window.innerWidth > 480) ? mosaicColumns : 'auto',
                     spaceBetween: 10,
                     freeMode: true,
                     watchSlidesProgress: true,
@@ -1339,8 +1363,9 @@
                 // Update mosaic direction on resize
                 $(window).on('resize', function() {
                     if (mosaicSwiper) {
-                        var newDirection = (window.innerWidth > 480) ? 'vertical' : 'horizontal';
-                        var newSlidesPerView = (window.innerWidth > 480) ? 4 : 'auto';
+                        var isMobile = window.innerWidth <= 480;
+                        var newDirection = isMobile ? 'horizontal' : 'vertical';
+                        var newSlidesPerView = isMobile ? 'auto' : mosaicColumns;
                         if (mosaicSwiper.params.direction !== newDirection || mosaicSwiper.params.slidesPerView !== newSlidesPerView) {
                             mosaicSwiper.params.direction = newDirection;
                             mosaicSwiper.params.slidesPerView = newSlidesPerView;

@@ -58,6 +58,14 @@ class JZSA_Shared_Albums {
 	const DEFAULT_PREVIEW_HEIGHT = 600;
 
 	/**
+	 * Default thumbnail dimensions for mosaic (retina optimized)
+	 *
+	 * @var int
+	 */
+	const DEFAULT_THUMB_WIDTH = 400;
+	const DEFAULT_THUMB_HEIGHT = 400;
+
+	/**
 	 * Maximum number of photos to load from album (absolute upper bound).
 	 *
 	 * @var int
@@ -134,7 +142,59 @@ class JZSA_Shared_Albums {
 		// shortcode preview works inside the admin.
 		if ( is_admin() ) {
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+			add_action( 'admin_init', array( $this, 'register_editor_helpers' ) );
 		}
+	}
+
+	/**
+	 * Register TinyMCE helpers for the editor.
+	 */
+	public function register_editor_helpers() {
+		if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
+			return;
+		}
+
+		if ( 'true' === get_user_option( 'rich_editing' ) ) {
+			add_filter( 'mce_external_plugins', array( $this, 'add_tinymce_plugin' ) );
+			add_filter( 'mce_buttons', array( $this, 'register_tinymce_button' ) );
+			add_filter( 'mce_css', array( $this, 'add_tinymce_css' ) );
+		}
+	}
+
+	/**
+	 * Add TinyMCE CSS.
+	 *
+	 * @param string $mce_css CSS.
+	 * @return string
+	 */
+	public function add_tinymce_css( $mce_css ) {
+		if ( ! empty( $mce_css ) ) {
+			$mce_css .= ',';
+		}
+		$mce_css .= plugins_url( 'assets/css/editor-style.css', $this->plugin_file );
+		return $mce_css;
+	}
+
+	/**
+	 * Add TinyMCE external plugin.
+	 *
+	 * @param array $plugin_array Plugins.
+	 * @return array
+	 */
+	public function add_tinymce_plugin( $plugin_array ) {
+		$plugin_array['jzsa_editor_button'] = plugins_url( 'assets/js/editor-helper.js', $this->plugin_file );
+		return $plugin_array;
+	}
+
+	/**
+	 * Register TinyMCE button.
+	 *
+	 * @param array $buttons Buttons.
+	 * @return array
+	 */
+	public function register_tinymce_button( $buttons ) {
+		array_push( $buttons, 'jzsa_editor_button' );
+		return $buttons;
 	}
 
 /**
@@ -231,8 +291,8 @@ class JZSA_Shared_Albums {
 		$stored_expiry  = get_option( $expiry_key, 0 );
 		$should_refresh = false;
 
-		// Refresh if no cache OR if cache duration setting changed
-		if ( false === $cached_data || (int) $stored_expiry !== self::CACHE_DURATION ) {
+		// Refresh if no cache OR if cache duration setting changed OR if debug mode is on
+		if ( false === $cached_data || (int) $stored_expiry !== self::CACHE_DURATION || ! empty( $config['debug'] ) ) {
 			$should_refresh = true;
 		}
 
@@ -257,6 +317,11 @@ class JZSA_Shared_Albums {
 
 		if ( ! $result['success'] ) {
 			return $this->render_fetch_error( $result['error'] );
+		}
+
+		// Debug: Log extraction results for administrators
+		if ( ! empty( $config['debug'] ) && current_user_can( 'manage_options' ) ) {
+			error_log( 'JZSA Debug - Photo Extraction Sample (First 3): ' . print_r( array_slice( $result['data']['photos'], 0, 3 ), true ) );
 		}
 
 		// Cache the fetched BASE photo URLs (without dimensions) and title
@@ -332,10 +397,12 @@ class JZSA_Shared_Albums {
 			'show-download-button'   => $this->parse_bool( $atts, 'show-download-button', false ),
 			'show-filename'          => $this->parse_bool( $atts, 'show-filename', false ),
 			'show-info'              => $this->parse_bool( $atts, 'show-info', false ),
+			'debug'                  => $this->parse_bool( $atts, 'debug', false ),
 
 			// Mosaic/Gallery Preview
 			'mosaic'          => $this->parse_bool( $atts, 'mosaic', false ),
 			'mosaic-position' => $this->parse_mosaic_position( $atts ),
+			'mosaic-columns'  => isset( $atts['mosaic-columns'] ) ? intval( $atts['mosaic-columns'] ) : 4,
 
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
@@ -658,6 +725,7 @@ class JZSA_Shared_Albums {
 				'filename'  => $filename,
 				'timestamp' => $timestamp,
 				'camera'    => $camera,
+				'thumb'     => sprintf( '%s=w%d-h%d-c', $base, self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
 			);
 
 			// Add preview URL if dimensions provided.
