@@ -1480,7 +1480,7 @@
 
             // For now, carousel-to-single uses the same Swiper configuration as
             // carousel. Fullscreen still works via the standard fullscreen button
-            // and behaves like the regular gallery; no extra lightbox logic.
+            // and behaves like the regular gallery; no extra logic needed.
         if (mode === 'carousel-to-single') {
             jzsaDebug('Carousel-to-single mode: using standard carousel behaviour for gallery', galleryId);
         }
@@ -1756,7 +1756,7 @@
 
     /**
      * Initialize a grid-mode gallery.
-     * Renders thumbnails and attaches click-to-lightbox handler.
+     * Renders thumbnails and attaches click-to-fullscreen handler.
      *
      * @param {Element} container The .jzsa-grid-album DOM element.
      */

@@ -140,7 +140,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
   - "single": Single photo viewer with zoom support. Users can pinch to zoom or double-click to zoom.
   - "carousel": Multiple photos visible at once. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos.
   - "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen.
-  - "grid": Thumbnail grid — all photos visible at once. Click any thumbnail to open it in a lightbox viewer.
+  - "grid": Thumbnail grid — all photos visible at once. Click any thumbnail to open it in a fullscreen viewer.
 
 **Grid Mode Options** (only apply when mode="grid"):
 
