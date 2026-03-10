@@ -1210,6 +1210,12 @@
         // Parse configuration from data attributes
         var allPhotosJson = $container.attr('data-all-photos');
         var allPhotos = allPhotosJson ? JSON.parse(allPhotosJson) : [];
+
+        // Guard: Swiper (especially with loop:true) crashes on empty containers
+        if (!allPhotos.length) {
+            console.warn('[JZSA] No photos for gallery "' + galleryId + '", skipping Swiper init.');
+            return null;
+        }
         var totalCount = parseInt($container.attr('data-total-count')) || allPhotos.length;
 
         // On older iOS/WebKit stacks, very large galleries (e.g. 300 photos) can
@@ -1361,8 +1367,8 @@
             fullScreenNavigation: fullScreenNavigation
         });
 
-        // Initialize Swiper
-        var swiper = new Swiper('#' + galleryId, swiperConfig);
+        // Initialize Swiper (pass the DOM element directly to avoid selector resolution issues)
+        var swiper = new Swiper($container[0], swiperConfig);
         swipers[galleryId] = swiper;
 
         // If normal mode autoplay is disabled but fullscreen autoplay is enabled, stop autoplay initially
@@ -1532,11 +1538,285 @@
     }
 
     // ============================================================================
+    // GRID MODE — thumbnail grid + fullscreen player
+    // ============================================================================
+
+    /**
+     * Build a hidden player container for a grid gallery.
+     * Uses the same DOM structure as build_gallery_container in PHP so that
+     * initializeSwiper can power it with the full feature set.
+     *
+     * @param  {jQuery} $gridContainer The grid container element.
+     * @return {string} The player container ID.
+     */
+    function buildGridPlayer($gridContainer) {
+        var gridId = $gridContainer.attr('id');
+        var playerId = gridId + '-player';
+
+        // Build full player DOM structure (mirrors PHP build_gallery_container)
+        var html =
+            '<div id="' + playerId + '" class="jzsa-album swiper jzsa-grid-player">' +
+                '<div class="swiper-wrapper"></div>' +
+                '<div class="swiper-button-prev"></div>' +
+                '<div class="swiper-button-next"></div>' +
+                '<div class="swiper-pagination"></div>' +
+                '<button class="swiper-button-play-pause" title="Play/Pause (Space)"></button>' +
+                '<div class="swiper-autoplay-progress"><div class="swiper-autoplay-progress-bar"></div></div>';
+
+        // External link button
+        var showLink = $gridContainer.attr('data-show-link-button') === 'true';
+        var albumUrl = $gridContainer.attr('data-album-url') || '';
+        if (showLink && albumUrl) {
+            html += '<a href="' + albumUrl + '" target="_blank" rel="noopener noreferrer" ' +
+                'class="swiper-button-external-link" title="Open in Google Photos"></a>';
+        }
+
+        // Download button
+        if ($gridContainer.attr('data-show-download-button') === 'true') {
+            html += '<button class="swiper-button-download" title="Download current image"></button>';
+        }
+
+        html += '<div class="swiper-button-fullscreen"></div>';
+        html += '</div>';
+
+        // Insert the player right after the grid container
+        $gridContainer.after(html);
+
+        var $player = $('#' + playerId);
+
+        // Copy data attributes for initializeSwiper
+        $player.attr('data-all-photos', $gridContainer.attr('data-all-photos'));
+        $player.attr('data-total-count', $gridContainer.attr('data-total-count'));
+        $player.attr('data-mode', 'player');
+        $player.attr('data-start-at', '1');
+        // Grid has no inline autoplay — use fullscreen autoplay settings
+        $player.attr('data-autoplay', 'false');
+
+        // Forward player-relevant settings from the grid container
+        var forwardAttrs = [
+            'data-full-screen-autoplay',
+            'data-full-screen-autoplay-delay',
+            'data-autoplay-inactivity-timeout',
+            'data-show-title',
+            'data-show-counter',
+            'data-album-title',
+            'data-album-url',
+            'data-image-fit'
+        ];
+        for (var i = 0; i < forwardAttrs.length; i++) {
+            var val = $gridContainer.attr(forwardAttrs[i]);
+            if (val !== undefined) {
+                $player.attr(forwardAttrs[i], val);
+            }
+        }
+
+        return playerId;
+    }
+
+    /**
+     * Parse Google Photos aspect ratio from a URL like "…=w800-h600".
+     * Returns width/height ratio, defaulting to 4/3.
+     *
+     * @param  {string} url Photo URL.
+     * @return {number} Aspect ratio (width / height).
+     */
+    function parseAspectRatio(url) {
+        var match = url.match(/=w(\d+)-h(\d+)/);
+        if (match) {
+            var w = parseInt(match[1], 10);
+            var h = parseInt(match[2], 10);
+            if (w > 0 && h > 0) {
+                return w / h;
+            }
+        }
+        return 4 / 3; // safe fallback
+    }
+
+    /**
+     * Group photos into rows for a justified grid.
+     * Each row fills approximately `containerWidth` when photos are scaled to `targetHeight`.
+     *
+     * @param  {Array}  photos         Array of {photo, ratio, index}.
+     * @param  {number} containerWidth Available pixel width.
+     * @param  {number} targetHeight   Desired row height in pixels.
+     * @param  {number} gap            Pixel gap between photos.
+     * @return {Array}  Array of rows, each row being an array of photo items.
+     */
+    function buildJustifiedRows(photos, containerWidth, targetHeight, gap) {
+        var rows = [];
+        var currentRow = [];
+        var currentRowWidth = 0;
+
+        photos.forEach(function(item) {
+            var photoWidth = targetHeight * item.ratio;
+            var gapBefore = currentRow.length > 0 ? gap : 0;
+
+            // Start a new row when adding this photo would exceed ~110% of container width
+            if (currentRow.length > 0 && currentRowWidth + gapBefore + photoWidth > containerWidth * 1.1) {
+                rows.push(currentRow);
+                currentRow = [];
+                currentRowWidth = 0;
+                gapBefore = 0;
+            }
+
+            currentRow.push(item);
+            currentRowWidth += gapBefore + photoWidth;
+        });
+
+        if (currentRow.length > 0) {
+            rows.push(currentRow);
+        }
+
+        return rows;
+    }
+
+    /**
+     * Render a uniform CSS-grid of thumbnails into `$container`.
+     *
+     * @param {jQuery} $container Grid album element.
+     * @param {Array}  photos     Photo objects {preview, full}.
+     */
+    function buildUniformGrid($container, photos) {
+        var columns       = parseInt($container.attr('data-grid-columns'), 10)        || 3;
+        var columnsTablet = parseInt($container.attr('data-grid-columns-tablet'), 10) || 2;
+        var columnsMobile = parseInt($container.attr('data-grid-columns-mobile'), 10) || 1;
+
+        // Pass column counts as CSS custom properties so the media queries pick them up
+        $container[0].style.setProperty('--jzsa-grid-columns',        columns);
+        $container[0].style.setProperty('--jzsa-grid-columns-tablet', columnsTablet);
+        $container[0].style.setProperty('--jzsa-grid-columns-mobile', columnsMobile);
+
+        var html = '';
+        photos.forEach(function(photo, index) {
+            var src = photo.preview || photo.full;
+            html +=
+                '<img class="jzsa-grid-thumb"' +
+                ' src="' + src + '"' +
+                (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
+                ' data-index="' + index + '"' +
+                ' alt="Photo ' + (index + 1) + '"' +
+                ' loading="lazy">';
+        });
+
+        $container.html(html);
+    }
+
+    /**
+     * Render a justified (Flickr-style) grid of thumbnails into `$container`.
+     *
+     * @param {jQuery} $container Grid album element.
+     * @param {Array}  photos     Photo objects {preview, full}.
+     */
+    function buildJustifiedGrid($container, photos) {
+        var targetHeight = parseInt($container.attr('data-grid-row-height'), 10) || 200;
+        var gap          = 4; // px gap between photos (also set in CSS)
+
+        // Measure available width; fall back gracefully if not yet laid out
+        var containerWidth = $container.width();
+        if (!containerWidth || containerWidth < 10) {
+            containerWidth = 800;
+        }
+
+        // Attach aspect ratio to each photo
+        var photosWithRatios = photos.map(function(photo, index) {
+            return {
+                photo: photo,
+                ratio: parseAspectRatio(photo.preview || photo.full),
+                index: index,
+            };
+        });
+
+        var rows = buildJustifiedRows(photosWithRatios, containerWidth, targetHeight, gap);
+
+        var html = '';
+        rows.forEach(function(row) {
+            var totalRatio    = row.reduce(function(sum, item) { return sum + item.ratio; }, 0);
+            var totalGap      = gap * (row.length - 1);
+            var availableWidth = containerWidth - totalGap;
+
+            html += '<div class="jzsa-justified-row">';
+            row.forEach(function(item) {
+                var width = Math.round((item.ratio / totalRatio) * availableWidth);
+                var src   = item.photo.preview || item.photo.full;
+                html +=
+                    '<img class="jzsa-grid-thumb jzsa-justified-thumb"' +
+                    ' src="' + src + '"' +
+                    (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
+                    ' data-index="' + item.index + '"' +
+                    ' alt="Photo ' + (item.index + 1) + '"' +
+                    ' loading="lazy"' +
+                    ' style="width:' + width + 'px;height:' + targetHeight + 'px;">';
+            });
+            html += '</div>';
+        });
+
+        $container.html(html);
+    }
+
+    /**
+     * Initialize a grid-mode gallery.
+     * Renders thumbnails and attaches click-to-lightbox handler.
+     *
+     * @param {Element} container The .jzsa-grid-album DOM element.
+     */
+    function initializeGrid(container) {
+        var $container = $(container);
+        var layout     = $container.attr('data-grid-layout') || 'uniform';
+
+        var allPhotosJson = $container.attr('data-all-photos');
+        var allPhotos     = allPhotosJson ? JSON.parse(allPhotosJson) : [];
+
+        // Honour the same old-iOS cap as the Swiper path
+        if (isOldIosWebkit() && allPhotos.length > OLD_IOS_MAX_PHOTOS) {
+            allPhotos = allPhotos.slice(0, OLD_IOS_MAX_PHOTOS);
+        }
+
+        if (layout === 'justified') {
+            buildJustifiedGrid($container, allPhotos);
+
+            // Recalculate on resize so rows stay flush to the container edge
+            var resizeTimer;
+            $(window).on('resize.jzsa-grid-' + $container.attr('id'), function() {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() {
+                    buildJustifiedGrid($container, allPhotos);
+                }, 150);
+            });
+        } else {
+            buildUniformGrid($container, allPhotos);
+        }
+
+        // Build the fullscreen player and initialize it eagerly (same as
+        // player/carousel modes — Swiper is always ready, not lazily created).
+        var playerId = buildGridPlayer($container);
+        var $player = $('#' + playerId);
+        initializeSwiper($player[0], 'player');
+
+        // Open fullscreen player when a thumbnail is clicked — just slideTo
+        // and toggleFullscreen, exactly like the fullscreen button in other modes.
+        $container.on('click', '.jzsa-grid-thumb', function() {
+            var index = parseInt($(this).attr('data-index'), 10) || 0;
+            var swiper = swipers[playerId];
+            if (swiper) {
+                if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
+                    swiper.slideToLoop(index, 0, false);
+                } else {
+                    swiper.slideTo(index, 0, false);
+                }
+            }
+            toggleFullscreen($player[0]);
+        });
+
+        $container.addClass('jzsa-loaded');
+        jzsaDebug('✅ Grid initialized:', $container.attr('id'), '| layout:', layout, '| photos:', allPhotos.length);
+    }
+
+    // ============================================================================
     // GALLERY INITIALIZATION
     // ============================================================================
 
     function initializeAllGalleries() {
-        $('.jzsa-album').each(function(index) {
+        $('.jzsa-album').not('.jzsa-grid-player').each(function(index) {
             var $gallery = $(this);
 
             // Generate unique ID if not present
@@ -1547,8 +1827,12 @@
             // Get mode
             var mode = $gallery.attr('data-mode') || 'player';
 
-            // Initialize with the mode
-            initializeSwiper(this, mode);
+            // Dispatch to the correct initializer
+            if (mode === 'grid') {
+                initializeGrid(this);
+            } else {
+                initializeSwiper(this, mode);
+            }
         });
     }
 
@@ -1567,6 +1851,7 @@
     window.SharedGooglePhotos = {
         swipers: swipers,
         initialize: initializeSwiper,
+        initializeGrid: initializeGrid,
         reinitialize: initializeAllGalleries
     };
 

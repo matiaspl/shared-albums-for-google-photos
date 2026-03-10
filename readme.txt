@@ -20,6 +20,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 
 = Features =
 
+* **Grid Mode** - Display all photos as a thumbnail grid
 * **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
@@ -138,6 +139,15 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
   - "single": Single photo viewer with zoom support. Users can pinch to zoom or double-click to zoom.
   - "carousel": Multiple photos visible at once. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos.
   - "carousel-to-single": Carousel preview (2 or 3 photos visible) that switches to a single photo viewer in fullscreen.
+  - "grid": Thumbnail grid — all photos visible at once. Click any thumbnail to open it in a lightbox viewer.
+
+**Grid Mode Options** (only apply when mode="grid"):
+
+* **grid-layout** - Grid layout algorithm: "uniform" (equal-size cells, default) or "justified" (photos fill each row at their natural aspect ratio, like Google Photos).
+* **grid-columns** - Number of columns on desktop screens (default: 3, uniform only).
+* **grid-columns-tablet** - Number of columns on tablet screens ≤ 768 px (default: 2, uniform only).
+* **grid-columns-mobile** - Number of columns on mobile screens ≤ 480 px (default: 1, uniform only).
+* **grid-row-height** - Target row height in pixels for the justified layout, 50–800 (default: 200).
 
 = Getting Your Album Share Link =
 

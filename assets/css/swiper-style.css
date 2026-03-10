@@ -551,3 +551,79 @@ body.jzsa-no-scroll {
     opacity: 1;
     transition: opacity 0.2s ease;
 }
+
+/* ============================================================================
+   Grid mode
+   ============================================================================ */
+
+/* Grid container: reset swiper height so the grid grows with its content */
+.jzsa-grid-album {
+    height: auto !important;
+    background-color: transparent;
+    position: static;
+}
+
+/* Uniform grid layout */
+.jzsa-grid-album[data-grid-layout="uniform"] {
+    display: grid;
+    grid-template-columns: repeat(var(--jzsa-grid-columns, 3), 1fr);
+    gap: 4px;
+}
+
+@media (max-width: 768px) {
+    .jzsa-grid-album[data-grid-layout="uniform"] {
+        grid-template-columns: repeat(var(--jzsa-grid-columns-tablet, 2), 1fr);
+    }
+}
+
+@media (max-width: 480px) {
+    .jzsa-grid-album[data-grid-layout="uniform"] {
+        grid-template-columns: repeat(var(--jzsa-grid-columns-mobile, 1), 1fr);
+    }
+}
+
+.jzsa-grid-album[data-grid-layout="uniform"] .jzsa-grid-thumb {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    display: block;
+}
+
+/* Justified grid layout */
+.jzsa-grid-album[data-grid-layout="justified"] .jzsa-justified-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 4px;
+    overflow: hidden;
+}
+
+.jzsa-grid-album[data-grid-layout="justified"] .jzsa-grid-thumb {
+    object-fit: cover;
+    flex-shrink: 0;
+    display: block;
+}
+
+/* Shared thumbnail hover */
+.jzsa-grid-thumb {
+    cursor: pointer;
+    transition: opacity 0.15s ease;
+}
+
+.jzsa-grid-thumb:hover {
+    opacity: 0.85;
+}
+
+/* ============================================================================
+   Grid fullscreen player (hidden until fullscreen is entered)
+   ============================================================================ */
+
+/* Grid fullscreen player: rendered off-screen at viewport size so Swiper can
+   measure dimensions during init. The existing .jzsa-album:fullscreen and
+   .jzsa-album.jzsa-pseudo-fullscreen CSS handles the rest — exactly the same
+   mechanism used by player/carousel/carousel-to-single modes. */
+.jzsa-grid-player {
+    position: fixed;
+    left: -200vw;
+    width: 100vw;
+    height: 100vh;
+}

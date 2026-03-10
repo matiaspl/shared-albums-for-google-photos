@@ -333,6 +333,13 @@ class JZSA_Shared_Albums {
 
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
+
+			// Grid mode
+			'grid-layout'         => $this->parse_grid_layout( $atts ),
+			'grid-columns'        => $this->parse_grid_int( $atts, 'grid-columns', 3 ),
+			'grid-columns-tablet' => $this->parse_grid_int( $atts, 'grid-columns-tablet', 2 ),
+			'grid-columns-mobile' => $this->parse_grid_int( $atts, 'grid-columns-mobile', 1 ),
+			'grid-row-height'     => $this->parse_grid_row_height( $atts ),
 		);
 
 		return $config;
@@ -497,7 +504,7 @@ class JZSA_Shared_Albums {
 	 * Parse mode attribute
 	 *
 	 * @param array $atts Attributes
-	 * @return string Mode: 'carousel', 'single', or 'carousel-to-single'
+	 * @return string Mode: 'carousel', 'single', 'carousel-to-single', or 'grid'
 	 */
 	private function parse_mode( $atts ) {
 		if ( ! isset( $atts['mode'] ) ) {
@@ -507,8 +514,8 @@ class JZSA_Shared_Albums {
 
 		$mode = strtolower( trim( $atts['mode'] ) );
 
-		// Valid modes: 'carousel', 'single', 'carousel-to-single'
-		$valid_modes = array( 'carousel', 'single', 'carousel-to-single' );
+		// Valid modes: 'carousel', 'single', 'carousel-to-single', 'grid'
+		$valid_modes = array( 'carousel', 'single', 'carousel-to-single', 'grid' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;
@@ -516,6 +523,60 @@ class JZSA_Shared_Albums {
 
 		// Default fallback
 		return 'single';
+	}
+
+	/**
+	 * Parse grid-layout attribute.
+	 *
+	 * @param array $atts Attributes.
+	 * @return string 'uniform' or 'justified'
+	 */
+	private function parse_grid_layout( $atts ) {
+		if ( ! isset( $atts['grid-layout'] ) ) {
+			return 'uniform';
+		}
+
+		$value = strtolower( trim( $atts['grid-layout'] ) );
+
+		if ( in_array( $value, array( 'uniform', 'justified' ), true ) ) {
+			return $value;
+		}
+
+		return 'uniform';
+	}
+
+	/**
+	 * Parse an integer grid column/row count attribute.
+	 *
+	 * @param array  $atts    Attributes.
+	 * @param string $key     Attribute key.
+	 * @param int    $default Default value.
+	 * @return int
+	 */
+	private function parse_grid_int( $atts, $key, $default ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return $default;
+		}
+
+		$value = intval( $atts[ $key ] );
+
+		return ( $value >= 1 && $value <= 12 ) ? $value : $default;
+	}
+
+	/**
+	 * Parse grid-row-height attribute (pixels, 50–800).
+	 *
+	 * @param array $atts Attributes.
+	 * @return int
+	 */
+	private function parse_grid_row_height( $atts ) {
+		if ( ! isset( $atts['grid-row-height'] ) ) {
+			return 200;
+		}
+
+		$value = intval( $atts['grid-row-height'] );
+
+		return ( $value >= 50 && $value <= 800 ) ? $value : 200;
 	}
 
 	/**
