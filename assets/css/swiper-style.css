@@ -692,6 +692,10 @@ body.jzsa-no-scroll {
     user-select: none;
 }
 
+.jzsa-grid-shell.jzsa-grid-draggable {
+    cursor: grab;
+}
+
 .jzsa-grid-album.jzsa-grid-draggable .jzsa-grid-thumb {
     cursor: inherit;
 }
@@ -700,7 +704,17 @@ body.jzsa-no-scroll {
     cursor: grabbing;
 }
 
+.jzsa-grid-shell.jzsa-grid-draggable.jzsa-grid-grabbing {
+    cursor: grabbing;
+}
+
 .jzsa-grid-album.jzsa-grid-draggable.jzsa-grid-grabbing .jzsa-grid-thumb {
+    cursor: inherit;
+}
+
+.jzsa-grid-shell.jzsa-grid-draggable .jzsa-grid-slide-stage,
+.jzsa-grid-shell.jzsa-grid-draggable .jzsa-grid-slide-track,
+.jzsa-grid-shell.jzsa-grid-draggable .jzsa-grid-slide-panel {
     cursor: inherit;
 }
 

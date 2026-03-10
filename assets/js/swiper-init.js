@@ -1937,22 +1937,87 @@
     }
 
     /**
+     * Build a stable visual snapshot of the current grid markup for transitions.
+     *
+     * @param {jQuery} $source Grid album element.
+     * @return {jQuery} Snapshot node.
+     */
+    function createGridTransitionSnapshot($source) {
+        var $snapshot = $source.clone(false, false);
+        var isCssGrid = false;
+        $snapshot.removeAttr('id');
+        $snapshot.removeClass('jzsa-grid-scrollable jzsa-grid-transition-target');
+        $snapshot.css({
+            maxHeight: '',
+            overflowY: '',
+            overflowX: '',
+            visibility: '',
+            transform: '',
+            transition: '',
+            scrollbarGutter: ''
+        });
+
+        var sourceRect = $source[0] ? $source[0].getBoundingClientRect() : null;
+        if (sourceRect && sourceRect.width > 0) {
+            $snapshot.css('width', sourceRect.width + 'px');
+        }
+
+        // Freeze computed layout to prevent intermediate one-tile flashes.
+        if ($source[0] && window.getComputedStyle) {
+            var sourceStyle = window.getComputedStyle($source[0]);
+            if (sourceStyle && sourceStyle.display === 'grid') {
+                isCssGrid = true;
+                $snapshot.css({
+                    display: 'grid',
+                    gridTemplateColumns: sourceStyle.gridTemplateColumns,
+                    gridAutoRows: sourceStyle.gridAutoRows,
+                    gap: sourceStyle.gap
+                });
+            }
+        }
+
+        var sourceThumbs = $source.find('.jzsa-grid-thumb');
+        var snapshotThumbs = $snapshot.find('.jzsa-grid-thumb');
+        snapshotThumbs.each(function(i) {
+            var sourceThumb = sourceThumbs.get(i);
+            if (!sourceThumb) {
+                return;
+            }
+
+            var rect = sourceThumb.getBoundingClientRect();
+            if (!isCssGrid && rect.width > 0 && rect.height > 0) {
+                this.style.width = rect.width + 'px';
+                this.style.height = rect.height + 'px';
+                this.style.aspectRatio = '';
+            }
+
+            this.setAttribute('loading', 'eager');
+            this.setAttribute('decoding', 'sync');
+        });
+
+        return $snapshot;
+    }
+
+    /**
      * Enable desktop mouse drag behavior for grid pagination/scrolling.
      *
      * @param {jQuery} $container Grid album element.
-     * @param {Object} config     { enabled, mode, onPageSwipe }.
+     * @param {Object} config     { enabled, mode, onPageSwipe, onPageDragStart }.
      */
     function setupGridMouseInteractions($container, config) {
         var id = $container.attr('id') || 'grid';
         var ns = '.jzsaGridMouse-' + id;
+        var $shell = ensureGridShell($container);
         var options = config || {};
         var mode = options.mode || '';
         var enabled = !!options.enabled;
         var onPageSwipe = typeof options.onPageSwipe === 'function' ? options.onPageSwipe : null;
+        var onPageDragStart = typeof options.onPageDragStart === 'function' ? options.onPageDragStart : null;
 
         $container.off(ns);
         $(document).off(ns);
         $container.removeClass('jzsa-grid-draggable jzsa-grid-grabbing');
+        $shell.removeClass('jzsa-grid-draggable jzsa-grid-grabbing');
         $container.removeData('jzsaGridSuppressClick');
 
         if (!enabled) {
@@ -1960,6 +2025,7 @@
         }
 
         $container.addClass('jzsa-grid-draggable');
+        $shell.addClass('jzsa-grid-draggable');
 
         var state = {
             active: false,
@@ -1967,7 +2033,11 @@
             swipeTriggered: false,
             startX: 0,
             startY: 0,
-            startScrollTop: 0
+            startScrollTop: 0,
+            lastDeltaX: 0,
+            lastDeltaY: 0,
+            dragDirection: 0,
+            dragSession: null
         };
 
         function suppressNextThumbClick() {
@@ -1980,6 +2050,32 @@
         function stopDraggingState() {
             state.active = false;
             $container.removeClass('jzsa-grid-grabbing');
+            $shell.removeClass('jzsa-grid-grabbing');
+        }
+
+        function finalizePaginationDragSession() {
+            if (mode !== 'pagination' || !state.dragSession) {
+                return false;
+            }
+
+            var threshold = Math.max(30, ($container.width() || 0) * 0.10);
+            var hasDirectionalDelta =
+                (state.dragDirection === 1 && state.lastDeltaX < 0) ||
+                (state.dragDirection === -1 && state.lastDeltaX > 0);
+            var shouldCommit = hasDirectionalDelta && Math.abs(state.lastDeltaX) >= threshold;
+            var session = state.dragSession;
+
+            state.dragSession = null;
+            state.swipeTriggered = shouldCommit;
+
+            if (typeof session.finish === 'function') {
+                session.finish(shouldCommit);
+            } else if (shouldCommit && onPageSwipe) {
+                onPageSwipe(state.dragDirection);
+            }
+
+            suppressNextThumbClick();
+            return true;
         }
 
         $container.on('dragstart' + ns, '.jzsa-grid-thumb', function(e) {
@@ -2008,8 +2104,13 @@
             state.startX = e.pageX;
             state.startY = e.pageY;
             state.startScrollTop = $container.scrollTop();
+            state.lastDeltaX = 0;
+            state.lastDeltaY = 0;
+            state.dragDirection = 0;
+            state.dragSession = null;
 
             $container.addClass('jzsa-grid-grabbing');
+            $shell.addClass('jzsa-grid-grabbing');
             e.preventDefault();
         });
 
@@ -2020,6 +2121,8 @@
 
             var deltaX = e.pageX - state.startX;
             var deltaY = e.pageY - state.startY;
+            state.lastDeltaX = deltaX;
+            state.lastDeltaY = deltaY;
 
             if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
                 state.moved = true;
@@ -2031,15 +2134,36 @@
                 return;
             }
 
-            if (mode === 'pagination' && !state.swipeTriggered) {
-                var threshold = Math.max(30, ($container.width() || 0) * 0.10);
+            if (mode === 'pagination') {
                 var isHorizontalGesture = Math.abs(deltaX) > Math.abs(deltaY);
-                if (isHorizontalGesture && Math.abs(deltaX) >= threshold) {
-                    state.swipeTriggered = true;
-                    suppressNextThumbClick();
-                    if (onPageSwipe) {
-                        onPageSwipe(deltaX < 0 ? 1 : -1);
+
+                if (onPageDragStart) {
+                    if (!state.dragSession && !state.swipeTriggered && isHorizontalGesture && Math.abs(deltaX) >= 6) {
+                        state.dragDirection = deltaX < 0 ? 1 : -1;
+                        state.dragSession = onPageDragStart(state.dragDirection);
+                        if (state.dragSession) {
+                            suppressNextThumbClick();
+                        }
                     }
+
+                    if (state.dragSession && typeof state.dragSession.update === 'function') {
+                        state.dragSession.update(deltaX);
+                        e.preventDefault();
+                        return;
+                    }
+                }
+
+                if (!onPageDragStart && !state.swipeTriggered) {
+                    var threshold = Math.max(30, ($container.width() || 0) * 0.10);
+                    if (isHorizontalGesture && Math.abs(deltaX) >= threshold) {
+                        state.swipeTriggered = true;
+                        suppressNextThumbClick();
+                        if (onPageSwipe) {
+                            onPageSwipe(deltaX < 0 ? 1 : -1);
+                        }
+                        e.preventDefault();
+                    }
+                } else if (isHorizontalGesture) {
                     e.preventDefault();
                 }
             }
@@ -2047,6 +2171,11 @@
 
         $(document).on('mouseup' + ns, function() {
             if (!state.active) {
+                return;
+            }
+
+            if (finalizePaginationDragSession()) {
+                stopDraggingState();
                 return;
             }
 
@@ -2061,11 +2190,183 @@
                 return;
             }
 
+            if (finalizePaginationDragSession()) {
+                stopDraggingState();
+                return;
+            }
+
             if (state.moved || state.swipeTriggered) {
                 suppressNextThumbClick();
             }
             stopDraggingState();
         });
+    }
+
+    /**
+     * Create an interactive drag session for grid page transitions.
+     *
+     * @param {jQuery}   $container         Grid album element.
+     * @param {number}   direction          +1 next page, -1 previous page.
+     * @param {Function} renderIncomingPage Renders the target page into $container.
+     * @param {Function} renderOutgoingPage Renders the current page into $container.
+     * @param {Function} onFinish           Callback called with committed boolean.
+     * @return {?Object} Session with update(deltaX) and finish(commit).
+     */
+    function createGridPageDragTransition($container, direction, renderIncomingPage, renderOutgoingPage, onFinish) {
+        var DRAG_SETTLE_MS = 220;
+
+        if (
+            !$container ||
+            !$container.length ||
+            typeof renderIncomingPage !== 'function' ||
+            typeof renderOutgoingPage !== 'function'
+        ) {
+            return null;
+        }
+
+        if ($container.data('jzsaGridAnimating')) {
+            return null;
+        }
+
+        var $shell = ensureGridShell($container);
+        var outgoingRect = $container[0] ? $container[0].getBoundingClientRect() : null;
+        var outgoingHeight = outgoingRect ? outgoingRect.height : $container.outerHeight();
+        var outgoingWidth = outgoingRect ? outgoingRect.width : $container.outerWidth();
+        if (!outgoingWidth || !outgoingHeight) {
+            return null;
+        }
+
+        var $outgoingSnapshot = createGridTransitionSnapshot($container);
+
+        $shell.addClass('jzsa-grid-transitioning');
+        $container.data('jzsaGridAnimating', true);
+        $container.css('visibility', 'hidden');
+
+        renderIncomingPage();
+        var $incomingSnapshot = createGridTransitionSnapshot($container);
+
+        var stageHeight = outgoingHeight;
+        if (stageHeight > 0) {
+            $shell.css({
+                height: stageHeight + 'px',
+                minHeight: stageHeight + 'px'
+            });
+        }
+
+        $shell.find('.jzsa-grid-slide-stage').remove();
+
+        var $stage = $('<div class="jzsa-grid-slide-stage"></div>');
+        var $track = $('<div class="jzsa-grid-slide-track"></div>');
+        var $panelA = $('<div class="jzsa-grid-slide-panel"></div>');
+        var $panelB = $('<div class="jzsa-grid-slide-panel"></div>');
+        var slideDistance = outgoingWidth;
+        if (!slideDistance || slideDistance <= 0) {
+            var shellRect = $shell[0] ? $shell[0].getBoundingClientRect() : null;
+            slideDistance = shellRect ? shellRect.width : ($shell.width() || 0);
+        }
+
+        if (stageHeight > 0) {
+            $stage.css('height', stageHeight + 'px');
+            $track.css('height', stageHeight + 'px');
+        }
+
+        $track.css({
+            width: (slideDistance * 2) + 'px',
+            transitionDuration: '0ms'
+        });
+        $panelA.css({
+            width: slideDistance + 'px',
+            maxWidth: slideDistance + 'px',
+            flex: '0 0 ' + slideDistance + 'px'
+        });
+        $panelB.css({
+            width: slideDistance + 'px',
+            maxWidth: slideDistance + 'px',
+            flex: '0 0 ' + slideDistance + 'px'
+        });
+
+        var startTransform = direction > 0 ? 0 : -slideDistance;
+        var endTransform = direction > 0 ? -slideDistance : 0;
+        var currentTransform = startTransform;
+
+        if (direction > 0) {
+            $panelA.append($outgoingSnapshot);
+            $panelB.append($incomingSnapshot);
+        } else {
+            $panelA.append($incomingSnapshot);
+            $panelB.append($outgoingSnapshot);
+        }
+
+        $track.append($panelA, $panelB);
+        $stage.append($track);
+        $shell.append($stage);
+        $track.css('transform', 'translateX(' + startTransform + 'px)');
+
+        if ($track[0]) {
+            $track[0].offsetHeight;
+        }
+
+        var finished = false;
+        function cleanup(committed) {
+            if (finished) {
+                return;
+            }
+            finished = true;
+
+            if (!committed) {
+                renderOutgoingPage();
+            }
+
+            $stage.remove();
+            $container.css('visibility', '');
+            $shell.removeClass('jzsa-grid-transitioning');
+            $shell.css({
+                height: '',
+                minHeight: ''
+            });
+            $container.data('jzsaGridAnimating', false);
+
+            if (typeof onFinish === 'function') {
+                onFinish(committed);
+            }
+        }
+
+        return {
+            update: function(deltaX) {
+                if (finished) {
+                    return;
+                }
+
+                var nextTransform = startTransform + deltaX;
+                if (nextTransform > 0) {
+                    nextTransform = 0;
+                } else if (nextTransform < -slideDistance) {
+                    nextTransform = -slideDistance;
+                }
+
+                currentTransform = nextTransform;
+                $track.css({
+                    transitionDuration: '0ms',
+                    transform: 'translateX(' + currentTransform + 'px)'
+                });
+            },
+            finish: function(committed) {
+                if (finished) {
+                    return;
+                }
+
+                var target = committed ? endTransform : startTransform;
+                $track.css('transition-duration', DRAG_SETTLE_MS + 'ms');
+                if ($track[0]) {
+                    $track[0].offsetHeight;
+                }
+                $track.css('transform', 'translateX(' + target + 'px)');
+
+                window.setTimeout(function() {
+                    cleanup(!!committed);
+                }, DRAG_SETTLE_MS + 30);
+            }
+        };
     }
 
     /**
@@ -2097,62 +2398,7 @@
             return;
         }
 
-        function createGridSnapshot($source) {
-            var $snapshot = $source.clone(false, false);
-            var isCssGrid = false;
-            $snapshot.removeAttr('id');
-            $snapshot.removeClass('jzsa-grid-scrollable jzsa-grid-transition-target');
-            $snapshot.css({
-                maxHeight: '',
-                overflowY: '',
-                overflowX: '',
-                visibility: '',
-                transform: '',
-                transition: '',
-                scrollbarGutter: ''
-            });
-
-            var sourceRect = $source[0] ? $source[0].getBoundingClientRect() : null;
-            if (sourceRect && sourceRect.width > 0) {
-                $snapshot.css('width', sourceRect.width + 'px');
-            }
-
-            // Freeze computed layout to prevent intermediate one-tile flashes.
-            if ($source[0] && window.getComputedStyle) {
-                var sourceStyle = window.getComputedStyle($source[0]);
-                if (sourceStyle && sourceStyle.display === 'grid') {
-                    isCssGrid = true;
-                    $snapshot.css({
-                        display: 'grid',
-                        gridTemplateColumns: sourceStyle.gridTemplateColumns,
-                        gridAutoRows: sourceStyle.gridAutoRows,
-                        gap: sourceStyle.gap
-                    });
-                }
-            }
-
-            var sourceThumbs = $source.find('.jzsa-grid-thumb');
-            var snapshotThumbs = $snapshot.find('.jzsa-grid-thumb');
-            snapshotThumbs.each(function(i) {
-                var sourceThumb = sourceThumbs.get(i);
-                if (!sourceThumb) {
-                    return;
-                }
-
-                var rect = sourceThumb.getBoundingClientRect();
-                if (!isCssGrid && rect.width > 0 && rect.height > 0) {
-                    this.style.width = rect.width + 'px';
-                    this.style.height = rect.height + 'px';
-                    this.style.aspectRatio = '';
-                }
-
-                this.setAttribute('loading', 'eager');
-                this.setAttribute('decoding', 'sync');
-            });
-            return $snapshot;
-        }
-
-        var $outgoingSnapshot = createGridSnapshot($container);
+        var $outgoingSnapshot = createGridTransitionSnapshot($container);
 
         $shell.addClass('jzsa-grid-transitioning');
         $container.data('jzsaGridAnimating', true);
@@ -2160,7 +2406,7 @@
 
         renderNewPage();
 
-        var $incomingSnapshot = createGridSnapshot($container);
+        var $incomingSnapshot = createGridTransitionSnapshot($container);
 
         // Keep shell height fixed during transition to avoid temporary layout shifts.
         var stageHeight = outgoingHeight;
@@ -2420,6 +2666,51 @@
                             }
 
                             onJustifiedPageChange(nextPage, direction);
+                        },
+                        onPageDragStart: function(direction) {
+                            if ($container.data('jzsaGridAnimating')) {
+                                return null;
+                            }
+
+                            var currentPage = paginationState.currentPage;
+                            var nextPage = currentPage + direction;
+                            if (nextPage < 0) {
+                                nextPage = paginationState.totalPages - 1;
+                            } else if (nextPage > paginationState.totalPages - 1) {
+                                nextPage = 0;
+                            }
+
+                            var nextRowStart = nextPage * rowsPerPage;
+                            var nextRowsForPage = (gridRows > 0)
+                                ? justified.rows.slice(nextRowStart, nextRowStart + rowsPerPage)
+                                : justified.rows;
+
+                            return createGridPageDragTransition(
+                                $container,
+                                direction,
+                                function() {
+                                    renderJustifiedRows(
+                                        $container,
+                                        nextRowsForPage,
+                                        justified.containerWidth,
+                                        justified.targetHeight,
+                                        justified.gap
+                                    );
+                                },
+                                function() {
+                                    renderJustifiedRows(
+                                        $container,
+                                        rowsForPage,
+                                        justified.containerWidth,
+                                        justified.targetHeight,
+                                        justified.gap
+                                    );
+                                },
+                                function(committed) {
+                                    paginationState.currentPage = committed ? nextPage : currentPage;
+                                    renderCurrentGridPage();
+                                }
+                            );
                         }
                     });
                 }
@@ -2513,6 +2804,36 @@
                             }
 
                             onUniformPageChange(nextPage, direction);
+                        },
+                        onPageDragStart: function(direction) {
+                            if ($container.data('jzsaGridAnimating')) {
+                                return null;
+                            }
+
+                            var currentPage = paginationState.currentPage;
+                            var nextPage = currentPage + direction;
+                            if (nextPage < 0) {
+                                nextPage = paginationState.totalPages - 1;
+                            } else if (nextPage > paginationState.totalPages - 1) {
+                                nextPage = 0;
+                            }
+
+                            var nextPageItems = getGridPageItems(allPhotos, nextPage, photosPerPage);
+
+                            return createGridPageDragTransition(
+                                $container,
+                                direction,
+                                function() {
+                                    buildUniformGrid($container, nextPageItems);
+                                },
+                                function() {
+                                    buildUniformGrid($container, pageItems);
+                                },
+                                function(committed) {
+                                    paginationState.currentPage = committed ? nextPage : currentPage;
+                                    renderCurrentGridPage();
+                                }
+                            );
                         }
                     });
                 }
