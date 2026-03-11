@@ -1871,8 +1871,11 @@
      * @param {jQuery}   $container    Grid album element.
      * @param {Object}   state         Pagination state object.
      * @param {Function} onPageChange  Callback invoked with next page index.
+     * @param {Object}   options       Optional controls config.
      */
-    function setupGridPaginationControls($container, state, onPageChange) {
+    function setupGridPaginationControls($container, state, onPageChange, options) {
+        var config = options || {};
+        var showAutoplayProgress = !!config.showAutoplayProgress;
         var controlsId = $container.attr('id') + '-grid-controls';
         var $shell = ensureGridShell($container);
         var $controls = $('#' + controlsId);
@@ -1887,6 +1890,7 @@
                 '<div id="' + controlsId + '" class="jzsa-grid-controls jzsa-album" role="group" aria-label="Grid page navigation">' +
                     '<div class="swiper-button-prev" role="button" tabindex="0" aria-label="Previous grid page"></div>' +
                     '<div class="swiper-pagination" aria-live="polite"></div>' +
+                    '<div class="swiper-autoplay-progress" aria-hidden="true"><div class="swiper-autoplay-progress-bar"></div></div>' +
                     '<div class="swiper-button-next" role="button" tabindex="0" aria-label="Next grid page"></div>' +
                 '</div>';
 
@@ -1897,6 +1901,8 @@
         var $prev = $controls.find('.swiper-button-prev');
         var $next = $controls.find('.swiper-button-next');
         var $status = $controls.find('.swiper-pagination');
+        var $progressContainer = $controls.find('.swiper-autoplay-progress');
+        var $progressBar = $controls.find('.swiper-autoplay-progress-bar');
 
         function isActivationKey(e) {
             return e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32;
@@ -1933,6 +1939,11 @@
         $status.text((state.currentPage + 1) + ' / ' + state.totalPages);
         $prev.removeClass('swiper-button-disabled').attr('aria-disabled', 'false');
         $next.removeClass('swiper-button-disabled').attr('aria-disabled', 'false');
+        $progressBar.css({
+            transform: 'scaleX(1)',
+            transition: 'none'
+        });
+        $progressContainer.css('display', showAutoplayProgress ? 'block' : 'none');
     }
 
     /**
@@ -2592,6 +2603,7 @@
      */
     function initializeGrid(container) {
         var $container = $(container);
+        var $shell = ensureGridShell($container);
         var layout     = $container.attr('data-grid-layout') || 'uniform';
 
         var allPhotosJson = $container.attr('data-all-photos');
@@ -2605,6 +2617,11 @@
         var requestedGridRows = parseInt($container.attr('data-grid-rows'), 10);
         var gridRows = (!isNaN(requestedGridRows) && requestedGridRows > 0) ? requestedGridRows : 0;
         var gridScroller = $container.attr('data-grid-scroller') === 'true';
+        var gridAutoplayEnabled = $container.attr('data-autoplay') === 'true';
+        var requestedGridAutoplayDelay = parseInt($container.attr('data-autoplay-delay'), 10);
+        var gridAutoplayDelay = (!isNaN(requestedGridAutoplayDelay) && requestedGridAutoplayDelay > 0)
+            ? requestedGridAutoplayDelay
+            : 5;
 
         // Apply grid-start-at: rotate the photo array so the grid begins at a
         // different offset. "random" shuffles the order on each page load.
@@ -2632,6 +2649,143 @@
             currentPage: 0,
             totalPages: 1
         };
+        var GRID_AUTOPLAY_RETRY_MS = 120;
+        var GRID_AUTOPLAY_PROGRESS_EXTRA_MS = 500;
+        var gridAutoplayTimer = null;
+        var gridAutoplayPausedByHover = false;
+        var playerId = null;
+        var $player = null;
+
+        function clearGridAutoplayTimer() {
+            if (gridAutoplayTimer) {
+                window.clearTimeout(gridAutoplayTimer);
+                gridAutoplayTimer = null;
+            }
+        }
+
+        function shouldShowGridAutoplayProgress() {
+            var useScroller = gridScroller && gridRows > 0;
+            return gridAutoplayEnabled && !useScroller && paginationState.totalPages > 1;
+        }
+
+        function canRunGridAutoplay() {
+            if (!shouldShowGridAutoplayProgress() || gridAutoplayPausedByHover) {
+                return false;
+            }
+
+            if ($player && $player.length && isFullscreen($player[0])) {
+                return false;
+            }
+
+            return true;
+        }
+
+        function setGridAutoplayProgressVisible(visible) {
+            var controlsId = $container.attr('id') + '-grid-controls';
+            var $controls = $('#' + controlsId);
+            var $progressContainer = $controls.find('.swiper-autoplay-progress');
+            var $progressBar = $controls.find('.swiper-autoplay-progress-bar');
+
+            if (!$progressContainer.length || !$progressBar.length) {
+                return;
+            }
+
+            $progressBar.css({
+                transform: 'scaleX(1)',
+                transition: 'none'
+            });
+            $progressContainer.css('display', visible ? 'block' : 'none');
+        }
+
+        function startGridAutoplayProgressCycle() {
+            var controlsId = $container.attr('id') + '-grid-controls';
+            var $controls = $('#' + controlsId);
+            var $progressContainer = $controls.find('.swiper-autoplay-progress');
+            var $progressBar = $controls.find('.swiper-autoplay-progress-bar');
+            var delayMs = gridAutoplayDelay * MILLISECONDS_PER_SECOND;
+
+            if (!$progressContainer.length || !$progressBar.length || delayMs <= 0) {
+                return;
+            }
+
+            var progressDuration = delayMs + GRID_AUTOPLAY_PROGRESS_EXTRA_MS;
+            if (progressDuration < 0) {
+                progressDuration = delayMs;
+            }
+
+            $progressContainer.css('display', 'block');
+            $progressBar.css({
+                transform: 'scaleX(1)',
+                transition: 'none'
+            });
+
+            if ($progressBar[0]) {
+                $progressBar[0].offsetHeight;
+            }
+
+            $progressBar.css({
+                transform: 'scaleX(0)',
+                transition: 'transform ' + progressDuration + 'ms linear'
+            });
+        }
+
+        function scheduleGridAutoplay() {
+            clearGridAutoplayTimer();
+
+            if (!shouldShowGridAutoplayProgress()) {
+                setGridAutoplayProgressVisible(false);
+                return;
+            }
+
+            if (!canRunGridAutoplay()) {
+                setGridAutoplayProgressVisible(true);
+                return;
+            }
+
+            if ($container.data('jzsaGridAnimating')) {
+                setGridAutoplayProgressVisible(true);
+                gridAutoplayTimer = window.setTimeout(function() {
+                    scheduleGridAutoplay();
+                }, GRID_AUTOPLAY_RETRY_MS);
+                return;
+            }
+
+            startGridAutoplayProgressCycle();
+            gridAutoplayTimer = window.setTimeout(function() {
+                if (!canRunGridAutoplay() || $container.data('jzsaGridAnimating')) {
+                    scheduleGridAutoplay();
+                    return;
+                }
+
+                var nextPage = paginationState.currentPage + 1;
+                if (nextPage >= paginationState.totalPages) {
+                    nextPage = 0;
+                }
+
+                paginationState.currentPage = nextPage;
+                renderCurrentGridPage({
+                    animate: true,
+                    direction: 1
+                });
+            }, gridAutoplayDelay * MILLISECONDS_PER_SECOND);
+        }
+
+        function syncGridAutoplayState() {
+            clearGridAutoplayTimer();
+            scheduleGridAutoplay();
+        }
+
+        var gridAutoplayNamespace = '.jzsaGridAutoplay-' + ($container.attr('id') || 'grid');
+        $shell.off('mouseenter' + gridAutoplayNamespace + ' mouseleave' + gridAutoplayNamespace);
+        $shell.on('mouseenter' + gridAutoplayNamespace, function() {
+            gridAutoplayPausedByHover = true;
+            clearGridAutoplayTimer();
+            scheduleGridAutoplay();
+        });
+        $shell.on('mouseleave' + gridAutoplayNamespace, function() {
+            gridAutoplayPausedByHover = false;
+            scheduleGridAutoplay();
+        });
 
         function renderCurrentGridPage(options) {
             var renderOptions = options || {};
@@ -2713,7 +2867,9 @@
                         });
                     };
 
-                    setupGridPaginationControls($container, paginationState, onJustifiedPageChange);
+                    setupGridPaginationControls($container, paginationState, onJustifiedPageChange, {
+                        showAutoplayProgress: gridAutoplayEnabled
+                    });
                     setupGridMouseInteractions($container, {
                         enabled: paginationState.totalPages > 1,
                         mode: 'pagination',
@@ -2870,7 +3026,9 @@
                         });
                     };
 
-                    setupGridPaginationControls($container, paginationState, onUniformPageChange);
+                    setupGridPaginationControls($container, paginationState, onUniformPageChange, {
+                        showAutoplayProgress: gridAutoplayEnabled
+                    });
                     setupGridMouseInteractions($container, {
                         enabled: paginationState.totalPages > 1,
                         mode: 'pagination',
@@ -2921,6 +3079,8 @@
                     });
                 }
             }
+
+            scheduleGridAutoplay();
         }
 
         renderCurrentGridPage();
@@ -2940,9 +3100,40 @@
 
         // Build the fullscreen player and initialize it eagerly (same as
         // player/carousel modes — Swiper is always ready, not lazily created).
-        var playerId = buildGridPlayer($container);
-        var $player = $('#' + playerId);
+        playerId = buildGridPlayer($container);
+        $player = $('#' + playerId);
         initializeSwiper($player[0], 'player');
+
+        var fullscreenSyncNamespace = '.jzsaGridFullscreen-' + ($container.attr('id') || 'grid');
+        $(document).off(
+            'fullscreenchange' + fullscreenSyncNamespace +
+            ' webkitfullscreenchange' + fullscreenSyncNamespace +
+            ' mozfullscreenchange' + fullscreenSyncNamespace +
+            ' MSFullscreenChange' + fullscreenSyncNamespace
+        );
+        $(document).on(
+            'fullscreenchange' + fullscreenSyncNamespace +
+            ' webkitfullscreenchange' + fullscreenSyncNamespace +
+            ' mozfullscreenchange' + fullscreenSyncNamespace +
+            ' MSFullscreenChange' + fullscreenSyncNamespace,
+            function() {
+                window.setTimeout(syncGridAutoplayState, 80);
+            }
+        );
+
+        $player.off(
+            'click' + fullscreenSyncNamespace +
+            ' dblclick' + fullscreenSyncNamespace +
+            ' touchend' + fullscreenSyncNamespace
+        );
+        $player.on(
+            'click' + fullscreenSyncNamespace +
+            ' dblclick' + fullscreenSyncNamespace +
+            ' touchend' + fullscreenSyncNamespace,
+            function() {
+                window.setTimeout(syncGridAutoplayState, 80);
+            }
+        );
 
         var fullScreenSwitch = $container.attr('data-full-screen-switch') || 'double-click';
 
@@ -2956,6 +3147,7 @@
                     swiper.slideTo(safeIndex, 0, false);
                 }
             }
+            clearGridAutoplayTimer();
             toggleFullscreen($player[0]);
         }
 

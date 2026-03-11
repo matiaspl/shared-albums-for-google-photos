@@ -28,11 +28,11 @@
     margin-top: 20px;
 }
 
-/* Shortcode Playground section stands out slightly so it's easy to find
+/* Playground section stands out slightly so it's easy to find
  * when scrolling back. Light pastel background, subtle border color. */
 .jzsa-section.jzsa-playground-section {
-    background: #f0f6fc; /* same light blue as Help section */
-    border-color: #2271b1;
+    background: #f0fcf4;
+    border-color: #1a7a3a;
     margin-bottom: 32px; /* a bit more breathing room below the playground */
 }
 

@@ -277,6 +277,14 @@ class JZSA_Renderer {
 		$attrs[] = sprintf( 'data-grid-scroller="%s"', ! empty( $config['grid-scroller'] ) ? 'true' : 'false' );
 		$attrs[] = sprintf( 'data-grid-start-at="%s"', esc_attr( $config['grid-start-at'] ) );
 
+		if ( isset( $config['autoplay'] ) ) {
+			$attrs[] = sprintf( 'data-autoplay="%s"', $config['autoplay'] ? 'true' : 'false' );
+		}
+
+		if ( isset( $config['autoplay-delay'] ) ) {
+			$attrs[] = sprintf( 'data-autoplay-delay="%s"', esc_attr( $config['autoplay-delay'] ) );
+		}
+
 		if ( ! empty( $config['album-url'] ) ) {
 			$attrs[] = sprintf( 'data-album-url="%s"', esc_url( $config['album-url'] ) );
 		}

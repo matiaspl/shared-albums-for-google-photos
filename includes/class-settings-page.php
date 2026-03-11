@@ -155,15 +155,15 @@ class JZSA_Settings_Page {
 						<div class="jzsa-step-number">1</div>
 						<div class="jzsa-step-content">
 							<h3><?php esc_html_e( 'Understand What Your Visitors Will See', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Use the Shortcode Playground below to explore the sample album: try the main controls, enter and exit fullscreen, understand what your visitors will experience.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Use the Playground below to explore the sample album: try the main controls, enter and exit fullscreen, understand what your visitors will experience.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
 					<div class="jzsa-step">
 						<div class="jzsa-step-number">2</div>
 						<div class="jzsa-step-content">
-							<h3><?php esc_html_e( 'Browse the Shortcode Samples Further Below', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Scroll down to the Shortcode Samples section to see different shortcode configurations with descriptions, ready to copy and adapt.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<h3><?php esc_html_e( 'Browse the Samples Further Below', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Scroll down to the Samples section to see different shortcode configurations with descriptions, ready to copy and adapt.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
@@ -171,7 +171,7 @@ class JZSA_Settings_Page {
 						<div class="jzsa-step-number">3</div>
 						<div class="jzsa-step-content">
 							<h3><?php esc_html_e( 'Try the Samples in the Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Copy some of the sample shortcodes, paste them into the Shortcode Playground textarea on this page end experiment with shortcode modifications.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Copy some of the sample shortcodes, paste them into the Playground textarea on this page and experiment with shortcode modifications.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
@@ -192,9 +192,9 @@ class JZSA_Settings_Page {
 					</div>
 				</div>
 
-				<!-- Shortcode Playground Section -->
+				<!-- Playground Section -->
 				<div class="jzsa-section jzsa-playground-section">
-					<h2><?php esc_html_e( 'Shortcode Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<h2><?php esc_html_e( 'Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 					<p class="jzsa-intro">
 						<?php esc_html_e( 'Use this area to experiment with the [jzsa-album] shortcode. You can paste your own shortcode here and adjust it before using it on a page or post.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</p>
@@ -217,9 +217,9 @@ class JZSA_Settings_Page {
 					</div>
 				</div>
 
-				<!-- Shortcode Samples Section -->
+				<!-- Samples Section -->
 				<div class="jzsa-section jzsa-samples-section">
-					<h2><?php esc_html_e( 'Shortcode Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<h2><?php esc_html_e( 'Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Basic Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
@@ -727,12 +727,12 @@ class JZSA_Settings_Page {
 						<tbody>
 							<tr>
 								<td><code>autoplay</code></td>
-								<td>Enable autoplay in normal mode: "true" or "false"</td>
+								<td>Enable autoplay in normal mode: "true" or "false". In <code>mode="grid"</code> with pagination (<code>grid-rows &gt; 0</code> and <code>grid-scroller="false"</code>), this advances grid pages automatically.</td>
 								<td>true</td>
 							</tr>
 							<tr>
 								<td><code>autoplay-delay</code></td>
-								<td>Autoplay delay in normal mode, in seconds, supports ranges like "4-12"</td>
+								<td>Autoplay delay in normal mode, in seconds, supports ranges like "4-12". In paginated grid mode this is the delay between page changes.</td>
 								<td>"4-12"</td>
 							</tr>
 							<tr>
@@ -742,7 +742,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>start-at</code></td>
-								<td>Starting photo: "random" (default) or a 1-based photo index like "1" or "12". Values out of range fall back to 1.</td>
+								<td>Starting photo: "random" (default) or a 1-based photo index like "1" or "12". Values out of range fall back to 1. In grid mode this is used as fallback when <code>grid-start-at</code> is not set.</td>
 								<td>random</td>
 							</tr>
 						</tbody>
@@ -889,7 +889,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>grid-start-at</code></td>
-								<td><?php esc_html_e( 'Which photo the grid starts at: a 1-based index (e.g. "5") to rotate the grid, or "random" to shuffle the order on each page load.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Which photo the grid starts at: a 1-based index (e.g. "5") to rotate the grid, or "random" to shuffle the order on each page load. Overrides start-at for grid mode when set.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>1</td>
 							</tr>
 						</tbody>
