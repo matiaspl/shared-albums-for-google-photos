@@ -1364,14 +1364,18 @@
                 var mosaicConfig = {
                     direction: isMobile ? 'horizontal' : 'vertical',
                     spaceBetween: 8,
-                    freeMode: false, // Strict alignment requires freeMode: false
+                    freeMode: false,
                     watchSlidesProgress: true,
                     slideToClickedSlide: true,
                     initialSlide: initialSlide,
                     watchOverflow: true,
-                    // If columns=1, it's just a simple list. If > 1, it's a grid.
                     slidesPerView: isMobile ? 'auto' : mosaicRows,
-                    slidesPerGroup: 1
+                    slidesPerGroup: 1,
+                    pagination: {
+                        el: '#' + galleryId + '-mosaic .swiper-pagination',
+                        clickable: true,
+                        type: 'bullets'
+                    }
                 };
 
                 // Swiper Grid logic: 
@@ -1419,7 +1423,12 @@
                                 initialSlide: currentSlide,
                                 watchOverflow: true,
                                 slidesPerView: isMobileNow ? 'auto' : mosaicRows,
-                                slidesPerGroup: 1
+                                slidesPerGroup: 1,
+                                pagination: {
+                                    el: '#' + galleryId + '-mosaic .swiper-pagination',
+                                    clickable: true,
+                                    type: 'bullets'
+                                }
                             };
                             
                             if (mosaicColumns > 1 || mosaicRows > 1) {

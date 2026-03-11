@@ -705,18 +705,27 @@ body.jzsa-no-scroll {
 /* Let Swiper handle the grid layout via JS, but provide basic slide structure */
 .jzsa-mosaic .swiper-slide {
     width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1 / 1;
+    aspect-ratio: 1 / 1 !important;
+    height: 0 !important;
+    padding-bottom: 100% !important;
     cursor: pointer;
     opacity: 0.5;
     transition: all 0.3s ease;
     box-sizing: border-box;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    position: relative;
     overflow: hidden;
     border-radius: 4px;
     margin: 0 !important;
+}
+
+.jzsa-mosaic .swiper-slide img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .jzsa-mosaic .swiper-slide:hover {
@@ -730,11 +739,21 @@ body.jzsa-no-scroll {
     outline-offset: -3px;
 }
 
-.jzsa-mosaic .swiper-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
+/* Mosaic pagination styles */
+.jzsa-mosaic .swiper-pagination {
+    bottom: 5px !important;
+}
+
+.jzsa-mosaic .swiper-pagination-bullet {
+    width: 6px;
+    height: 6px;
+    background: #fff;
+    opacity: 0.5;
+}
+
+.jzsa-mosaic .swiper-pagination-bullet-active {
+    background: #0b57d0;
+    opacity: 1;
 }
 
 /* On mobile, stack them vertically or hide mosaic? */
