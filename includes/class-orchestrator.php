@@ -172,7 +172,7 @@ class JZSA_Shared_Albums {
 	public function add_media_button( $editor_id = 'content' ) {
 		$label = __( 'Add Google Photos Album', 'janzeman-shared-albums-for-google-photos' );
 		printf(
-			'<button type="button" id="jzsa-insert-album" class="button" data-editor="%s" title="%s">' .
+			'<button type="button" class="button jzsa-insert-album" data-editor="%s" title="%s">' .
 			'<span class="dashicons dashicons-format-gallery" style="margin-right: 4px; margin-top: 3px;"></span>%s</button>',
 			esc_attr( $editor_id ),
 			esc_attr( $label ),
