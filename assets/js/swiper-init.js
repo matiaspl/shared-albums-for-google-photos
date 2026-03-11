@@ -1360,7 +1360,9 @@
                 $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
 
                 var isMobile = window.innerWidth <= 480;
-                
+                var slidesPerView = isMobile ? (mosaicColumns > 1 ? mosaicColumns : 4) : mosaicRows;
+                var gridRows = isMobile ? mosaicRows : mosaicColumns;
+
                 var mosaicConfig = {
                     direction: isMobile ? 'horizontal' : 'vertical',
                     spaceBetween: 8,
@@ -1369,8 +1371,9 @@
                     slideToClickedSlide: true,
                     initialSlide: initialSlide,
                     watchOverflow: true,
-                    slidesPerView: isMobile ? 'auto' : mosaicRows,
-                    slidesPerGroup: 1,
+                    slidesPerView: slidesPerView,
+                    // One dot per "page" requires group matching total visible slides in the grid
+                    slidesPerGroup: slidesPerView * (gridRows > 1 ? gridRows : 1),
                     pagination: {
                         el: '#' + galleryId + '-mosaic .swiper-pagination',
                         clickable: true,
@@ -1378,18 +1381,11 @@
                     }
                 };
 
-                // Swiper Grid logic: 
-                // Vertical direction: grid.rows = columns across, slidesPerView = rows visible.
-                // Horizontal direction: grid.rows = rows across, slidesPerView = columns visible.
-                if (mosaicColumns > 1 || mosaicRows > 1) {
+                if (gridRows > 1) {
                     mosaicConfig.grid = {
-                        rows: isMobile ? mosaicRows : mosaicColumns,
-                        fill: isMobile ? 'row' : 'column'
+                        rows: gridRows,
+                        fill: 'column'
                     };
-                    
-                    if (isMobile) {
-                        mosaicConfig.slidesPerView = mosaicColumns;
-                    }
                 }
 
                 mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', mosaicConfig);
@@ -1398,6 +1394,7 @@
                 if (swiper) {
                     swiper.on('slideChange', function() {
                         if (mosaicSwiper && !mosaicSwiper.destroyed) {
+                            // slideTo in grid mode with pagination follows the page
                             mosaicSwiper.slideTo(swiper.activeIndex);
                         }
                     });
@@ -1414,6 +1411,9 @@
                             var currentSlide = swiper ? swiper.activeIndex : mosaicSwiper.activeIndex;
                             mosaicSwiper.destroy(true, true);
                             
+                            var slidesPerViewNow = isMobileNow ? (mosaicColumns > 1 ? mosaicColumns : 4) : mosaicRows;
+                            var gridRowsNow = isMobileNow ? mosaicRows : mosaicColumns;
+
                             var newConfig = {
                                 direction: newDirection,
                                 spaceBetween: 8,
@@ -1422,8 +1422,8 @@
                                 slideToClickedSlide: true,
                                 initialSlide: currentSlide,
                                 watchOverflow: true,
-                                slidesPerView: isMobileNow ? 'auto' : mosaicRows,
-                                slidesPerGroup: 1,
+                                slidesPerView: slidesPerViewNow,
+                                slidesPerGroup: slidesPerViewNow * (gridRowsNow > 1 ? gridRowsNow : 1),
                                 pagination: {
                                     el: '#' + galleryId + '-mosaic .swiper-pagination',
                                     clickable: true,
@@ -1431,12 +1431,11 @@
                                 }
                             };
                             
-                            if (mosaicColumns > 1 || mosaicRows > 1) {
+                            if (gridRowsNow > 1) {
                                 newConfig.grid = {
-                                    rows: isMobileNow ? mosaicRows : mosaicColumns,
-                                    fill: isMobileNow ? 'row' : 'column'
+                                    rows: gridRowsNow,
+                                    fill: 'column'
                                 };
-                                if (isMobileNow) newConfig.slidesPerView = mosaicColumns;
                             }
                             
                             mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', newConfig);

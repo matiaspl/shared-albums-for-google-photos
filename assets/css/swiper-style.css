@@ -705,7 +705,6 @@ body.jzsa-no-scroll {
 /* Let Swiper handle the grid layout via JS, but provide basic slide structure */
 .jzsa-mosaic .swiper-slide {
     width: 100% !important;
-    aspect-ratio: 1 / 1 !important;
     height: 0 !important;
     padding-bottom: 100% !important;
     cursor: pointer;
@@ -737,6 +736,47 @@ body.jzsa-no-scroll {
     opacity: 1;
     outline: 3px solid #0b57d0;
     outline-offset: -3px;
+}
+
+/* Scroll indicators for mosaic */
+.jzsa-mosaic::before,
+.jzsa-mosaic::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 40px;
+    z-index: 10;
+    pointer-events: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 24px;
+    text-shadow: 0 0 4px rgba(0,0,0,0.8);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.jzsa-mosaic::before {
+    top: 0;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+    content: '▴';
+    align-items: flex-start;
+    padding-top: 5px;
+}
+
+.jzsa-mosaic::after {
+    bottom: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+    content: '▾';
+    align-items: flex-end;
+    padding-bottom: 5px;
+}
+
+.jzsa-mosaic:hover::before,
+.jzsa-mosaic:hover::after {
+    opacity: 1;
 }
 
 /* Mosaic pagination styles */
