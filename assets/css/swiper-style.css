@@ -297,8 +297,9 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 @media (hover: none), (pointer: coarse) {
     .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
-        opacity: 1;
-        pointer-events: auto;
+        display: none;
+        opacity: 0;
+        pointer-events: none;
     }
 }
 
@@ -990,8 +991,9 @@ body.jzsa-no-scroll {
 
 @media (hover: none), (pointer: coarse) {
     .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
-        opacity: 1;
-        pointer-events: auto;
+        display: none;
+        opacity: 0;
+        pointer-events: none;
     }
 }
 
