@@ -1033,59 +1033,190 @@
 
     // Helper: Setup progressive image loading
     function setupProgressiveImageLoading(swiper, $container) {
-        // Progressive image loading - load full-res image when slide becomes active
-        function loadFullImage($img) {
+        var fullImageRegistry = {};
+
+        function ensureFullImageCached(fullSrc, onLoad, onError) {
+            if (!fullSrc) {
+                return;
+            }
+
+            var entry = fullImageRegistry[fullSrc];
+            if (entry && entry.state === 'loaded') {
+                if (typeof onLoad === 'function') {
+                    onLoad();
+                }
+                return;
+            }
+
+            if (entry && entry.state === 'error') {
+                if (typeof onError === 'function') {
+                    onError();
+                }
+                return;
+            }
+
+            if (entry && entry.state === 'loading') {
+                if (typeof onLoad === 'function') {
+                    entry.onLoad.push(onLoad);
+                }
+                if (typeof onError === 'function') {
+                    entry.onError.push(onError);
+                }
+                return;
+            }
+
+            entry = {
+                state: 'loading',
+                onLoad: [],
+                onError: []
+            };
+            if (typeof onLoad === 'function') {
+                entry.onLoad.push(onLoad);
+            }
+            if (typeof onError === 'function') {
+                entry.onError.push(onError);
+            }
+            fullImageRegistry[fullSrc] = entry;
+
+            var tempImg = new Image();
+            tempImg.onload = function() {
+                entry.state = 'loaded';
+                entry.onLoad.forEach(function(cb) {
+                    cb();
+                });
+                entry.onLoad = [];
+                entry.onError = [];
+            };
+            tempImg.onerror = function() {
+                entry.state = 'error';
+                entry.onError.forEach(function(cb) {
+                    cb();
+                });
+                entry.onLoad = [];
+                entry.onError = [];
+            };
+            tempImg.src = fullSrc;
+        }
+
+        function markImageAsFullLoaded($img, fullSrc) {
+            if (!$img || !$img.length || !fullSrc) {
+                return;
+            }
+            if ($img.attr('src') !== fullSrc) {
+                $img.attr('src', fullSrc);
+            }
+            $img.data('full-loaded', true);
+            $img.data('full-prefetched', true);
+            $img.addClass('jzsa-full-loaded');
+            $img.removeClass('jzsa-image-error');
+        }
+
+        function preloadFullImage($img) {
+            if (!$img || !$img.length) {
+                return;
+            }
+
             var fullSrc = $img.attr('data-full-src');
-            if (fullSrc && !$img.data('full-loaded')) {
-                var tempImg = new Image();
-                tempImg.onload = function() {
-                    $img.attr('src', fullSrc);
-                    $img.data('full-loaded', true);
-                    $img.addClass('jzsa-full-loaded');
-                    $img.removeClass('jzsa-image-error');
-                };
-                tempImg.onerror = function() {
-                    // Mark image as failed to load
+            if (!fullSrc || $img.data('full-prefetched') || $img.data('full-loaded') === true) {
+                return;
+            }
+
+            ensureFullImageCached(fullSrc, function() {
+                if (!$img.closest('html').length) {
+                    return;
+                }
+                $img.data('full-prefetched', true);
+            });
+        }
+
+        // Swap to full source (never preview) once the full image is cached.
+        function loadFullImage($img) {
+            if (!$img || !$img.length) {
+                return;
+            }
+
+            var fullSrc = $img.attr('data-full-src');
+            if (!fullSrc) {
+                return;
+            }
+
+            if ($img.data('full-loaded') === true && $img.attr('src') === fullSrc) {
+                return;
+            }
+
+            ensureFullImageCached(
+                fullSrc,
+                function() {
+                    if (!$img.closest('html').length) {
+                        return;
+                    }
+                    markImageAsFullLoaded($img, fullSrc);
+                },
+                function() {
+                    if (!$img.closest('html').length) {
+                        return;
+                    }
                     $img.addClass('jzsa-image-error');
                     $img.data('full-loaded', 'error');
                     console.warn('Failed to load image:', fullSrc);
-                };
-                tempImg.src = fullSrc;
-            }
+                }
+            );
         }
 
-        function loadCurrentAndAdjacentImages() {
+        function getSlideImageAt(index) {
+            if (!swiper.slides || !swiper.slides[index]) {
+                return null;
+            }
+            var $img = $(swiper.slides[index]).find('.jzsa-progressive-image');
+            return $img.length ? $img : null;
+        }
+
+        function processOffsets(offsets, processor) {
+            if (!swiper || !swiper.slides || !swiper.slides.length) {
+                return;
+            }
             var currentIndex = swiper.activeIndex;
-
-            // Load current slide
-            var $currentImg = $(swiper.slides[currentIndex]).find('.jzsa-progressive-image');
-            loadFullImage($currentImg);
-
-            // Preload next slide
-            if (swiper.slides[currentIndex + 1]) {
-                var $nextImg = $(swiper.slides[currentIndex + 1]).find('.jzsa-progressive-image');
-                loadFullImage($nextImg);
-            }
-
-            // Preload previous slide
-            if (swiper.slides[currentIndex - 1]) {
-                var $prevImg = $(swiper.slides[currentIndex - 1]).find('.jzsa-progressive-image');
-                loadFullImage($prevImg);
-            }
+            offsets.forEach(function(offset) {
+                var targetIndex = currentIndex + offset;
+                var $img = getSlideImageAt(targetIndex);
+                if ($img) {
+                    processor($img);
+                }
+            });
         }
 
-        function maybeLoadCurrentAndAdjacentImages() {
-            if (!$container || !$container.length || isFullscreen($container[0])) {
-                loadCurrentAndAdjacentImages();
+        function preloadAllSlidesFull() {
+            if (!swiper || !swiper.slides || !swiper.slides.length) {
+                return;
             }
+
+            $(swiper.slides).each(function() {
+                var $img = $(this).find('.jzsa-progressive-image');
+                preloadFullImage($img);
+            });
         }
 
-        // Only load full-res images in fullscreen mode.
-        maybeLoadCurrentAndAdjacentImages();
+        function runProgressiveLoadingCycle() {
+            var inFullscreen = !$container || !$container.length || isFullscreen($container[0]);
 
-        // Load full images for adjacent slides (preload next/prev)
+            if (inFullscreen) {
+                // Fullscreen rule: render with full-res sources only.
+                processOffsets([0, 1, -1, 2, -2], loadFullImage);
+
+                // Aggressively preload the queue for smooth looping in fullscreen.
+                processOffsets([3, -3, 4, -4], preloadFullImage);
+                preloadAllSlidesFull();
+                return;
+            }
+
+            // Outside fullscreen, keep previews on screen but warm the cache for likely next images.
+            processOffsets([0, 1, -1, 2], preloadFullImage);
+        }
+
+        runProgressiveLoadingCycle();
+
         swiper.on('slideChange', function() {
-            maybeLoadCurrentAndAdjacentImages();
+            runProgressiveLoadingCycle();
         });
 
         if ($container && $container.length) {
@@ -1108,7 +1239,7 @@
                         return;
                     }
                     window.setTimeout(function() {
-                        maybeLoadCurrentAndAdjacentImages();
+                        runProgressiveLoadingCycle();
                     }, 0);
                 }
             );
@@ -1119,7 +1250,7 @@
                 if (!isActive) {
                     return;
                 }
-                maybeLoadCurrentAndAdjacentImages();
+                runProgressiveLoadingCycle();
             });
         }
     }
