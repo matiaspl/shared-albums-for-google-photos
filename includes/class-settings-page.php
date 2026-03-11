@@ -95,7 +95,7 @@ class JZSA_Settings_Page {
 								<rect x="1" y="10" width="140" height="99" rx="6" class="jzsa-purpose-panel jzsa-purpose-panel-single" />
 								<image href="<?php echo esc_url( JZSA_PLUGIN_URL . 'assets/icon-256x256.gif' ); ?>" x="33" y="15" width="75" height="75" />
 								<text x="72" y="99" text-anchor="middle" class="jzsa-purpose-label">
-									<?php esc_html_e( 'We render your albums.', 'janzeman-shared-albums-for-google-photos' ); ?>
+									<?php esc_html_e( 'We render your album.', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 
 								<!-- Right: multi-album page layout built outside this plugin -->
@@ -127,7 +127,7 @@ class JZSA_Settings_Page {
 									<?php esc_html_e( 'the', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 								<text x="207" y="99" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-7">
-									<?php esc_html_e( 'albums', 'janzeman-shared-albums-for-google-photos' ); ?>
+									<?php esc_html_e( 'multi-album', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 								<text x="287" y="99" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-8">
 									<?php esc_html_e( 'layout.', 'janzeman-shared-albums-for-google-photos' ); ?>
