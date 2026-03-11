@@ -167,7 +167,6 @@ class JZSA_Renderer {
 				$mosaic_rows
 			);
 			$html .= '<div class="swiper-wrapper"></div>';
-			$html .= '<div class="swiper-pagination"></div>';
 			$html .= '</div>';
 			$html .= '</div>'; // Close jzsa-gallery-wrapper
 		}

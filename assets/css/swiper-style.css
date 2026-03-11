@@ -216,9 +216,6 @@
 .jzsa-mosaic::after { bottom: 0; background: linear-gradient(to top, rgba(0,0,0,0.5), transparent); content: '▾'; align-items: flex-end; padding-bottom: 5px; }
 .jzsa-mosaic:hover::before, .jzsa-mosaic:hover::after { opacity: 1; }
 
-.jzsa-mosaic .swiper-pagination { bottom: 5px !important; }
-.jzsa-mosaic .swiper-pagination-bullet { width: 6px; height: 6px; background: #fff; opacity: 0.5; }
-.jzsa-mosaic .swiper-pagination-bullet-active { background: #0b57d0; opacity: 1; }
 
 /* Responsive Mobile */
 @media (max-width: 480px) {

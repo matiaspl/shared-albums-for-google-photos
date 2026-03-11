@@ -1380,13 +1380,7 @@
                     initialSlide: initialSlide,
                     watchOverflow: true,
                     slidesPerView: slidesPerView,
-                    // One dot per "page" requires group matching total visible slides in the grid
-                    slidesPerGroup: slidesPerPage,
-                    pagination: {
-                        el: '#' + galleryId + '-mosaic .swiper-pagination',
-                        clickable: true,
-                        type: 'bullets'
-                    }
+                    slidesPerGroup: slidesPerPage
                 };
 
                 if (gridRows > 1) {
@@ -1432,12 +1426,7 @@
                                 initialSlide: currentSlide,
                                 watchOverflow: true,
                                 slidesPerView: slidesPerViewNow,
-                                slidesPerGroup: slidesPerPageNow,
-                                pagination: {
-                                    el: '#' + galleryId + '-mosaic .swiper-pagination',
-                                    clickable: true,
-                                    type: 'bullets'
-                                }
+                                slidesPerGroup: slidesPerPageNow
                             };
                             
                             if (gridRowsNow > 1) {
