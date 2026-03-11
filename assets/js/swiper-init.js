@@ -1361,89 +1361,45 @@
                 });
                 $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
 
-                var isMobile = window.innerWidth <= 480;
-                var slidesPerView = isMobile ? (mosaicColumns > 1 ? mosaicColumns : 4) : mosaicRows;
-                var gridRows = isMobile ? mosaicRows : mosaicColumns;
-                
-                // Total slides per page in the grid
-                var slidesPerPage = slidesPerView * (gridRows > 1 ? gridRows : 1);
-
-                var mosaicConfig = {
-                    direction: isMobile ? 'horizontal' : 'vertical',
-                    spaceBetween: 8,
-                    freeMode: false,
-                    watchSlidesProgress: true,
-                    slideToClickedSlide: true,
-                    initialSlide: initialSlide,
-                    watchOverflow: true,
-                    slidesPerView: slidesPerView,
-                    slidesPerGroup: slidesPerPage
-                };
-
-                if (gridRows > 1) {
-                    mosaicConfig.grid = {
-                        rows: gridRows,
-                        fill: 'column'
+                function buildMosaicConfig(startSlide) {
+                    var mobile = window.innerWidth <= 480;
+                    var cfg = {
+                        spaceBetween: 8,
+                        freeMode: false,
+                        watchSlidesProgress: true,
+                        slideToClickedSlide: true,
+                        initialSlide: startSlide,
+                        watchOverflow: true
                     };
+
+                    if (mobile) {
+                        cfg.direction = 'horizontal';
+                        cfg.slidesPerView = mosaicColumns > 1 ? mosaicColumns : 4;
+                    } else if (mosaicColumns > 1) {
+                        // Swiper grid module requires horizontal direction
+                        cfg.direction = 'horizontal';
+                        cfg.slidesPerView = mosaicColumns;
+                        cfg.grid = { rows: mosaicRows, fill: 'row' };
+                    } else {
+                        cfg.direction = 'vertical';
+                        cfg.slidesPerView = mosaicRows;
+                    }
+
+                    return cfg;
                 }
 
-                mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', mosaicConfig);
-
-                // Auto-follow: sync mosaic with main swiper
-                if (swiper) {
-                    swiper.on('slideChange', function() {
-                        if (mosaicSwiper && !mosaicSwiper.destroyed) {
-                            // Find which page the active slide belongs to
-                            var pageIndex = Math.floor(swiper.activeIndex / slidesPerPage) * slidesPerPage;
-                            mosaicSwiper.slideTo(pageIndex);
-                        }
-                    });
-                }
+                mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', buildMosaicConfig(initialSlide));
 
                 // Update mosaic on resize
                 $(window).on('resize', function() {
                     if (mosaicSwiper) {
-                        var isMobileNow = window.innerWidth <= 480;
-                        var newDirection = isMobileNow ? 'horizontal' : 'vertical';
-                        
-                        if (mosaicSwiper.params.direction !== newDirection) {
+                        var newCfg = buildMosaicConfig(0);
+                        if (mosaicSwiper.params.direction !== newCfg.direction) {
                             var currentSlide = swiper ? swiper.activeIndex : mosaicSwiper.activeIndex;
                             mosaicSwiper.destroy(true, true);
-                            
-                            var slidesPerViewNow = isMobileNow ? (mosaicColumns > 1 ? mosaicColumns : 4) : mosaicRows;
-                            var gridRowsNow = isMobileNow ? mosaicRows : mosaicColumns;
-                            var slidesPerPageNow = slidesPerViewNow * (gridRowsNow > 1 ? gridRowsNow : 1);
-
-                            var newConfig = {
-                                direction: newDirection,
-                                spaceBetween: 8,
-                                freeMode: false,
-                                watchSlidesProgress: true,
-                                slideToClickedSlide: true,
-                                initialSlide: currentSlide,
-                                watchOverflow: true,
-                                slidesPerView: slidesPerViewNow,
-                                slidesPerGroup: slidesPerPageNow
-                            };
-                            
-                            if (gridRowsNow > 1) {
-                                newConfig.grid = {
-                                    rows: gridRowsNow,
-                                    fill: 'column'
-                                };
-                            }
-                            
-                            mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', newConfig);
-                            
-                            if (swiper) {
+                            mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', buildMosaicConfig(currentSlide));
+                            if (swiper && swiper.thumbs) {
                                 swiper.thumbs.swiper = mosaicSwiper;
-                                // Re-attach auto-follow
-                                swiper.on('slideChange', function() {
-                                    if (mosaicSwiper && !mosaicSwiper.destroyed) {
-                                        var pIndex = Math.floor(swiper.activeIndex / slidesPerPageNow) * slidesPerPageNow;
-                                        mosaicSwiper.slideTo(pIndex);
-                                    }
-                                });
                             }
                         }
                     }
@@ -1532,6 +1488,15 @@
         // Initialize Swiper
         var swiper = new Swiper('#' + galleryId, swiperConfig);
         swipers[galleryId] = swiper;
+
+        // Sync mosaic with main gallery: scroll mosaic to keep active thumb visible
+        if (mosaicSwiper) {
+            swiper.on('slideChange', function() {
+                if (mosaicSwiper && !mosaicSwiper.destroyed) {
+                    mosaicSwiper.slideTo(swiper.activeIndex);
+                }
+            });
+        }
 
         // Persistent Overlay Logic
         var $filenameOverlay = $container.find('.jzsa-persistent-filename');
