@@ -132,6 +132,10 @@ class JZSA_Renderer {
 		);
 		$html .= '<div class="swiper-autoplay-progress"><div class="swiper-autoplay-progress-bar"></div></div>';
 
+		// Persistent overlays (outside wrapper)
+		$html .= '<div class="jzsa-persistent-filename"></div>';
+		$html .= '<div class="jzsa-persistent-info"></div>';
+
 		// External link button (if enabled)
 		if ( ! empty( $config['show-link-button'] ) && ! empty( $config['album-url'] ) ) {
 			$html .= sprintf(

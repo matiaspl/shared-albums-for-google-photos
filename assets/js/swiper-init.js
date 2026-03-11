@@ -274,41 +274,46 @@
             var fullUrl = photo.full;
             var filename = photo.filename || '';
             var timestamp = photo.timestamp || '';
-            var camera = photo.camera || '';
             var info = photo.info || '';
+            
+            // Format timestamp for display
+            var dateStr = '';
+            if (timestamp) {
+                var date = new Date(parseInt(timestamp));
+                dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            }
 
-            html += '<div class="swiper-slide">' +
+            var combinedInfo = '';
+            if (showInfo) {
+                var infoParts = [];
+                if (dateStr) infoParts.push(dateStr);
+                if (info) infoParts.push(info);
+                combinedInfo = infoParts.join(' • ');
+            }
+
+            html += '<div class="swiper-slide" ' +
+                'data-filename="' + escapeHtml(filename) + '" ' +
+                'data-info="' + escapeHtml(combinedInfo) + '">' +
                 '<div class="swiper-zoom-container">' +
                 '<img src="' + previewUrl + '" ' +
                 (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
                 'alt="Photo" class="jzsa-progressive-image" />' +
+                '</div>' +
                 '</div>';
-            
-            if (showFilename && filename) {
-                html += '<div class="jzsa-filename-label">' + filename + '</div>';
-            }
-
-            if (showInfo && (filename || timestamp || camera || info)) {
-                html += '<div class="jzsa-photo-info">';
-                if (filename) html += '<div class="jzsa-info-filename"><strong>' + filename + '</strong></div>';
-                
-                if (timestamp) {
-                    var date = new Date(parseInt(timestamp));
-                    var dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                    html += '<div class="jzsa-info-date">' + dateStr + '</div>';
-                }
-                
-                if (info) {
-                    html += '<div class="jzsa-info-exif">' + info + '</div>';
-                } else if (camera) {
-                    html += '<div class="jzsa-info-camera">' + camera + '</div>';
-                }
-                html += '</div>';
-            }
-            
-            html += '</div>';
         });
         return html;
+    }
+
+    // Helper: Escape HTML
+    function escapeHtml(text) {
+        var map = {
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;'
+        };
+        return text.replace(/[&<>"']/g, function(m) { return map[m]; });
     }
 
     // Helper: Apply fullscreen autoplay settings immediately (for Android compatibility)
@@ -1536,6 +1541,34 @@
         // Initialize Swiper
         var swiper = new Swiper('#' + galleryId, swiperConfig);
         swipers[galleryId] = swiper;
+
+        // Persistent Overlay Logic
+        var $filenameOverlay = $container.find('.jzsa-persistent-filename');
+        var $infoOverlay = $container.find('.jzsa-persistent-info');
+
+        function updatePersistentOverlays() {
+            var $activeSlide = $(swiper.slides[swiper.activeIndex]);
+            var filename = $activeSlide.attr('data-filename');
+            var info = $activeSlide.attr('data-info');
+
+            if (showFilename && filename) {
+                $filenameOverlay.text(filename).show();
+            } else {
+                $filenameOverlay.hide();
+            }
+
+            if (showInfo && info) {
+                $infoOverlay.text(info).show();
+            } else {
+                $infoOverlay.hide();
+            }
+        }
+
+        // Initial update
+        updatePersistentOverlays();
+
+        // Update on slide change
+        swiper.on('slideChange', updatePersistentOverlays);
 
         // If normal mode autoplay is disabled but fullscreen autoplay is enabled, stop autoplay initially
         if (!autoplay && fullScreenAutoplay && swiper.autoplay && swiper.autoplay.running) {
