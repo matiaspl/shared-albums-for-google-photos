@@ -199,7 +199,7 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 1.0.7 =
-* ...
+* Grid mode support
 
 = 1.0.6 =
 * New animated logo
@@ -250,4 +250,7 @@ This plugin does not collect or store any user data.
 
 == Support ==
 
-For support, please visit the [plugin support forum](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/) or [GitHub repository](https://github.com/JanZeman/shared-albums-for-google-photos).
+* **Bug reports:** [Open an issue on GitHub](https://github.com/JanZeman/shared-albums-for-google-photos/issues/new)
+* **Feature requests:** [Post on the support forum](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/)
+* **Leave a rating:** [Review on WordPress.org](https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post)
+* **Buy Me a Coffee:** [buymeacoffee.com/janzeman](https://www.buymeacoffee.com/janzeman)
