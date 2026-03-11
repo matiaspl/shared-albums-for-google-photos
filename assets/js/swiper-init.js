@@ -1353,9 +1353,6 @@
         if (mosaic) {
             var $mosaicContainer = $('#' + galleryId + '-mosaic');
             if ($mosaicContainer.length) {
-                // Set column count as CSS variable for width calculation if needed
-                $mosaicContainer.css('--mosaic-cols', mosaicColumns);
-                
                 // Build specific thumb slides for mosaic
                 var thumbSlidesHtml = '';
                 allPhotos.forEach(function(photo) {

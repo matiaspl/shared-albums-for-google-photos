@@ -157,14 +157,9 @@ class JZSA_Renderer {
 		$html .= '</div>';
 
 		if ( $mosaic_enabled ) {
-			$mosaic_cols = ! empty( $config['mosaic-columns'] ) ? intval( $config['mosaic-columns'] ) : 4;
-			$mosaic_rows = ! empty( $config['mosaic-rows'] ) ? intval( $config['mosaic-rows'] ) : 1;
-
 			$html .= sprintf(
-				'<div class="jzsa-mosaic swiper" id="%s-mosaic" style="--mosaic-cols: %d; --mosaic-rows: %d;">',
-				esc_attr( $gallery_id ),
-				$mosaic_cols,
-				$mosaic_rows
+				'<div class="jzsa-mosaic swiper" id="%s-mosaic">',
+				esc_attr( $gallery_id )
 			);
 			$html .= '<div class="swiper-wrapper"></div>';
 			$html .= '</div>';
