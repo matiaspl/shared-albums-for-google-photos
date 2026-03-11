@@ -142,6 +142,7 @@ class JZSA_Shared_Albums {
 		// shortcode preview works inside the admin.
 		if ( is_admin() ) {
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
+			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_editor_media_button' ), 20 );
 			add_action( 'admin_init', array( $this, 'register_editor_helpers' ) );
 		}
 	}
@@ -154,11 +155,50 @@ class JZSA_Shared_Albums {
 			return;
 		}
 
+		add_action( 'media_buttons', array( $this, 'add_media_button' ), 15 );
+
 		if ( 'true' === get_user_option( 'rich_editing' ) ) {
 			add_filter( 'mce_external_plugins', array( $this, 'add_tinymce_plugin' ) );
 			add_filter( 'mce_buttons', array( $this, 'register_tinymce_button' ) );
 			add_filter( 'mce_css', array( $this, 'add_tinymce_css' ) );
 		}
+	}
+
+	/**
+	 * Add "Add Google Photos Album" button next to Add Media in the classic editor.
+	 *
+	 * @param string $editor_id ID of the editor (e.g. 'content').
+	 */
+	public function add_media_button( $editor_id = 'content' ) {
+		$label = __( 'Add Google Photos Album', 'janzeman-shared-albums-for-google-photos' );
+		printf(
+			'<button type="button" id="jzsa-insert-album" class="button" data-editor="%s" title="%s">' .
+			'<span class="dashicons dashicons-format-gallery" style="margin-right: 4px; margin-top: 3px;"></span>%s</button>',
+			esc_attr( $editor_id ),
+			esc_attr( $label ),
+			esc_html( $label )
+		);
+	}
+
+	/**
+	 * Enqueue script for the classic editor media button (post/page edit screens).
+	 *
+	 * @param string $hook Current admin page hook.
+	 */
+	public function enqueue_editor_media_button( $hook ) {
+		if ( ! in_array( $hook, array( 'post.php', 'post-new.php' ), true ) ) {
+			return;
+		}
+		if ( ! current_user_can( 'edit_posts' ) && ! current_user_can( 'edit_pages' ) ) {
+			return;
+		}
+		wp_enqueue_script(
+			'jzsa-media-button',
+			plugins_url( 'assets/js/media-button.js', $this->plugin_file ),
+			array(),
+			defined( 'JZSA_VERSION' ) ? JZSA_VERSION : '1.0',
+			true
+		);
 	}
 
 	/**
