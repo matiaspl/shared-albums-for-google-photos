@@ -207,11 +207,29 @@
 .jzsa-mosaic .swiper-slide {
     cursor: pointer; opacity: 0.5; transition: all 0.3s ease;
     overflow: hidden; border-radius: 4px;
-    aspect-ratio: 1;
-    height: auto;
+    width: 100%;
+    height: auto !important;
 }
 
-.jzsa-mosaic .swiper-slide img { width: 100%; height: 100%; object-fit: cover; }
+/* Inner wrapper forces square using padding-bottom so Swiper’s slide sizing doesn’t break it */
+.jzsa-mosaic .jzsa-mosaic-thumb-inner {
+    display: block;
+    width: 100%;
+    padding-bottom: 100%;
+    height: 0;
+    position: relative;
+    overflow: hidden;
+    border-radius: inherit;
+}
+
+.jzsa-mosaic .jzsa-mosaic-thumb-inner img {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
 .jzsa-mosaic .swiper-slide:hover { opacity: 0.8; transform: scale(1.02); }
 .jzsa-mosaic .swiper-slide-thumb-active { opacity: 1; outline: 3px solid #0b57d0; outline-offset: -3px; }
 

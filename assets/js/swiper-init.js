@@ -1355,7 +1355,7 @@
                 var thumbSlidesHtml = '';
                 allPhotos.forEach(function(photo) {
                     var thumbUrl = photo.thumb || photo.preview || photo.full;
-                    thumbSlidesHtml += '<div class="swiper-slide"><img src="' + thumbUrl + '" alt="Thumb" /></div>';
+                    thumbSlidesHtml += '<div class="swiper-slide"><span class="jzsa-mosaic-thumb-inner"><img src="' + thumbUrl + '" alt="Thumb" /></span></div>';
                 });
                 $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
 
