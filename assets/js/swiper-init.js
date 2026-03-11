@@ -1359,11 +1359,13 @@
                 });
                 $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
 
+                var mosaicGap = 8;
+
                 function buildMosaicConfig(startSlide) {
                     var mobile = window.innerWidth <= 480;
                     var count = Math.max(1, mosaicCount);
                     var cfg = {
-                        spaceBetween: 8,
+                        spaceBetween: mosaicGap,
                         freeMode: false,
                         watchSlidesProgress: true,
                         slideToClickedSlide: true,
@@ -1384,11 +1386,36 @@
                     return cfg;
                 }
 
+                function resizeMosaic() {
+                    var mobile = window.innerWidth <= 480;
+                    if (mobile) {
+                        $mosaicContainer.css({ width: '', height: '' });
+                        return;
+                    }
+                    var $wrapper = $mosaicContainer.parent();
+                    var count = Math.max(1, mosaicCount);
+                    var availableLength = (mosaicPosition === 'left' || mosaicPosition === 'right')
+                        ? $wrapper.height()
+                        : $wrapper.width();
+                    var thumbSize = (availableLength - (mosaicGap * (count - 1))) / count;
+                    thumbSize = Math.max(1, Math.floor(thumbSize));
+                    if (mosaicPosition === 'left' || mosaicPosition === 'right') {
+                        $mosaicContainer.css({ width: thumbSize + 'px', height: '' });
+                    } else {
+                        $mosaicContainer.css({ width: '', height: thumbSize + 'px' });
+                    }
+                    if (mosaicSwiper && !mosaicSwiper.destroyed) {
+                        mosaicSwiper.update();
+                    }
+                }
+
                 mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', buildMosaicConfig(initialSlide));
+                resizeMosaic();
 
                 // Update mosaic on resize
                 $(window).on('resize', function() {
                     if (mosaicSwiper) {
+                        resizeMosaic();
                         var newCfg = buildMosaicConfig(0);
                         if (mosaicSwiper.params.direction !== newCfg.direction) {
                             var currentSlide = swiper ? swiper.activeIndex : mosaicSwiper.activeIndex;
