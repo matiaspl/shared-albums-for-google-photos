@@ -1861,12 +1861,46 @@
             var autoplayHoverFullscreenNamespace = '.jzsaAutoplayHoverFs-' + galleryId;
             $container.off('mouseenter' + autoplayHoverNamespace + ' mouseleave' + autoplayHoverNamespace);
 
+            function resetHoverAutoplayFlags() {
+                autoplayPausedByHover = false;
+                hoverPausedWithStopFallback = false;
+            }
+
+            function shouldBlockHoverPause() {
+                return suppressHoverPauseUntilLeave || isFullscreen($container[0]) || fullscreenChangeParams.autoplayPausedByInteraction;
+            }
+
+            function setInlineAutoplayDelay() {
+                if (!swiper.autoplay) {
+                    return;
+                }
+                var normalDelay = autoplayDelay * MILLISECONDS_PER_SECOND;
+                swiper.params.autoplay.delay = normalDelay;
+                swiper.autoplay.delay = normalDelay;
+            }
+
+            function resumeInlineAutoplay(forceStart) {
+                if (!swiper.autoplay || fullscreenChangeParams.autoplayPausedByInteraction) {
+                    return;
+                }
+
+                setInlineAutoplayDelay();
+
+                if (!forceStart && typeof swiper.autoplay.resume === 'function' && swiper.autoplay.paused) {
+                    swiper.autoplay.resume();
+                    return;
+                }
+
+                if (!swiper.autoplay.running || forceStart) {
+                    swiper.autoplay.start();
+                }
+            }
+
             function handleHoverFullscreenExit() {
                 // Some browsers emit pointer/hover events while exiting fullscreen.
                 // Ignore hover-based pause until cursor leaves the gallery once.
                 suppressHoverPauseUntilLeave = true;
-                autoplayPausedByHover = false;
-                hoverPausedWithStopFallback = false;
+                resetHoverAutoplayFlags();
 
                 // Defensive recovery: after fullscreen exit, ensure inline autoplay is
                 // actually advancing (some browsers can leave autoplay in paused/running state).
@@ -1879,15 +1913,7 @@
                         return;
                     }
 
-                    var normalDelay = autoplayDelay * MILLISECONDS_PER_SECOND;
-                    swiper.params.autoplay.delay = normalDelay;
-                    swiper.autoplay.delay = normalDelay;
-
-                    if (typeof swiper.autoplay.resume === 'function' && swiper.autoplay.paused) {
-                        swiper.autoplay.resume();
-                    } else if (!swiper.autoplay.running) {
-                        swiper.autoplay.start();
-                    }
+                    resumeInlineAutoplay(false);
                 }, 80);
             }
 
@@ -1917,7 +1943,7 @@
 
             if (autoplay && hoverPauseSupported && swiper.autoplay) {
                 $container.on('mouseenter' + autoplayHoverNamespace, function() {
-                    if (suppressHoverPauseUntilLeave || isFullscreen($container[0]) || fullscreenChangeParams.autoplayPausedByInteraction) {
+                    if (shouldBlockHoverPause()) {
                         return;
                     }
 
@@ -1936,12 +1962,11 @@
                 $container.on('mouseleave' + autoplayHoverNamespace, function() {
                     if (suppressHoverPauseUntilLeave) {
                         suppressHoverPauseUntilLeave = false;
-                        autoplayPausedByHover = false;
-                        hoverPausedWithStopFallback = false;
+                        resetHoverAutoplayFlags();
                         return;
                     }
 
-                    if (!autoplayPausedByHover || isFullscreen($container[0]) || fullscreenChangeParams.autoplayPausedByInteraction) {
+                    if (!autoplayPausedByHover || shouldBlockHoverPause()) {
                         return;
                     }
 
@@ -1951,24 +1976,13 @@
                     // Do not auto-resume in that case (except stop/start fallback mode).
                     if (!swiper.autoplay || !swiper.autoplay.running) {
                         if (hoverPausedWithStopFallback && swiper.autoplay && !fullscreenChangeParams.autoplayPausedByInteraction) {
-                            var fallbackDelay = autoplayDelay * MILLISECONDS_PER_SECOND;
-                            swiper.params.autoplay.delay = fallbackDelay;
-                            swiper.autoplay.delay = fallbackDelay;
-                            swiper.autoplay.start();
+                            resumeInlineAutoplay(true);
                         }
                         hoverPausedWithStopFallback = false;
                         return;
                     }
 
-                    var normalDelay = autoplayDelay * MILLISECONDS_PER_SECOND;
-                    swiper.params.autoplay.delay = normalDelay;
-                    swiper.autoplay.delay = normalDelay;
-
-                    if (typeof swiper.autoplay.resume === 'function') {
-                        swiper.autoplay.resume();
-                    } else {
-                        swiper.autoplay.start();
-                    }
+                    resumeInlineAutoplay(false);
                     hoverPausedWithStopFallback = false;
                 });
             }
