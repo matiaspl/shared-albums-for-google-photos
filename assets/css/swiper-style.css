@@ -233,46 +233,58 @@
 .jzsa-mosaic .swiper-slide:hover { opacity: 0.8; transform: scale(1.02); }
 .jzsa-mosaic .swiper-slide-thumb-active { opacity: 1; outline: 3px solid #0b57d0; outline-offset: -3px; }
 
-/* Scroll indicators for mosaic: common */
-.jzsa-mosaic::before, .jzsa-mosaic::after {
+/* Scroll arrows for mosaic: clickable, page navigation */
+.jzsa-mosaic::before, .jzsa-mosaic::after { display: none; }
+.jzsa-mosaic .jzsa-mosaic-arrow {
     position: absolute; z-index: 10;
-    pointer-events: none; display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 24px; text-shadow: 0 0 4px rgba(0,0,0,0.8); opacity: 0; transition: opacity 0.3s;
+    cursor: pointer; border: none; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 24px; text-shadow: 0 0 4px rgba(0,0,0,0.8);
+    opacity: 0; transition: opacity 0.3s;
 }
-.jzsa-mosaic:hover::before, .jzsa-mosaic:hover::after { opacity: 1; }
+.jzsa-mosaic .jzsa-mosaic-arrow::before { font-size: inherit; }
+.jzsa-mosaic:hover .jzsa-mosaic-arrow { opacity: 1; }
 
-/* Vertical rail (left/right): top/bottom gradients and ▴ ▾ */
-.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic::before,
-.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic::before {
+/* Vertical rail (left/right): top/bottom ▴ ▾ */
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-prev,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-prev {
     left: 0; right: 0; top: 0; height: 40px;
-    content: '▴'; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
+    background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent);
     align-items: flex-start; padding-top: 5px;
 }
-.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic::after,
-.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic::after {
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-prev::before,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-prev::before { content: '▴'; }
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-next,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-next {
     left: 0; right: 0; bottom: 0; height: 40px;
-    content: '▾'; background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
     align-items: flex-end; padding-bottom: 5px;
 }
+.jzsa-gallery-wrapper.jzsa-mosaic-left .jzsa-mosaic-arrow-next::before,
+.jzsa-gallery-wrapper.jzsa-mosaic-right .jzsa-mosaic-arrow-next::before { content: '▾'; }
 
-/* Horizontal strip (top/bottom): left/right gradients and ◀ ▶ */
-.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic::before,
-.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic::before {
+/* Horizontal strip (top/bottom): left/right ◀ ▶ */
+.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-prev,
+.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-prev {
     left: 0; top: 0; bottom: 0; width: 40px;
-    content: '◀'; background: linear-gradient(to right, rgba(0,0,0,0.5), transparent);
+    background: linear-gradient(to right, rgba(0,0,0,0.5), transparent);
     justify-content: flex-start; padding-left: 5px;
 }
-.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic::after,
-.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic::after {
+.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-prev::before,
+.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-prev::before { content: '◀'; }
+.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-next,
+.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-next {
     right: 0; top: 0; bottom: 0; width: 40px;
-    content: '▶'; background: linear-gradient(to left, rgba(0,0,0,0.5), transparent);
+    background: linear-gradient(to left, rgba(0,0,0,0.5), transparent);
     justify-content: flex-end; padding-right: 5px;
 }
+.jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-next::before,
+.jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-next::before { content: '▶'; }
 
 
 /* Responsive Mobile */
 @media (max-width: 480px) {
     .jzsa-gallery-wrapper { flex-direction: column !important; }
     .jzsa-mosaic { width: 100%; height: 80px; }
-    .jzsa-mosaic::before, .jzsa-mosaic::after { display: none; }
+    .jzsa-mosaic .jzsa-mosaic-arrow { display: none !important; }
 }
