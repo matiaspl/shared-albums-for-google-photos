@@ -1379,6 +1379,7 @@
                         // Swiper grid module requires horizontal direction
                         cfg.direction = 'horizontal';
                         cfg.slidesPerView = mosaicColumns;
+                        cfg.slidesPerGroup = mosaicColumns * mosaicRows;
                         cfg.grid = { rows: mosaicRows, fill: 'row' };
                     } else {
                         cfg.direction = 'vertical';
@@ -1491,9 +1492,15 @@
 
         // Sync mosaic with main gallery: scroll mosaic to keep active thumb visible
         if (mosaicSwiper) {
+            var mosaicPageSize = (mosaicColumns > 1) ? mosaicColumns * mosaicRows : 0;
             swiper.on('slideChange', function() {
                 if (mosaicSwiper && !mosaicSwiper.destroyed) {
-                    mosaicSwiper.slideTo(swiper.activeIndex);
+                    if (mosaicPageSize > 0) {
+                        var pageStart = Math.floor(swiper.activeIndex / mosaicPageSize) * mosaicPageSize;
+                        mosaicSwiper.slideTo(pageStart);
+                    } else {
+                        mosaicSwiper.slideTo(swiper.activeIndex);
+                    }
                 }
             });
         }
