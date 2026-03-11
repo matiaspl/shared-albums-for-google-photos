@@ -53,11 +53,12 @@
                         {type: 'listbox', name: 'mosaic_position', label: 'Mosaic Position',
                             values: [
                                 {text: 'Right', value: 'right'},
-                                {text: 'Left', value: 'left'}
+                                {text: 'Left', value: 'left'},
+                                {text: 'Top', value: 'top'},
+                                {text: 'Bottom', value: 'bottom'}
                             ]
                         },
-                        {type: 'textbox', name: 'mosaic_columns', label: 'Mosaic Columns', value: '4'},
-                        {type: 'textbox', name: 'mosaic_rows', label: 'Mosaic Rows', value: '1'},
+                        {type: 'textbox', name: 'mosaic_count', label: 'Mosaic Count', value: '4'},
                         {type: 'checkbox', name: 'show_filename', label: 'Show Filename Label'},
                         {type: 'checkbox', name: 'show_info', label: 'Show Info Panel (Date/Camera)'},
                         {type: 'checkbox', name: 'autoplay', label: 'Enable Autoplay', checked: true},
@@ -71,8 +72,7 @@
                         if (e.data.mosaic) {
                             atts += ' mosaic="true"';
                             if (e.data.mosaic_position !== 'right') atts += ' mosaic-position="' + e.data.mosaic_position + '"';
-                            if (e.data.mosaic_columns && e.data.mosaic_columns !== '4') atts += ' mosaic-columns="' + e.data.mosaic_columns + '"';
-                            if (e.data.mosaic_rows && e.data.mosaic_rows !== '1') atts += ' mosaic-rows="' + e.data.mosaic_rows + '"';
+                            if (e.data.mosaic_count && e.data.mosaic_count !== '4') atts += ' mosaic-count="' + e.data.mosaic_count + '"';
                         }
                         if (e.data.show_filename) atts += ' show-filename="true"';
                         if (e.data.show_info) atts += ' show-info="true"';

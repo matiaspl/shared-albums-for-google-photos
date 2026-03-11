@@ -478,7 +478,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Album with Mosaic Preview', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Display a mosaic of preview images next to the big preview. You can choose to show it on the left or right.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Display a mosaic of preview images next to the big preview. You can choose to show it on the top, bottom, left, or right.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mosaic="true" mosaic-position="right"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -804,18 +804,13 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>mosaic-position</code></td>
-								<td>Position of the mosaic preview: "left" or "right"</td>
+								<td>Position of the mosaic preview: "top", "bottom", "left", or "right"</td>
 								<td>right</td>
 							</tr>
 							<tr>
-								<td><code>mosaic-columns</code></td>
-								<td>Number of columns in the mosaic preview</td>
+								<td><code>mosaic-count</code></td>
+								<td>Number of thumbnails visible in the mosaic (rows for left/right, columns for top/bottom)</td>
 								<td>4</td>
-							</tr>
-							<tr>
-								<td><code>mosaic-rows</code></td>
-								<td>Number of rows in the mosaic preview</td>
-								<td>1</td>
 							</tr>
 						</tbody>
 					</table>

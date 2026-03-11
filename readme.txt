@@ -22,7 +22,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 
 * **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
-* **Gallery with Mosaic Preview** - Display a mosaic of preview images next to the big preview (left or right)
+* **Gallery with Mosaic Preview** - Display a mosaic of preview images next to the big preview (top, bottom, left, or right)
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
 * **Touch Gestures** - Swipe navigation on touch devices
 * **Fullscreen Mode** - Click to view photos in fullscreen
@@ -138,7 +138,8 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 **Gallery Preview (Mosaic):**
 
 * **mosaic** - Show a mosaic of preview images next to the big preview: "true" or "false" (default: false)
-* **mosaic-position** - Position of the mosaic preview: "left" or "right" (default: right)
+* **mosaic-position** - Position of the mosaic preview: "top", "bottom", "left", or "right" (default: right)
+* **mosaic-count** - Number of thumbnails visible in the mosaic: rows for left/right, columns for top/bottom (default: 4)
 
 **Gallery Mode:**
 

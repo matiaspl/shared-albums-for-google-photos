@@ -232,12 +232,8 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-mosaic-position="%s"', esc_attr( $config['mosaic-position'] ) );
 		}
 
-		if ( isset( $config['mosaic-columns'] ) ) {
-			$attrs[] = sprintf( 'data-mosaic-columns="%d"', intval( $config['mosaic-columns'] ) );
-		}
-
-		if ( isset( $config['mosaic-rows'] ) ) {
-			$attrs[] = sprintf( 'data-mosaic-rows="%d"', intval( $config['mosaic-rows'] ) );
+		if ( isset( $config['mosaic-count'] ) ) {
+			$attrs[] = sprintf( 'data-mosaic-count="%d"', intval( $config['mosaic-count'] ) );
 		}
 
 		if ( isset( $config['autoplay-delay'] ) ) {

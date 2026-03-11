@@ -1279,8 +1279,7 @@
             // Mosaic settings
             mosaic: $container.attr('data-mosaic') === 'true',
             mosaicPosition: $container.attr('data-mosaic-position') || 'right',
-            mosaicColumns: parseInt($container.attr('data-mosaic-columns')) || 4,
-            mosaicRows: parseInt($container.attr('data-mosaic-rows')) || 1
+            mosaicCount: parseInt($container.attr('data-mosaic-count'), 10) || 4
         };
 
         // Calculate initial slide based on startAt setting
@@ -1317,15 +1316,14 @@
         var initialSlide = config.initialSlide;
         var mosaic = config.mosaic;
         var mosaicPosition = config.mosaicPosition;
-        var mosaicColumns = config.mosaicColumns;
-        var mosaicRows = config.mosaicRows;
+        var mosaicCount = config.mosaicCount;
 
         console.log('📸 Initializing Swiper for gallery:', galleryId);
         console.log('  - Mode:', mode);
         console.log('  - Total photos:', totalCount);
         console.log('  - Initial photos loaded:', allPhotos.length);
         console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
-        console.log('  - Mosaic enabled:', mosaic, 'Position:', mosaicPosition, 'Columns:', mosaicColumns, 'Rows:', mosaicRows);
+        console.log('  - Mosaic enabled:', mosaic, 'Position:', mosaicPosition, 'Count:', mosaicCount);
         console.log('  - Show filename:', showFilename);
         console.log('  - Show info:', showInfo);
         
@@ -1363,27 +1361,24 @@
 
                 function buildMosaicConfig(startSlide) {
                     var mobile = window.innerWidth <= 480;
+                    var count = Math.max(1, mosaicCount);
                     var cfg = {
                         spaceBetween: 8,
                         freeMode: false,
                         watchSlidesProgress: true,
                         slideToClickedSlide: true,
                         initialSlide: startSlide,
-                        watchOverflow: true
+                        watchOverflow: true,
+                        slidesPerView: count,
+                        slidesPerGroup: count
                     };
 
                     if (mobile) {
                         cfg.direction = 'horizontal';
-                        cfg.slidesPerView = mosaicColumns > 1 ? mosaicColumns : 4;
-                    } else if (mosaicColumns > 1) {
-                        // Swiper grid module requires horizontal direction
-                        cfg.direction = 'horizontal';
-                        cfg.slidesPerView = mosaicColumns;
-                        cfg.slidesPerGroup = mosaicColumns * mosaicRows;
-                        cfg.grid = { rows: mosaicRows, fill: 'row' };
-                    } else {
+                    } else if (mosaicPosition === 'left' || mosaicPosition === 'right') {
                         cfg.direction = 'vertical';
-                        cfg.slidesPerView = mosaicRows;
+                    } else {
+                        cfg.direction = 'horizontal';
                     }
 
                     return cfg;
@@ -1492,15 +1487,11 @@
 
         // Sync mosaic with main gallery: scroll mosaic to keep active thumb visible
         if (mosaicSwiper) {
-            var mosaicPageSize = (mosaicColumns > 1) ? mosaicColumns * mosaicRows : 0;
+            var mosaicPageSize = Math.max(1, mosaicCount);
             swiper.on('slideChange', function() {
                 if (mosaicSwiper && !mosaicSwiper.destroyed) {
-                    if (mosaicPageSize > 0) {
-                        var pageStart = Math.floor(swiper.activeIndex / mosaicPageSize) * mosaicPageSize;
-                        mosaicSwiper.slideTo(pageStart);
-                    } else {
-                        mosaicSwiper.slideTo(swiper.activeIndex);
-                    }
+                    var pageStart = Math.floor(swiper.activeIndex / mosaicPageSize) * mosaicPageSize;
+                    mosaicSwiper.slideTo(pageStart);
                 }
             });
         }

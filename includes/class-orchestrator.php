@@ -402,8 +402,7 @@ class JZSA_Shared_Albums {
 			// Mosaic/Gallery Preview
 			'mosaic'          => $this->parse_bool( $atts, 'mosaic', false ),
 			'mosaic-position' => $this->parse_mosaic_position( $atts ),
-			'mosaic-columns'  => isset( $atts['mosaic-columns'] ) ? intval( $atts['mosaic-columns'] ) : 4,
-			'mosaic-rows'     => isset( $atts['mosaic-rows'] ) ? intval( $atts['mosaic-rows'] ) : 1,
+			'mosaic-count'    => isset( $atts['mosaic-count'] ) ? intval( $atts['mosaic-count'] ) : 4,
 
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
@@ -416,7 +415,7 @@ class JZSA_Shared_Albums {
 	 * Parse mosaic position attribute.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string 'left' or 'right'.
+	 * @return string 'top', 'bottom', 'left', or 'right'.
 	 */
 	private function parse_mosaic_position( $atts ) {
 		if ( ! isset( $atts['mosaic-position'] ) ) {
@@ -425,7 +424,7 @@ class JZSA_Shared_Albums {
 
 		$value = strtolower( trim( (string) $atts['mosaic-position'] ) );
 
-		if ( in_array( $value, array( 'left', 'right' ), true ) ) {
+		if ( in_array( $value, array( 'top', 'bottom', 'left', 'right' ), true ) ) {
 			return $value;
 		}
 
