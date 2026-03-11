@@ -1367,6 +1367,9 @@
                 var isMobile = window.innerWidth <= 480;
                 var slidesPerView = isMobile ? (mosaicColumns > 1 ? mosaicColumns : 4) : mosaicRows;
                 var gridRows = isMobile ? mosaicRows : mosaicColumns;
+                
+                // Total slides per page in the grid
+                var slidesPerPage = slidesPerView * (gridRows > 1 ? gridRows : 1);
 
                 var mosaicConfig = {
                     direction: isMobile ? 'horizontal' : 'vertical',
@@ -1378,7 +1381,7 @@
                     watchOverflow: true,
                     slidesPerView: slidesPerView,
                     // One dot per "page" requires group matching total visible slides in the grid
-                    slidesPerGroup: slidesPerView * (gridRows > 1 ? gridRows : 1),
+                    slidesPerGroup: slidesPerPage,
                     pagination: {
                         el: '#' + galleryId + '-mosaic .swiper-pagination',
                         clickable: true,
@@ -1399,8 +1402,9 @@
                 if (swiper) {
                     swiper.on('slideChange', function() {
                         if (mosaicSwiper && !mosaicSwiper.destroyed) {
-                            // slideTo in grid mode with pagination follows the page
-                            mosaicSwiper.slideTo(swiper.activeIndex);
+                            // Find which page the active slide belongs to
+                            var pageIndex = Math.floor(swiper.activeIndex / slidesPerPage) * slidesPerPage;
+                            mosaicSwiper.slideTo(pageIndex);
                         }
                     });
                 }
@@ -1411,13 +1415,13 @@
                         var isMobileNow = window.innerWidth <= 480;
                         var newDirection = isMobileNow ? 'horizontal' : 'vertical';
                         
-                        // If direction changed, we MUST re-initialize because Swiper Grid doesn't support live changes well
                         if (mosaicSwiper.params.direction !== newDirection) {
                             var currentSlide = swiper ? swiper.activeIndex : mosaicSwiper.activeIndex;
                             mosaicSwiper.destroy(true, true);
                             
                             var slidesPerViewNow = isMobileNow ? (mosaicColumns > 1 ? mosaicColumns : 4) : mosaicRows;
                             var gridRowsNow = isMobileNow ? mosaicRows : mosaicColumns;
+                            var slidesPerPageNow = slidesPerViewNow * (gridRowsNow > 1 ? gridRowsNow : 1);
 
                             var newConfig = {
                                 direction: newDirection,
@@ -1428,7 +1432,7 @@
                                 initialSlide: currentSlide,
                                 watchOverflow: true,
                                 slidesPerView: slidesPerViewNow,
-                                slidesPerGroup: slidesPerViewNow * (gridRowsNow > 1 ? gridRowsNow : 1),
+                                slidesPerGroup: slidesPerPageNow,
                                 pagination: {
                                     el: '#' + galleryId + '-mosaic .swiper-pagination',
                                     clickable: true,
@@ -1450,7 +1454,8 @@
                                 // Re-attach auto-follow
                                 swiper.on('slideChange', function() {
                                     if (mosaicSwiper && !mosaicSwiper.destroyed) {
-                                        mosaicSwiper.slideTo(swiper.activeIndex);
+                                        var pIndex = Math.floor(swiper.activeIndex / slidesPerPageNow) * slidesPerPageNow;
+                                        mosaicSwiper.slideTo(pIndex);
                                     }
                                 });
                             }
