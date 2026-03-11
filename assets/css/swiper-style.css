@@ -687,6 +687,33 @@ body.jzsa-no-scroll {
     opacity: 0.85;
 }
 
+.jzsa-grid-item {
+    position: relative;
+}
+
+.jzsa-grid-item .jzsa-grid-thumb-fs-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    z-index: 12;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease;
+}
+
+.jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item:hover .jzsa-grid-thumb-fs-btn,
+.jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item:focus-within .jzsa-grid-thumb-fs-btn {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+@media (hover: none) {
+    .jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item .jzsa-grid-thumb-fs-btn {
+        opacity: 1;
+        pointer-events: auto;
+    }
+}
+
 .jzsa-grid-album.jzsa-grid-draggable {
     cursor: grab;
     user-select: none;
@@ -759,6 +786,10 @@ body.jzsa-no-scroll {
     margin: 0 auto;
     max-width: max-content;
     pointer-events: none;
+}
+
+.jzsa-grid-controls .swiper-button-fullscreen {
+    pointer-events: auto;
 }
 
 .jzsa-grid-slide-stage {

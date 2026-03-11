@@ -1696,6 +1696,7 @@
         var columns       = parseInt($container.attr('data-grid-columns'), 10)        || 3;
         var columnsTablet = parseInt($container.attr('data-grid-columns-tablet'), 10) || 2;
         var columnsMobile = parseInt($container.attr('data-grid-columns-mobile'), 10) || 1;
+        var buttonOnlyFullscreen = $container.attr('data-full-screen-switch') === 'button-only';
 
         // Pass column counts as CSS custom properties so the media queries pick them up
         $container[0].style.setProperty('--jzsa-grid-columns',        columns);
@@ -1707,14 +1708,28 @@
             var photo = item.photo;
             var globalIndex = item.index;
             var src = photo.preview || photo.full;
-            html +=
-                '<img class="jzsa-grid-thumb"' +
-                ' src="' + src + '"' +
-                (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
-                ' data-index="' + globalIndex + '"' +
-                ' alt="Photo ' + (globalIndex + 1) + '"' +
-                ' draggable="false"' +
-                ' loading="lazy">';
+            if (buttonOnlyFullscreen) {
+                html +=
+                    '<div class="jzsa-grid-item" data-index="' + globalIndex + '">' +
+                        '<img class="jzsa-grid-thumb"' +
+                        ' src="' + src + '"' +
+                        (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
+                        ' data-index="' + globalIndex + '"' +
+                        ' alt="Photo ' + (globalIndex + 1) + '"' +
+                        ' draggable="false"' +
+                        ' loading="lazy">' +
+                        '<div class="jzsa-grid-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open photo ' + (globalIndex + 1) + ' in fullscreen"></div>' +
+                    '</div>';
+            } else {
+                html +=
+                    '<img class="jzsa-grid-thumb"' +
+                    ' src="' + src + '"' +
+                    (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
+                    ' data-index="' + globalIndex + '"' +
+                    ' alt="Photo ' + (globalIndex + 1) + '"' +
+                    ' draggable="false"' +
+                    ' loading="lazy">';
+            }
         });
 
         $container.html(html);
@@ -1744,6 +1759,7 @@
      * @param {number} gap             Gap between thumbnails in pixels.
      */
     function renderJustifiedRows($container, rows, containerWidth, targetHeight, gap) {
+        var buttonOnlyFullscreen = $container.attr('data-full-screen-switch') === 'button-only';
         var html = '';
         rows.forEach(function(row) {
             var totalRatio    = row.reduce(function(sum, item) { return sum + item.ratio; }, 0);
@@ -1754,15 +1770,30 @@
             row.forEach(function(item) {
                 var width = Math.round((item.ratio / totalRatio) * availableWidth);
                 var src   = item.photo.preview || item.photo.full;
-                html +=
-                    '<img class="jzsa-grid-thumb jzsa-justified-thumb"' +
-                    ' src="' + src + '"' +
-                    (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
-                    ' data-index="' + item.index + '"' +
-                    ' alt="Photo ' + (item.index + 1) + '"' +
-                    ' draggable="false"' +
-                    ' loading="lazy"' +
-                    ' style="width:' + width + 'px;height:' + targetHeight + 'px;">';
+                if (buttonOnlyFullscreen) {
+                    html +=
+                        '<div class="jzsa-grid-item" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
+                            '<img class="jzsa-grid-thumb jzsa-justified-thumb"' +
+                            ' src="' + src + '"' +
+                            (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
+                            ' data-index="' + item.index + '"' +
+                            ' alt="Photo ' + (item.index + 1) + '"' +
+                            ' draggable="false"' +
+                            ' loading="lazy"' +
+                            ' style="width:100%;height:100%;">' +
+                            '<div class="jzsa-grid-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open photo ' + (item.index + 1) + ' in fullscreen"></div>' +
+                        '</div>';
+                } else {
+                    html +=
+                        '<img class="jzsa-grid-thumb jzsa-justified-thumb"' +
+                        ' src="' + src + '"' +
+                        (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
+                        ' data-index="' + item.index + '"' +
+                        ' alt="Photo ' + (item.index + 1) + '"' +
+                        ' draggable="false"' +
+                        ' loading="lazy"' +
+                        ' style="width:' + width + 'px;height:' + targetHeight + 'px;">';
+                }
             });
             html += '</div>';
         });
@@ -2104,13 +2135,19 @@
                 e.stopImmediatePropagation();
             }
         });
+        $container.on('click' + ns, '.jzsa-grid-thumb-fs-btn', function(e) {
+            if ($container.data('jzsaGridSuppressClick')) {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+            }
+        });
 
         $container.on('mousedown' + ns, function(e) {
             if (e.which !== 1) {
                 return;
             }
 
-            if ($(e.target).closest('.swiper-button-prev, .swiper-button-next').length) {
+            if ($(e.target).closest('.swiper-button-prev, .swiper-button-next, .jzsa-grid-thumb-fs-btn').length) {
                 return;
             }
 
@@ -2909,17 +2946,37 @@
 
         var fullScreenSwitch = $container.attr('data-full-screen-switch') || 'double-click';
 
-        function openGridPlayerFromThumb(targetEl) {
-            var index = parseInt($(targetEl).attr('data-index'), 10) || 0;
+        function openGridPlayerAtIndex(index) {
+            var safeIndex = typeof index === 'number' && index >= 0 ? index : 0;
             var swiper = swipers[playerId];
             if (swiper) {
                 if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
-                    swiper.slideToLoop(index, 0, false);
+                    swiper.slideToLoop(safeIndex, 0, false);
                 } else {
-                    swiper.slideTo(index, 0, false);
+                    swiper.slideTo(safeIndex, 0, false);
                 }
             }
             toggleFullscreen($player[0]);
+        }
+
+        function getGridPhotoIndexFromElement(targetEl) {
+            var $target = $(targetEl);
+            var direct = parseInt($target.attr('data-index'), 10);
+            if (!isNaN(direct) && direct >= 0) {
+                return direct;
+            }
+
+            var closest = parseInt($target.closest('[data-index]').attr('data-index'), 10);
+            if (!isNaN(closest) && closest >= 0) {
+                return closest;
+            }
+
+            return 0;
+        }
+
+        function openGridPlayerFromThumb(targetEl) {
+            var index = getGridPhotoIndexFromElement(targetEl);
+            openGridPlayerAtIndex(index);
         }
 
         if (fullScreenSwitch === 'single-click') {
@@ -2945,8 +3002,20 @@
                     openGridPlayerFromThumb(e.currentTarget || e.target);
                 });
             });
-        } else {
-            jzsaDebug('Grid fullscreen entry disabled by full-screen-switch=button-only for', $container.attr('id'));
+        } else if (fullScreenSwitch === 'button-only') {
+            $container.on('click', '.jzsa-grid-thumb-fs-btn', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                openGridPlayerFromThumb(this);
+            });
+            $container.on('keydown', '.jzsa-grid-thumb-fs-btn', function(e) {
+                if (e.key !== 'Enter' && e.key !== ' ' && e.keyCode !== 13 && e.keyCode !== 32) {
+                    return;
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                openGridPlayerFromThumb(this);
+            });
         }
 
         $container.addClass('jzsa-loaded');
