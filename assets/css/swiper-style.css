@@ -728,6 +728,18 @@ body.jzsa-no-scroll {
     object-fit: cover;
     display: block;
 }
+
+.jzsa-grid-album[data-grid-layout="uniform"] .jzsa-grid-placeholder {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    display: block;
+    box-sizing: border-box;
+    border: 2px dashed rgba(128, 128, 128, 0.15);
+    background: rgba(128, 128, 128, 0.04);
+    border-radius: 2px;
+    pointer-events: none;
+    user-select: none;
+}
 .jzsa-grid-album[data-grid-layout="uniform"][data-image-fit="contain"] .jzsa-grid-thumb {
     object-fit: contain;
 }

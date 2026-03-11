@@ -1886,7 +1886,13 @@
      * @param {jQuery} $container Grid album element.
      * @param {Array}  pageItems  Array of objects: { photo, index }.
      */
-    function buildUniformGrid($container, pageItems) {
+    function buildUniformGrid($container, pageItems, options) {
+        var renderOptions = options || {};
+        var placeholderCount = parseInt(renderOptions.placeholderCount, 10);
+        if (isNaN(placeholderCount) || placeholderCount < 0) {
+            placeholderCount = 0;
+        }
+
         var columns       = parseInt($container.attr('data-grid-columns'), 10)        || 3;
         var columnsTablet = parseInt($container.attr('data-grid-columns-tablet'), 10) || 2;
         var columnsMobile = parseInt($container.attr('data-grid-columns-mobile'), 10) || 1;
@@ -1925,6 +1931,10 @@
                     ' loading="lazy">';
             }
         });
+
+        for (var i = 0; i < placeholderCount; i++) {
+            html += '<div class="jzsa-grid-placeholder" aria-hidden="true"></div>';
+        }
 
         renderGridMarkup($container, html);
     }
@@ -3269,8 +3279,14 @@
                     clampGridPage(paginationState);
 
                     var pageItems = getGridPageItems(allPhotos, paginationState.currentPage, photosPerPage);
+                    var shouldRenderPlaceholders = paginationState.totalPages > 1 && gridRows > 0;
+                    var placeholderCount = shouldRenderPlaceholders
+                        ? Math.max(0, photosPerPage - pageItems.length)
+                        : 0;
                     var renderUniformPage = function() {
-                        buildUniformGrid($container, pageItems);
+                        buildUniformGrid($container, pageItems, {
+                            placeholderCount: placeholderCount
+                        });
                     };
 
                     if (renderOptions.animate) {
@@ -3339,15 +3355,22 @@
                             }
 
                             var nextPageItems = getGridPageItems(allPhotos, nextPage, photosPerPage);
+                            var nextPlaceholderCount = shouldRenderPlaceholders
+                                ? Math.max(0, photosPerPage - nextPageItems.length)
+                                : 0;
 
                             return createGridPageDragTransition(
                                 $container,
                                 direction,
                                 function() {
-                                    buildUniformGrid($container, nextPageItems);
+                                    buildUniformGrid($container, nextPageItems, {
+                                        placeholderCount: nextPlaceholderCount
+                                    });
                                 },
                                 function() {
-                                    buildUniformGrid($container, pageItems);
+                                    buildUniformGrid($container, pageItems, {
+                                        placeholderCount: placeholderCount
+                                    });
                                 },
                                 function(committed) {
                                     paginationState.currentPage = committed ? nextPage : currentPage;
