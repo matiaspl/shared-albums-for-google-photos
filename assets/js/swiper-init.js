@@ -1394,9 +1394,14 @@
                     }
                     var $wrapper = $mosaicContainer.parent();
                     var count = Math.max(1, mosaicCount);
-                    var availableLength = (mosaicPosition === 'left' || mosaicPosition === 'right')
-                        ? $wrapper.height()
-                        : $wrapper.width();
+                    var availableLength;
+                    if (mosaicPosition === 'left' || mosaicPosition === 'right') {
+                        var wrapperH = $wrapper.height();
+                        var albumH = $container.height();
+                        availableLength = (wrapperH > 0 ? wrapperH : albumH) || $wrapper[0].clientHeight || 300;
+                    } else {
+                        availableLength = $wrapper.width() || $wrapper[0].clientWidth || 400;
+                    }
                     var thumbSize = (availableLength - (mosaicGap * (count - 1))) / count;
                     thumbSize = Math.max(1, Math.floor(thumbSize));
                     if (mosaicPosition === 'left' || mosaicPosition === 'right') {
@@ -1411,6 +1416,20 @@
 
                 mosaicSwiper = new Swiper('#' + galleryId + '-mosaic', buildMosaicConfig(initialSlide));
                 resizeMosaic();
+                requestAnimationFrame(function() {
+                    requestAnimationFrame(resizeMosaic);
+                });
+
+                var resizeObserver = null;
+                if (typeof ResizeObserver !== 'undefined') {
+                    var wrapperEl = $mosaicContainer.parent()[0];
+                    if (wrapperEl) {
+                        resizeObserver = new ResizeObserver(function() {
+                            resizeMosaic();
+                        });
+                        resizeObserver.observe(wrapperEl);
+                    }
+                }
 
                 // Update mosaic on resize
                 $(window).on('resize', function() {
