@@ -10,6 +10,23 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     position: relative; /* For loader overlay positioning */
 }
 
+/* Initial gallery fade-in on load (content appears gradually). */
+.jzsa-album.jzsa-content-intro {
+    opacity: 0;
+    transition: opacity 1000ms ease-out;
+}
+
+.jzsa-album.jzsa-content-intro.jzsa-content-intro-visible {
+    opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jzsa-album.jzsa-content-intro {
+        opacity: 1;
+        transition: none;
+    }
+}
+
 /* Make sure all structural layers share the same background color */
 .jzsa-album,
 .jzsa-album .swiper,
@@ -531,9 +548,68 @@ body.jzsa-no-scroll {
     transition: opacity 0.35s ease-in-out;
 }
 
+.jzsa-album.jzsa-loader-pending .jzsa-loader {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.jzsa-album.jzsa-loader-pending.jzsa-loader-visible .jzsa-loader {
+    opacity: 1;
+    visibility: visible;
+}
+
 .jzsa-album.jzsa-loaded .jzsa-loader {
     opacity: 0;
     visibility: hidden;
+}
+
+/* Hide controls while gallery is still in loading-pending state. */
+.jzsa-album.jzsa-loader-pending .swiper-button-prev,
+.jzsa-album.jzsa-loader-pending .swiper-button-next,
+.jzsa-album.jzsa-loader-pending .swiper-pagination,
+.jzsa-album.jzsa-loader-pending .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.jzsa-loader-pending .swiper-button-play-pause,
+.jzsa-album.jzsa-loader-pending .swiper-button-download,
+.jzsa-album.jzsa-loader-pending .swiper-button-external-link,
+.jzsa-album.jzsa-loader-pending .swiper-autoplay-progress {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
+.jzsa-album.jzsa-loaded .swiper-button-prev,
+.jzsa-album.jzsa-loaded .swiper-button-next,
+.jzsa-album.jzsa-loaded .swiper-pagination,
+.jzsa-album.jzsa-loaded .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.jzsa-loaded .swiper-button-play-pause,
+.jzsa-album.jzsa-loaded .swiper-button-download,
+.jzsa-album.jzsa-loaded .swiper-button-external-link,
+.jzsa-album.jzsa-loaded .swiper-autoplay-progress {
+    visibility: visible;
+    animation: jzsa-controls-fade-in 1000ms ease-out both;
+}
+
+/* Grid controls live in a sibling overlay shell; hide them while the grid is pending. */
+.jzsa-grid-shell > .jzsa-grid-album.jzsa-loader-pending ~ .jzsa-grid-controls {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    animation: none;
+}
+
+.jzsa-grid-shell > .jzsa-grid-album.jzsa-loaded ~ .jzsa-grid-controls {
+    visibility: visible;
+    animation: jzsa-controls-fade-in 1000ms ease-out both;
+}
+
+@keyframes jzsa-controls-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
 }
 
 .jzsa-loader-inner {
@@ -617,6 +693,14 @@ body.jzsa-no-scroll {
     height: auto !important;
     background-color: transparent;
     position: static;
+}
+
+.jzsa-grid-album.jzsa-grid-loading {
+    min-height: 140px;
+}
+
+.jzsa-grid-album.jzsa-grid-loading .jzsa-loader {
+    background: radial-gradient(circle at top, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.58));
 }
 
 /* Uniform grid layout */
