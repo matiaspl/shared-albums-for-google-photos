@@ -1937,6 +1937,22 @@
     }
 
     /**
+     * Keep paginated grid height stable across pages to avoid layout jumps.
+     *
+     * @param {jQuery} $container Grid album element.
+     * @param {boolean} enabled   Whether fixed-height pagination is enabled.
+     * @param {number} height     Target minimum height in pixels.
+     */
+    function setGridPaginationHeightState($container, enabled, height) {
+        if (!enabled || typeof height !== 'number' || height <= 0) {
+            $container.css('min-height', '');
+            return;
+        }
+
+        $container.css('min-height', Math.ceil(height) + 'px');
+    }
+
+    /**
      * Build a stable visual snapshot of the current grid markup for transitions.
      *
      * @param {jQuery} $source Grid album element.
@@ -2609,6 +2625,7 @@
                     paginationState.currentPage = 0;
                     paginationState.totalPages = 1;
                     removeGridPaginationControls($container);
+                    setGridPaginationHeightState($container, false);
                     setupGridMouseInteractions($container, {
                         enabled: isJustifiedScrollable,
                         mode: 'scroll'
@@ -2640,6 +2657,16 @@
                     } else {
                         renderJustifiedPage();
                     }
+
+                    var fixedJustifiedRows = gridRows > 0 ? gridRows : rowsPerPage;
+                    var fixedJustifiedHeight =
+                        (fixedJustifiedRows * justified.targetHeight) +
+                        ((fixedJustifiedRows - 1) * gap);
+                    setGridPaginationHeightState(
+                        $container,
+                        paginationState.totalPages > 1 && fixedJustifiedRows > 0,
+                        fixedJustifiedHeight
+                    );
 
                     var onJustifiedPageChange = function(nextPage, direction) {
                         paginationState.currentPage = nextPage;
@@ -2753,6 +2780,7 @@
                     paginationState.currentPage = 0;
                     paginationState.totalPages = 1;
                     removeGridPaginationControls($container);
+                    setGridPaginationHeightState($container, false);
                     setupGridMouseInteractions($container, {
                         enabled: isUniformScrollable,
                         mode: 'scroll'
@@ -2778,6 +2806,24 @@
                     } else {
                         renderUniformPage();
                     }
+
+                    var fixedUniformRows = gridRows > 0 ? gridRows : Math.max(1, Math.ceil(allPhotos.length / activeColumns));
+                    var $fixedThumb = $container.find('.jzsa-grid-thumb').first();
+                    var fixedUniformRowHeight = $fixedThumb.length ? $fixedThumb.outerHeight() : 0;
+                    if (!fixedUniformRowHeight || fixedUniformRowHeight <= 0) {
+                        var fixedContainerWidth = getGridContainerWidth($container);
+                        var fixedCellWidth = (fixedContainerWidth - (gap * (activeColumns - 1))) / activeColumns;
+                        fixedUniformRowHeight = fixedCellWidth * 0.75; // 4:3 aspect ratio in uniform layout
+                    }
+
+                    var fixedUniformHeight =
+                        (fixedUniformRows * fixedUniformRowHeight) +
+                        ((fixedUniformRows - 1) * gap);
+                    setGridPaginationHeightState(
+                        $container,
+                        paginationState.totalPages > 1 && fixedUniformRows > 0,
+                        fixedUniformHeight
+                    );
 
                     var onUniformPageChange = function(nextPage, direction) {
                         paginationState.currentPage = nextPage;
