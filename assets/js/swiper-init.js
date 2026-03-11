@@ -1543,23 +1543,29 @@
             var info = $activeSlide.attr('data-info');
 
             if (showFilename && filename) {
-                $filenameOverlay.text(filename).show();
+                $filenameOverlay.text(filename).css('opacity', '1');
             } else {
-                $filenameOverlay.hide();
+                $filenameOverlay.css('opacity', '0');
             }
 
             if (showInfo && info) {
-                $infoOverlay.text(info).show();
+                $infoOverlay.text(info).css('opacity', '1');
             } else {
-                $infoOverlay.hide();
+                $infoOverlay.css('opacity', '0');
             }
         }
 
-        // Initial update
+        function fadeOutOverlays() {
+            $filenameOverlay.css('opacity', '0');
+            $infoOverlay.css('opacity', '0');
+        }
+
+        // Initial update (no fade needed)
         updatePersistentOverlays();
 
-        // Update on slide change
-        swiper.on('slideChange', updatePersistentOverlays);
+        // Fade out when slide transition starts, update when it ends
+        swiper.on('slideChangeTransitionStart', fadeOutOverlays);
+        swiper.on('slideChangeTransitionEnd', updatePersistentOverlays);
 
         // If normal mode autoplay is disabled but fullscreen autoplay is enabled, stop autoplay initially
         if (!autoplay && fullScreenAutoplay && swiper.autoplay && swiper.autoplay.running) {

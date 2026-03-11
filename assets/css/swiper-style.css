@@ -62,7 +62,9 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    will-change: opacity;
 }
 
 .jzsa-persistent-info {
@@ -81,7 +83,9 @@
     max-width: 300px;
     text-align: right;
     backdrop-filter: blur(4px);
-    display: none;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    will-change: opacity;
 }
 
 /* Fullscreen adjustments for persistent overlays */
