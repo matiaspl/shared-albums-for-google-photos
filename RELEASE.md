@@ -37,7 +37,13 @@ git add -A && git commit -m "X.Y.Z"
 ./release.sh X.Y.Z
 ```
 
-The script will:
+To **only build the ZIP** (no git tag, no SVN sync — useful for local testing):
+
+```bash
+./release.sh --zip-only X.Y.Z
+```
+
+The full release script will:
 
 1. **Validate** that the requested version matches all versioned files
 2. **Check git state** — must be on `main` with a clean working tree
