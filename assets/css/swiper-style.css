@@ -893,6 +893,7 @@ body.jzsa-no-scroll {
 }
 
 @media (hover: none) {
+    .jzsa-grid-album[data-full-screen-toggle="button-only"] .jzsa-grid-item .jzsa-grid-thumb-fs-btn,
     .jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item .jzsa-grid-thumb-fs-btn {
         opacity: 1;
         pointer-events: auto;

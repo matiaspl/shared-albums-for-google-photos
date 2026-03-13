@@ -1540,7 +1540,10 @@
 
             // Display settings
             loop: true, // Always loop
-            fullScreenSwitch: $container.attr('data-full-screen-switch') || 'single-click',
+            fullScreenSwitch:
+                $container.attr('data-full-screen-toggle') ||
+                $container.attr('data-full-screen-switch') ||
+                'single-click',
             startAt: $container.attr('data-start-at') || 'random',
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
@@ -2137,6 +2140,7 @@
             'data-full-screen-autoplay',
             'data-full-screen-autoplay-delay',
             'data-autoplay-inactivity-timeout',
+            'data-full-screen-toggle',
             'data-full-screen-switch',
             'data-show-title',
             'data-show-counter',
@@ -3876,7 +3880,10 @@
             }
         );
 
-        var fullScreenSwitch = $container.attr('data-full-screen-switch') || 'single-click';
+        var fullScreenSwitch =
+            $container.attr('data-full-screen-toggle') ||
+            $container.attr('data-full-screen-switch') ||
+            'single-click';
 
         function openGridPlayerAtIndex(index) {
             var safeIndex = typeof index === 'number' && index >= 0 ? index : 0;

@@ -349,13 +349,13 @@ class JZSA_Shared_Albums {
 			// Display
 			'mode'             => $this->parse_mode( $atts ),
 			'background-color' => $this->parse_color( $atts ),
-			'image-fit'              => $this->parse_image_fit( $atts ),
-			'full-screen-image-fit'  => $this->parse_fullscreen_image_fit( $atts ),
-			'full-screen-switch'     => $this->parse_fullscreen_switch_mode( $atts ),
-			'show-title'             => $this->parse_bool( $atts, 'show-title', false ),
-			'show-counter'           => $this->parse_show_counter( $atts ),
-			'show-link-button'       => $this->parse_bool( $atts, 'show-link-button', false ),
-			'show-download-button'   => $this->parse_bool( $atts, 'show-download-button', false ),
+			'image-fit'               => $this->parse_image_fit( $atts ),
+			'full-screen-image-fit'   => $this->parse_fullscreen_image_fit( $atts ),
+			'full-screen-toggle'      => $this->parse_fullscreen_toggle_mode( $atts ),
+			'show-title'              => $this->parse_bool( $atts, 'show-title', false ),
+			'show-counter'            => $this->parse_show_counter( $atts ),
+			'show-link-button'        => $this->parse_bool( $atts, 'show-link-button', false ),
+			'show-download-button'    => $this->parse_bool( $atts, 'show-download-button', false ),
 
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
@@ -676,18 +676,28 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse full screen switch mode attribute
+	 * Parse full screen toggle mode attribute.
+	 *
+	 * Backward compatibility: accept legacy full-screen-switch too.
 	 *
 	 * @param array $atts Attributes
-	 * @return string Full screen switch mode: 'button-only', 'single-click', or 'double-click'
+	 * @return string Full screen toggle mode: 'button-only', 'single-click', or 'double-click'
 	 */
-	private function parse_fullscreen_switch_mode( $atts ) {
-		if ( ! isset( $atts['full-screen-switch'] ) ) {
+	private function parse_fullscreen_toggle_mode( $atts ) {
+		$raw_mode = null;
+
+		if ( isset( $atts['full-screen-toggle'] ) ) {
+			$raw_mode = $atts['full-screen-toggle'];
+		} elseif ( isset( $atts['full-screen-switch'] ) ) {
+			$raw_mode = $atts['full-screen-switch'];
+		}
+
+		if ( null === $raw_mode ) {
 			// Default to 'single-click'
 			return 'single-click';
 		}
 
-		$mode = strtolower( trim( $atts['full-screen-switch'] ) );
+		$mode = strtolower( trim( (string) $raw_mode ) );
 
 		// Valid modes: 'single-click', 'double-click', 'button-only'
 		$valid_modes = array( 'single-click', 'double-click', 'button-only' );

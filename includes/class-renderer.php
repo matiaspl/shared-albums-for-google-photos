@@ -240,8 +240,8 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-album-title="%s"', esc_attr( $config['album-title'] ) );
 		}
 
-		if ( ! empty( $config['full-screen-switch'] ) ) {
-			$attrs[] = sprintf( 'data-full-screen-switch="%s"', esc_attr( $config['full-screen-switch'] ) );
+		if ( ! empty( $config['full-screen-toggle'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-toggle="%s"', esc_attr( $config['full-screen-toggle'] ) );
 		}
 
 		return implode( ' ', $attrs );
@@ -317,8 +317,8 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-autoplay-inactivity-timeout="%s"', esc_attr( $config['autoplay-inactivity-timeout'] ) );
 		}
 
-		if ( ! empty( $config['full-screen-switch'] ) ) {
-			$attrs[] = sprintf( 'data-full-screen-switch="%s"', esc_attr( $config['full-screen-switch'] ) );
+		if ( ! empty( $config['full-screen-toggle'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-toggle="%s"', esc_attr( $config['full-screen-toggle'] ) );
 		}
 
 		if ( ! empty( $config['image-fit'] ) ) {

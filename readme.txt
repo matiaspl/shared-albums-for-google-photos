@@ -28,7 +28,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 * **Touch Gestures** - Swipe navigation on touch devices
 * **Play/Pause Control** - Fullscreen play/pause button with spacebar keyboard shortcut
 * **Fullscreen Navigation** - In fullscreen, single-click/tap navigates previous/next photos
-* **Fullscreen Switch Modes** - `full-screen-switch` supports `single-click`, `double-click`, and `button-only`
+* **Fullscreen Toggle Modes** - `full-screen-toggle` supports `single-click`, `double-click`, and `button-only`
 * **Dual-Mode Autoplay** - Separate autoplay settings for normal and fullscreen modes
 * **Zoom Support** - Pinch-to-zoom on touch devices
 * **Keyboard Navigation** - Use arrow keys to navigate, spacebar to play/pause in fullscreen
@@ -88,7 +88,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
     start-at="1"
     full-screen-autoplay="true"
     full-screen-autoplay-delay="3"
-    full-screen-switch="single-click"
+    full-screen-toggle="single-click"
     show-title="true"
     show-counter="true"
     show-link-button="true"
