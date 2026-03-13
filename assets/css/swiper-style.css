@@ -61,6 +61,22 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* full-screen-image-fit overrides image-fit when in fullscreen.
    Each vendor prefix MUST be in its own rule — grouping them causes browsers
    to drop the entire rule when they encounter an unrecognised pseudo-class. */
+.jzsa-album:fullscreen[data-full-screen-image-fit="fit"] .swiper-slide img {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="fit"] .swiper-slide img {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="fit"] .swiper-slide img {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
+}
+
 .jzsa-album:fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: auto;

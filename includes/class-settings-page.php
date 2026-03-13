@@ -456,6 +456,21 @@ class JZSA_Settings_Page {
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-autoplay-delay="2"]' );
 						?>
+						</div>
+						</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Fullscreen Fit (Default)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Uses full-screen-image-fit="fit" to preserve the entire photo in fullscreen while scaling it up to fill at least one axis. This is the default fullscreen image-fit mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-image-fit="fit"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-fs-fit">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-image-fit="fit"]' );
+						?>
 					</div>
 					</div>
 
@@ -840,8 +855,8 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>full-screen-image-fit</code></td>
-								<td>How photos fit the frame in fullscreen: "contain" (letterbox, no cropping), "cover" (fill and crop edges), or "stretch" (fill and distort).</td>
-								<td>contain</td>
+								<td>How photos fit the frame in fullscreen: "fit" (default, no crop, scales up to fill one axis), "contain" (no crop, keeps natural size when possible), "cover" (fill and crop edges), or "stretch" (fill and distort).</td>
+								<td>fit</td>
 							</tr>
 						</tbody>
 					</table>

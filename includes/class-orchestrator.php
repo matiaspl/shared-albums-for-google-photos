@@ -491,21 +491,21 @@ class JZSA_Shared_Albums {
 	/**
 	 * Parse full-screen-image-fit attribute.
 	 *
-	 * Defaults to 'contain' when not explicitly provided.
+	 * Defaults to 'fit' when not explicitly provided.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string One of 'contain', 'cover', or 'stretch'.
+	 * @return string One of 'fit', 'contain', 'cover', or 'stretch'.
 	 */
 	private function parse_fullscreen_image_fit( $atts ) {
 		if ( isset( $atts['full-screen-image-fit'] ) ) {
 			$value = strtolower( trim( (string) $atts['full-screen-image-fit'] ) );
-			if ( in_array( $value, array( 'contain', 'cover', 'stretch' ), true ) ) {
+			if ( in_array( $value, array( 'fit', 'contain', 'cover', 'stretch' ), true ) ) {
 				return $value;
 			}
 		}
 
-		// Not set or invalid — default to 'contain'.
-		return 'contain';
+		// Not set or invalid — default to 'fit'.
+		return 'fit';
 	}
 
 	/**
