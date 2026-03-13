@@ -561,9 +561,15 @@ body.jzsa-no-scroll {
     height: 100%;
 }
 
-/* Disable zoom cursor in carousel mode */
+/* Carousel mode: slides are clickable and open fullscreen player */
 .jzsa-album[data-mode="carousel"] .swiper-slide {
-    cursor: default;
+    cursor: pointer;
+}
+
+.jzsa-album[data-mode="carousel"] .swiper-slide:hover {
+    /* Keep cursor feedback for clickability but avoid any dimming/fog effect */
+    opacity: 1;
+    transition: opacity 0.2s ease;
 }
 
 /* Fullscreen navigation cursor feedback on a non-animated surface.
@@ -805,28 +811,6 @@ body.jzsa-no-scroll {
 
 .jzsa-hint-visible {
     opacity: 1;
-}
-
-/* ============================================================================
-   Carousel-to-single tweaks
-   ============================================================================ */
-
-/* Make it clear slides are clickable in carousel-to-single mode */
-.jzsa-album[data-mode="carousel-to-single"] .swiper-slide {
-    cursor: pointer;
-}
-
-.jzsa-album[data-mode="carousel-to-single"] .swiper-slide:hover {
-    /* Keep cursor feedback for clickability but avoid any dimming/fog effect */
-    opacity: 1;
-    transition: opacity 0.2s ease;
-}
-
-/* Fullscreen navigation cursor should override carousel preview cursor. */
-.jzsa-album:fullscreen[data-mode="carousel-to-single"] .swiper-slide,
-.jzsa-album:-webkit-full-screen[data-mode="carousel-to-single"] .swiper-slide,
-.jzsa-album.jzsa-pseudo-fullscreen[data-mode="carousel-to-single"] .swiper-slide {
-    cursor: inherit !important;
 }
 
 /* ============================================================================
@@ -1166,7 +1150,7 @@ body.jzsa-no-scroll {
 /* Grid fullscreen player: rendered off-screen at viewport size so Swiper can
    measure dimensions during init. The existing .jzsa-album:fullscreen and
    .jzsa-album.jzsa-pseudo-fullscreen CSS handles the rest — exactly the same
-   mechanism used by player/carousel/carousel-to-single modes. */
+   mechanism used by player/carousel/grid modes. */
 .jzsa-grid-player {
     position: fixed;
     left: -200vw;

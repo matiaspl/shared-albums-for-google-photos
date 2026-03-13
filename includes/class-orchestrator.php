@@ -553,7 +553,7 @@ class JZSA_Shared_Albums {
 	 * Parse mode attribute
 	 *
 	 * @param array $atts Attributes
-	 * @return string Mode: 'carousel', 'single', 'carousel-to-single', or 'grid'
+	 * @return string Mode: 'carousel', 'single', or 'grid'
 	 */
 	private function parse_mode( $atts ) {
 		if ( ! isset( $atts['mode'] ) ) {
@@ -563,8 +563,8 @@ class JZSA_Shared_Albums {
 
 		$mode = strtolower( trim( $atts['mode'] ) );
 
-		// Valid modes: 'carousel', 'single', 'carousel-to-single', 'grid'
-		$valid_modes = array( 'carousel', 'single', 'carousel-to-single', 'grid' );
+		// Valid modes: 'carousel', 'single', 'grid'
+		$valid_modes = array( 'carousel', 'single', 'grid' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;

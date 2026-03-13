@@ -416,9 +416,9 @@
 			var logPrefix = params.browserPrefix ? ' (' + params.browserPrefix + ')' : '';
 			jzsaDebug('🔍 Fullscreen entered for gallery' + logPrefix + ':', params.galleryId);
 
-            // For carousel-to-single, switch layout to a single slide in
-            // fullscreen while keeping the preview in carousel mode.
-            if (params.mode === 'carousel-to-single') {
+            // In carousel mode, switch layout to a single slide in fullscreen
+            // while keeping the preview in multi-slide carousel mode.
+            if (params.mode === 'carousel') {
                 if (params.originalSlidesPerView == null) {
                     params.originalSlidesPerView = swiper.params.slidesPerView;
                     params.originalBreakpoints = swiper.params.breakpoints;
@@ -473,12 +473,12 @@
 			var logPrefix = params.browserPrefix ? ' (' + params.browserPrefix + ')' : '';
 			jzsaDebug('🔍 Fullscreen exited for gallery' + logPrefix + ':', params.galleryId);
 
-            // For carousel-to-single, restore the original multi-slide layout
+            // In carousel mode, restore the original multi-slide layout
             // but keep the same logical photo index the user was viewing in
             // fullscreen. We must capture the realIndex *before* changing
             // slidesPerView/breakpoints, because Swiper may adjust indices when
             // layout changes.
-            if (params.mode === 'carousel-to-single' && params.originalSlidesPerView != null) {
+            if (params.mode === 'carousel' && params.originalSlidesPerView != null) {
                 var targetIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
 
                 swiper.params.slidesPerView = params.originalSlidesPerView;
@@ -872,10 +872,10 @@
 
     // Helper: Setup fullscreen switch handlers
     function setupFullscreenSwitchHandlers(swiper, $container, params) {
-        // When entering fullscreen from carousel-to-single, ensure we focus the
+        // When entering fullscreen from carousel mode, ensure we focus the
         // exact slide the user clicked in the preview (multi-slide) view.
         function focusClickedSlide(e) {
-            if (params.mode !== 'carousel-to-single') {
+            if (params.mode !== 'carousel') {
                 return;
             }
 
@@ -1338,9 +1338,9 @@
                 }
 
                 if (params.showCounter) {
-                    // In carousel modes (including carousel-to-single preview), show
+                    // In carousel mode, show
                     // all currently visible photo indices, e.g. "4-6 / 41".
-                    if (params.mode === 'carousel' || params.mode === 'carousel-to-single') {
+                    if (params.mode === 'carousel') {
                         var slidesPerView = swiper.params.slidesPerView || 1;
                         var realIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : (current - 1);
                         var visible = [];
@@ -1414,8 +1414,8 @@
         };
 
         // Mode-specific configuration
-        if (params.mode === 'carousel' || params.mode === 'carousel-to-single') {
-            // Carousel mode (and carousel-to-single): Show multiple slides at once
+        if (params.mode === 'carousel') {
+            // Carousel mode: show multiple slides at once
             config.slidesPerView = params.SLIDES_MOBILE;
             config.spaceBetween = params.SPACING_MOBILE;
             config.centeredSlides = false;
@@ -1788,7 +1788,7 @@
                 autoplayPausedByInteraction: autoplayPausedByInteraction,
                 autoplayInactivityTimeout: autoplayInactivityTimeout,
                 browserPrefix: null,
-                // For carousel-to-single: remember original layout so we can
+                // For carousel mode: remember original layout so we can
                 // temporarily switch to a single-slide view in fullscreen.
                 originalSlidesPerView: null,
                 originalBreakpoints: null,
@@ -1990,18 +1990,6 @@
                     console.warn('Failed to load preview image:', $img.attr('src'));
                 };
             });
-
-
-            // ------------------------------------------------------------------------
-            // Carousel-to-player mode
-            // ------------------------------------------------------------------------
-
-                // For now, carousel-to-single uses the same Swiper configuration as
-                // carousel. Fullscreen still works via the standard fullscreen button
-                // and behaves like the regular gallery; no extra logic needed.
-            if (mode === 'carousel-to-single') {
-                jzsaDebug('Carousel-to-single mode: using standard carousel behaviour for gallery', galleryId);
-            }
 
             // ------------------------------------------------------------------------
             // Pause autoplay when user clicks navigation buttons
