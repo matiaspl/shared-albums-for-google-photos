@@ -990,16 +990,41 @@
     }
 
     // Helper: Setup navigation handlers
-    function setupNavigationHandlers(swiper, $container, fullScreenNavigation, fullscreenChangeParams) {
+    function setupNavigationHandlers(swiper, $container, fullScreenNavigation, fullscreenChangeParams, fullScreenSwitch) {
         // NAVIGATION HANDLERS (only works in fullscreen)
         if (fullScreenNavigation === 'single-click') {
+            // When fullscreen switch uses double-click, delay single-click navigation
+            // so the first click of a double-click doesn't trigger a spurious navigate.
+            var navClickTimer = null;
+            var NAV_CLICK_DELAY = fullScreenSwitch === 'double-click' ? 300 : 0;
+
+            if (NAV_CLICK_DELAY > 0) {
+                $container.on('dblclick.jzsaNavGuard', function() {
+                    if (navClickTimer) {
+                        clearTimeout(navClickTimer);
+                        navClickTimer = null;
+                    }
+                });
+            }
+
             $container.on('click', function(e) {
                 if (!shouldIgnoreClick(e.target) && isFullscreen()) {
                     e.preventDefault();
-                    pauseAutoplayOnInteraction(swiper, fullscreenChangeParams);
-                    var containerWidth = $container.width();
-                    var clickX = e.pageX - $container.offset().left;
-                    navigateByPosition(swiper, clickX, containerWidth);
+                    if (NAV_CLICK_DELAY > 0) {
+                        var evt = e;
+                        navClickTimer = setTimeout(function() {
+                            navClickTimer = null;
+                            pauseAutoplayOnInteraction(swiper, fullscreenChangeParams);
+                            var containerWidth = $container.width();
+                            var clickX = evt.pageX - $container.offset().left;
+                            navigateByPosition(swiper, clickX, containerWidth);
+                        }, NAV_CLICK_DELAY);
+                    } else {
+                        pauseAutoplayOnInteraction(swiper, fullscreenChangeParams);
+                        var containerWidth = $container.width();
+                        var clickX = e.pageX - $container.offset().left;
+                        navigateByPosition(swiper, clickX, containerWidth);
+                    }
                 }
             });
         } else if (fullScreenNavigation === 'double-click') {
@@ -2008,7 +2033,7 @@
             // Navigation handlers (click/double-click to navigate in fullscreen)
             // ------------------------------------------------------------------------
 
-            setupNavigationHandlers(swiper, $container, fullScreenNavigation, fullscreenChangeParams);
+            setupNavigationHandlers(swiper, $container, fullScreenNavigation, fullscreenChangeParams, fullScreenSwitch);
 
             // ------------------------------------------------------------------------
             // Carousel-to-player mode
