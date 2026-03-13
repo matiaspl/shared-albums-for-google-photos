@@ -527,41 +527,47 @@ body.jzsa-no-scroll {
     cursor: default;
 }
 
-/* Fullscreen navigation cursor feedback.
-   Left third = previous (w-resize), right two-thirds = next (e-resize via ::after).
-   Each vendor prefix in its own rule to avoid browser invalidation. */
-.jzsa-album:fullscreen .swiper-slide,
-.jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
-    cursor: w-resize;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    user-select: none;
-}
-.jzsa-album:-webkit-full-screen .swiper-slide {
-    cursor: w-resize;
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    user-select: none;
+/* Fullscreen navigation cursor feedback on a non-animated surface.
+   Left half = previous (w-resize), right half = next (e-resize via ::after). */
+.jzsa-album:fullscreen,
+.jzsa-album:-webkit-full-screen,
+.jzsa-album.jzsa-pseudo-fullscreen {
+    cursor: w-resize !important;
 }
 
-.jzsa-album:fullscreen .swiper-slide::after,
-.jzsa-album.jzsa-pseudo-fullscreen .swiper-slide::after {
+.jzsa-album:fullscreen::after,
+.jzsa-album:-webkit-full-screen::after,
+.jzsa-album.jzsa-pseudo-fullscreen::after {
     content: '';
     position: absolute;
     top: 0;
     right: 0;
-    width: 66.67%;
+    width: 50%;
     height: 100%;
-    cursor: e-resize;
+    cursor: e-resize !important;
+    z-index: 2;
 }
-.jzsa-album:-webkit-full-screen .swiper-slide::after {
+
+.jzsa-album:fullscreen::before,
+.jzsa-album:-webkit-full-screen::before,
+.jzsa-album.jzsa-pseudo-fullscreen::before {
     content: '';
     position: absolute;
     top: 0;
-    right: 0;
-    width: 66.67%;
+    left: 0;
+    width: 50%;
     height: 100%;
-    cursor: e-resize;
+    cursor: w-resize !important;
+    z-index: 2;
+}
+
+.jzsa-album:fullscreen .swiper-slide,
+.jzsa-album:-webkit-full-screen .swiper-slide,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
+    cursor: inherit !important;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
 }
 
 /* Gallery loading overlay (shown until first image is ready) */
@@ -766,6 +772,13 @@ body.jzsa-no-scroll {
     /* Keep cursor feedback for clickability but avoid any dimming/fog effect */
     opacity: 1;
     transition: opacity 0.2s ease;
+}
+
+/* Fullscreen navigation cursor should override carousel preview cursor. */
+.jzsa-album:fullscreen[data-mode="carousel-to-single"] .swiper-slide,
+.jzsa-album:-webkit-full-screen[data-mode="carousel-to-single"] .swiper-slide,
+.jzsa-album.jzsa-pseudo-fullscreen[data-mode="carousel-to-single"] .swiper-slide {
+    cursor: inherit !important;
 }
 
 /* ============================================================================

@@ -988,13 +988,12 @@
 		}
 
 		$container.on('click', function(e) {
-			if (!shouldIgnoreClick(e.target) && isFullscreen()) {
-				e.preventDefault();
-				var containerWidth = $container.width();
-				var clickX = e.originalEvent ? e.originalEvent.clientX : e.clientX;
-				var containerLeft = $container[0].getBoundingClientRect().left;
-				var relativeX = clickX - containerLeft;
-				var direction = relativeX < containerWidth / 3 ? 'prev' : 'next';
+				if (!shouldIgnoreClick(e.target) && isFullscreen()) {
+					e.preventDefault();
+					var clickX = e.originalEvent ? e.originalEvent.clientX : e.clientX;
+					var containerRect = $container[0].getBoundingClientRect();
+					var relativeX = clickX - containerRect.left;
+					var direction = relativeX < containerRect.width / 2 ? 'prev' : 'next';
 
 				if (NAV_CLICK_DELAY > 0) {
 					// Keep only one pending navigation click timer. Without this,
