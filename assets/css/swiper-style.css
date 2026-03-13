@@ -1007,6 +1007,23 @@ body.jzsa-no-scroll {
 }
 
 @media (hover: hover) and (pointer: fine) {
+    .jzsa-grid-controls .swiper-button-prev,
+    .jzsa-grid-controls .swiper-button-next,
+    .jzsa-grid-controls .swiper-button-fullscreen {
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .jzsa-grid-shell:hover .jzsa-grid-controls .swiper-button-prev,
+    .jzsa-grid-shell:hover .jzsa-grid-controls .swiper-button-next,
+    .jzsa-grid-shell:hover .jzsa-grid-controls .swiper-button-fullscreen,
+    .jzsa-grid-shell:focus-within .jzsa-grid-controls .swiper-button-prev,
+    .jzsa-grid-shell:focus-within .jzsa-grid-controls .swiper-button-next,
+    .jzsa-grid-shell:focus-within .jzsa-grid-controls .swiper-button-fullscreen {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
     .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
         opacity: 0;
         pointer-events: none;
@@ -1024,6 +1041,30 @@ body.jzsa-no-scroll {
         display: none;
         opacity: 0;
         pointer-events: none;
+    }
+}
+
+/* Single mode (desktop): hide primary controls until hover/focus, matching grid UX. */
+@media (hover: hover) and (pointer: fine) {
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-prev,
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-next,
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-play-pause {
+        opacity: 0;
+        pointer-events: none;
+        animation: none;
+    }
+
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-prev,
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-next,
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-play-pause,
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-prev,
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-next,
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-play-pause {
+        opacity: 1;
+        pointer-events: auto;
     }
 }
 
