@@ -37,8 +37,8 @@ done
 
 if [ -z "$REQUESTED_VERSION" ]; then
     echo -e "${RED}Usage:${NC} $(basename "$0") [--zip-only] <version>"
-    echo "Example: $(basename "$0") 1.0.2"
-    echo "         $(basename "$0") --zip-only 1.0.7"
+    echo "Example: $(basename "$0") 1.0.39"
+    echo "         $(basename "$0") --zip-only 1.0.39"
     exit 1
 fi
 
