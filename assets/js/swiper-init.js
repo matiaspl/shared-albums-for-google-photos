@@ -1605,9 +1605,9 @@
         console.log('  - fullScreenAutoplayDelay in ms:', fullScreenAutoplayDelay * MILLISECONDS_PER_SECOND);
 
         // Two-phase single bootstrap caused visible re-render flicker on some pages.
-        // Keep single mode one-pass for stable rendering.
+        // Keep slider mode one-pass for stable rendering.
         var useDeferredSingleFirstPaint = false;
-        var shouldUseLazyHints = mode === 'single';
+        var shouldUseLazyHints = mode === 'slider';
         var slidesRenderOptions = shouldUseLazyHints
             ? {
                 lazyHints: true,
@@ -2125,7 +2125,7 @@
         // Copy data attributes for initializeSwiper
         $player.attr('data-all-photos', $galleryContainer.attr('data-all-photos'));
         $player.attr('data-total-count', $galleryContainer.attr('data-total-count'));
-        $player.attr('data-mode', 'player');
+        $player.attr('data-mode', 'slider');
         $player.attr('data-start-at', '1');
         // Gallery has no inline autoplay — use fullscreen autoplay settings
         $player.attr('data-autoplay', 'false');
@@ -3982,7 +3982,7 @@
             }
 
             // Get mode
-            var mode = $gallery.attr('data-mode') || 'player';
+            var mode = $gallery.attr('data-mode') || 'gallery';
 
             // Dispatch to the correct initializer
             if (mode === 'gallery') {

@@ -38,8 +38,8 @@ class JZSA_Shared_Albums {
 	 *
 	 * @var int
 	 */
-	const DEFAULT_WIDTH = 267;
-	const DEFAULT_HEIGHT = 200;
+	const DEFAULT_WIDTH = 400;
+	const DEFAULT_HEIGHT = 300;
 
 	/**
 	 * Default full-resolution image dimensions (fetched from Google Photos)
@@ -545,7 +545,7 @@ class JZSA_Shared_Albums {
 	 * Parse mode attribute
 	 *
 	 * @param array $atts Attributes
-	 * @return string Mode: 'gallery', 'single', or 'carousel'
+	 * @return string Mode: 'gallery', 'slider', or 'carousel'
 	 */
 	private function parse_mode( $atts ) {
 		if ( ! isset( $atts['mode'] ) ) {
@@ -555,8 +555,8 @@ class JZSA_Shared_Albums {
 
 		$mode = strtolower( trim( $atts['mode'] ) );
 
-		// Valid modes: 'gallery', 'single', 'carousel'
-		$valid_modes = array( 'gallery', 'single', 'carousel' );
+		// Valid modes: 'gallery', 'slider', 'carousel'
+		$valid_modes = array( 'gallery', 'slider', 'carousel' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;

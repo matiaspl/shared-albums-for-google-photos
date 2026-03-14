@@ -654,7 +654,7 @@ body.jzsa-no-scroll {
     animation: none;
 }
 
-/* Safe default: keep single/player controls hidden until initial content is ready.
+/* Safe default: keep slider controls hidden until initial content is ready.
    This prevents controls flashing before images on slower or highly optimized setups. */
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-prev,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-next,
