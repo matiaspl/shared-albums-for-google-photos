@@ -254,9 +254,15 @@ class JZSA_Data_Provider {
 					$context_length = min( 5000, strlen( $html ) - $offset );
 				}
 				$context  = substr( $html, $offset, $context_length );
-				$is_video = ( false !== strpos( $context, 'video-downloads' )
+				$has_video_downloads = false !== strpos( $context, 'video-downloads' );
+				// `video-downloads` can appear once at album level; require URL repetition to tie it to this item.
+				$has_item_video_download = $has_video_downloads && substr_count( $context, $base ) > 1;
+
+				$is_video = ( $has_item_video_download
 					|| false !== strpos( $context, '"VIDEO"' )
-					|| false !== strpos( $context, '"video/mp4"' ) );
+					|| false !== strpos( $context, '"video/mp4"' )
+					// Newer payloads expose per-item video metadata under this key.
+					|| false !== strpos( $context, '"76647426"' ) );
 
 				if ( $is_video ) {
 					$media[] = array(
