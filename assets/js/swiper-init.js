@@ -1031,17 +1031,7 @@
 					var clickX = e.originalEvent ? e.originalEvent.clientX : e.clientX;
 					var containerRect = $container[0].getBoundingClientRect();
 					var relativeX = clickX - containerRect.left;
-					var navEdgeRatio = 0.4; // 40-20-40 split: outer 40% zones navigate, center 20% is dead zone
-					var leftEdge = containerRect.width * navEdgeRatio;
-					var rightEdge = containerRect.width * (1 - navEdgeRatio);
-					var direction;
-					if (relativeX < leftEdge) {
-						direction = 'prev';
-					} else if (relativeX > rightEdge) {
-						direction = 'next';
-					} else {
-						return; // Center dead zone — no navigation
-					}
+					var direction = relativeX < containerRect.width / 2 ? 'prev' : 'next';
 
 				if (NAV_CLICK_DELAY > 0) {
 					// Keep only one pending navigation click timer. Without this,
@@ -1692,11 +1682,11 @@
             autoplay: $container.attr('data-autoplay') === 'true',
             autoplayDelay: parseInt($container.attr('data-autoplay-delay')) || DEFAULT_AUTOPLAY_DELAY_FALLBACK,
             fullScreenAutoplay: $container.attr('data-full-screen-autoplay') === 'true',
-            fullScreenAutoplayDelay: parseInt($container.attr('data-full-screen-autoplay-delay')) || 3,
+            fullScreenAutoplayDelay: parseInt($container.attr('data-full-screen-autoplay-delay')) || 5,
             autoplayInactivityTimeout: parseInt($container.attr('data-autoplay-inactivity-timeout')) || 30,
 
             // Display settings
-            loop: true, // Always loop
+            loop: allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
             fullScreenSwitch:
                 $container.attr('data-full-screen-toggle') || 'single-click',
             startAt: $container.attr('data-start-at') || 'random',

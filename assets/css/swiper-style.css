@@ -556,65 +556,15 @@ body.jzsa-no-scroll {
     transition: opacity 0.2s ease;
 }
 
-/* Fullscreen navigation cursor feedback on a non-animated surface.
-   40-20-40 split: outer 40% zones show prev/next cursors,
-   center 20% is a neutral dead zone (default cursor, pointer-events pass through). */
-.jzsa-album:fullscreen,
-.jzsa-album:-webkit-full-screen,
-.jzsa-album.jzsa-pseudo-fullscreen {
-    cursor: default !important;
-}
-
-/* Right 40% — next (e-resize) */
-.jzsa-album:fullscreen::after,
-.jzsa-album:-webkit-full-screen::after,
-.jzsa-album.jzsa-pseudo-fullscreen::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 40%;
-    height: 100%;
-    cursor: e-resize !important;
-    z-index: 2;
-    pointer-events: auto;
-}
-
-/* Left 40% — previous (w-resize) */
-.jzsa-album:fullscreen::before,
-.jzsa-album:-webkit-full-screen::before,
-.jzsa-album.jzsa-pseudo-fullscreen::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 40%;
-    height: 100%;
-    cursor: w-resize !important;
-    z-index: 2;
-    pointer-events: auto;
-}
-
+/* Fullscreen slides: Swiper's own grab/grabbing cursor is used.
+   No pseudo-element overlays so drag/touch navigation works natively.
+   Click-to-navigate (50-50 split) is handled by JS. */
 .jzsa-album:fullscreen .swiper-slide,
 .jzsa-album:-webkit-full-screen .swiper-slide,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
-    cursor: inherit !important;
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
-}
-
-/* On video slides: disable the navigation pseudo-element overlays so clicks
-   reach the video player controls directly.
-   The .jzsa-video-active class is toggled by JS on slideChange. */
-.jzsa-album.jzsa-video-active:fullscreen::before,
-.jzsa-album.jzsa-video-active:fullscreen::after,
-.jzsa-album.jzsa-video-active:-webkit-full-screen::before,
-.jzsa-album.jzsa-video-active:-webkit-full-screen::after,
-.jzsa-album.jzsa-video-active.jzsa-pseudo-fullscreen::before,
-.jzsa-album.jzsa-video-active.jzsa-pseudo-fullscreen::after {
-    pointer-events: none !important;
-    cursor: default !important;
 }
 
 /* Gallery loading overlay (shown until first image is ready) */
