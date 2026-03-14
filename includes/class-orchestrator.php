@@ -462,7 +462,7 @@ class JZSA_Shared_Albums {
 	 * Parse image fit mode.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string One of 'cover', 'contain', or 'stretch'.
+	 * @return string One of 'cover', 'contain', 'fit', or 'stretch'.
 	 */
 	private function parse_image_fit( $atts ) {
 		if ( ! isset( $atts['image-fit'] ) ) {
@@ -472,7 +472,7 @@ class JZSA_Shared_Albums {
 
 		$value = strtolower( trim( (string) $atts['image-fit'] ) );
 
-		if ( in_array( $value, array( 'cover', 'contain', 'stretch' ), true ) ) {
+		if ( in_array( $value, array( 'cover', 'contain', 'fit', 'stretch' ), true ) ) {
 			return $value;
 		}
 
