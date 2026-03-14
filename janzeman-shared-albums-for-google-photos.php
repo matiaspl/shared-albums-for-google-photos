@@ -95,7 +95,7 @@ function jzsa_add_settings_link( $links ) {
 	$settings_link = sprintf(
 		'<a href="%s">%s</a>',
 		admin_url( 'options-general.php?page=janzeman-shared-albums-for-google-photos' ),
-		esc_html__( 'Settings', 'janzeman-shared-albums-for-google-photos' )
+		esc_html__( 'Settings & Onboarding', 'janzeman-shared-albums-for-google-photos' )
 	);
 	array_unshift( $links, $settings_link );
 	return $links;

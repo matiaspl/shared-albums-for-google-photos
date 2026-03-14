@@ -20,8 +20,8 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 
 = Features =
 
-* **Grid Mode** - Display photos as a thumbnail grid with uniform/justified layouts
-* **Grid Paging Or Scrolling** - Use `grid-rows` with optional `grid-scroller` to choose page controls or a single scrollable grid
+* **Gallery Mode (Default)** - Display photos as a thumbnail gallery with uniform/justified layouts
+* **Gallery Paging Or Scrolling** - Use `gallery-rows` with optional `gallery-scroller` to choose page controls or a single scrollable gallery
 * **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
@@ -103,7 +103,7 @@ Tip: `full-screen-image-fit` defaults to `fit`, which preserves the full photo (
 
 The only required parameter is **link** — the Google Photos share URL.
 
-All other parameters are optional and control appearance, autoplay, fullscreen behavior, display options, gallery mode, and grid layout.
+All other parameters are optional and control appearance, autoplay, fullscreen behavior, display options, gallery mode, and gallery layout.
 
 For the complete list of all parameters with descriptions and defaults, visit the plugin's **Settings** page in your WordPress admin (Settings → Shared Albums for Google Photos). The Settings page also includes a Playground for experimenting with shortcodes and live Samples you can copy.
 
@@ -202,10 +202,8 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 1.0.8 =
-* Change default values (Breaking change, my apologies!)
-
-= 1.0.7 =
-* Grid mode support
+* Gallery mode support
+* Default values changes (Breaking change, apologies!)
 
 = 1.0.6 =
 * New animated logo

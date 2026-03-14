@@ -250,6 +250,16 @@
         return $(target).closest('.swiper-button-next, .swiper-button-prev, .swiper-button-fullscreen, .swiper-button-external-link, .swiper-button-download, .swiper-button-play-pause, .swiper-pagination').length > 0;
     }
 
+    // Helper: Read gallery mode data attributes.
+    function readGalleryAttr($container, suffix) {
+        return $container.attr('data-gallery-' + suffix);
+    }
+
+    // Helper: Write gallery mode data attributes.
+    function writeGalleryAttr($container, suffix, value) {
+        $container.attr('data-gallery-' + suffix, value);
+    }
+
     // Helper: Double-tap detection for touch devices
     var DOUBLE_TAP_MAX_DELAY = 250; // ms - maximum time between taps to be considered a double-tap
     var lastTap = 0;
@@ -493,7 +503,7 @@
                 }
             }
 
-            // Attempt to auto-correct WordPress grid item width if iOS Safari/WebKit
+            // Attempt to auto-correct WordPress tile width if iOS Safari/WebKit
             // leaves it in a broken state after fullscreen. We compare the parent LI
             // width with the gallery container width and, if they differ
             // significantly, clamp the LI to match the gallery width.
@@ -670,7 +680,7 @@
                 type: 'POST',
                 data: {
                     action: 'jzsa_download_image',
-                    nonce: jzsaAjax.nonce,
+                    nonce: jzsaAjax.downloadNonce,
                     image_url: imageUrl,
                     filename: filename
                 },
@@ -782,7 +792,7 @@
                 progressInterval = null;
             }
 
-            // Reset to full width and keep visible (used for hover-pause parity with grid mode).
+            // Reset to full width and keep visible (used for hover-pause parity with gallery mode).
             $progressBar.css({
                 'transform': 'scaleX(1)',
                 'transition': 'none'
@@ -1540,9 +1550,7 @@
             // Display settings
             loop: true, // Always loop
             fullScreenSwitch:
-                $container.attr('data-full-screen-toggle') ||
-                $container.attr('data-full-screen-switch') ||
-                'single-click',
+                $container.attr('data-full-screen-toggle') || 'single-click',
             startAt: $container.attr('data-start-at') || 'random',
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
@@ -1842,7 +1850,7 @@
             var togglePlayPause = setupPlayPauseButton(swiper, $container, progressBar);
             setupFullscreenSwitchHandlers(swiper, $container, fullscreenParams);
 
-            // Desktop UX parity with grid mode: pause inline autoplay while hovering
+            // Desktop UX parity with gallery mode: pause inline autoplay while hovering
             // over the gallery, then resume when the pointer leaves.
             var hoverPauseSupported = !!(window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches);
             var autoplayPausedByHover = false;
@@ -2062,24 +2070,24 @@
     }
 
     // ============================================================================
-    // GRID MODE — thumbnail grid + fullscreen player
+    // GALLERY MODE — thumbnail gallery + fullscreen player
     // ============================================================================
 
     /**
-     * Build a hidden player container for a grid gallery.
+     * Build a hidden player container for a thumbnail gallery.
      * Uses the same DOM structure as build_gallery_container in PHP so that
      * initializeSwiper can power it with the full feature set.
      *
-     * @param  {jQuery} $gridContainer The grid container element.
+     * @param  {jQuery} $galleryContainer The gallery container element.
      * @return {string} The player container ID.
      */
-    function buildGridPlayer($gridContainer) {
-        var gridId = $gridContainer.attr('id');
-        var playerId = gridId + '-player';
+    function buildGalleryPlayer($galleryContainer) {
+        var galleryId = $galleryContainer.attr('id');
+        var playerId = galleryId + '-player';
 
         // Build full player DOM structure (mirrors PHP build_gallery_container)
         var html =
-            '<div id="' + playerId + '" class="jzsa-album swiper jzsa-grid-player jzsa-loader-pending jzsa-content-intro">' +
+            '<div id="' + playerId + '" class="jzsa-album swiper jzsa-gallery-player jzsa-loader-pending jzsa-content-intro">' +
                 '<div class="swiper-wrapper"></div>' +
                 '<div class="swiper-button-prev"></div>' +
                 '<div class="swiper-button-next"></div>' +
@@ -2088,47 +2096,46 @@
                 '<div class="swiper-autoplay-progress"><div class="swiper-autoplay-progress-bar"></div></div>';
 
         // External link button
-        var showLink = $gridContainer.attr('data-show-link-button') === 'true';
-        var albumUrl = $gridContainer.attr('data-album-url') || '';
+        var showLink = $galleryContainer.attr('data-show-link-button') === 'true';
+        var albumUrl = $galleryContainer.attr('data-album-url') || '';
         if (showLink && albumUrl) {
             html += '<a href="' + albumUrl + '" target="_blank" rel="noopener noreferrer" ' +
                 'class="swiper-button-external-link" title="Open in Google Photos"></a>';
         }
 
         // Download button
-        if ($gridContainer.attr('data-show-download-button') === 'true') {
+        if ($galleryContainer.attr('data-show-download-button') === 'true') {
             html += '<button class="swiper-button-download" title="Download current image"></button>';
         }
 
         html += '<div class="swiper-button-fullscreen"></div>';
         html += '</div>';
 
-        // Insert player after the grid shell when present so controls can stay
-        // overlaid on top of the grid without affecting player placement.
-        var $shell = $gridContainer.parent('.jzsa-grid-shell');
+        // Insert player after the gallery shell when present so controls can stay
+        // overlaid on top of the gallery without affecting player placement.
+        var $shell = $galleryContainer.parent('.jzsa-gallery-shell');
         if ($shell.length) {
             $shell.after(html);
         } else {
-            $gridContainer.after(html);
+            $galleryContainer.after(html);
         }
 
         var $player = $('#' + playerId);
 
         // Copy data attributes for initializeSwiper
-        $player.attr('data-all-photos', $gridContainer.attr('data-all-photos'));
-        $player.attr('data-total-count', $gridContainer.attr('data-total-count'));
+        $player.attr('data-all-photos', $galleryContainer.attr('data-all-photos'));
+        $player.attr('data-total-count', $galleryContainer.attr('data-total-count'));
         $player.attr('data-mode', 'player');
         $player.attr('data-start-at', '1');
-        // Grid has no inline autoplay — use fullscreen autoplay settings
+        // Gallery has no inline autoplay — use fullscreen autoplay settings
         $player.attr('data-autoplay', 'false');
 
-        // Forward player-relevant settings from the grid container
+        // Forward player-relevant settings from the gallery container
         var forwardAttrs = [
             'data-full-screen-autoplay',
             'data-full-screen-autoplay-delay',
             'data-autoplay-inactivity-timeout',
             'data-full-screen-toggle',
-            'data-full-screen-switch',
             'data-show-title',
             'data-show-counter',
             'data-album-title',
@@ -2138,14 +2145,14 @@
             'data-background-color'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
-            var val = $gridContainer.attr(forwardAttrs[i]);
+            var val = $galleryContainer.attr(forwardAttrs[i]);
             if (val !== undefined) {
                 $player.attr(forwardAttrs[i], val);
             }
         }
 
         // Forward --gallery-bg-color CSS custom property for fullscreen background
-        var bgColor = $gridContainer.attr('data-background-color');
+        var bgColor = $galleryContainer.attr('data-background-color');
         if (bgColor && bgColor !== 'transparent') {
             $player[0].style.setProperty('--gallery-bg-color', bgColor);
         }
@@ -2173,7 +2180,7 @@
     }
 
     /**
-     * Group photos into rows for a justified grid.
+     * Group photos into rows for a justified gallery.
      * Each row fills approximately `containerWidth` when photos are scaled to `targetHeight`.
      *
      * @param  {Array}  photos         Array of {photo, ratio, index}.
@@ -2211,12 +2218,12 @@
     }
 
     /**
-     * Render a uniform CSS-grid of thumbnails into `$container`.
+     * Render a uniform CSS gallery of thumbnails into `$container`.
      *
-     * @param {jQuery} $container Grid album element.
+     * @param {jQuery} $container Gallery album element.
      * @param {Array}  pageItems  Array of objects: { photo, index }.
      */
-    function buildUniformGrid($container, pageItems, options) {
+    function buildUniformGallery($container, pageItems, options) {
         var renderOptions = options || {};
         var placeholderCount = parseInt(renderOptions.placeholderCount, 10);
         if (isNaN(placeholderCount) || placeholderCount < 0) {
@@ -2228,15 +2235,15 @@
         }
         var tileHeightValue = tileHeight > 0 ? (Math.round(tileHeight * 1000) / 1000) + 'px' : '';
         var tileStyleAttr = tileHeightValue ? ' style="height:' + tileHeightValue + ';"' : '';
-        var tileFillClass = tileHeightValue ? ' jzsa-grid-tile-fill' : '';
+        var tileFillClass = tileHeightValue ? ' jzsa-gallery-tile-fill' : '';
 
-        var columns       = parseInt($container.attr('data-grid-columns'), 10)        || 3;
-        var columnsTablet = parseInt($container.attr('data-grid-columns-tablet'), 10) || 2;
-        var columnsMobile = parseInt($container.attr('data-grid-columns-mobile'), 10) || 1;
+        var columns       = parseInt(readGalleryAttr($container, 'columns'), 10) || 3;
+        var columnsTablet = parseInt(readGalleryAttr($container, 'columns-tablet'), 10) || 2;
+        var columnsMobile = parseInt(readGalleryAttr($container, 'columns-mobile'), 10) || 1;
         // Pass column counts as CSS custom properties so the media queries pick them up
-        $container[0].style.setProperty('--jzsa-grid-columns',        columns);
-        $container[0].style.setProperty('--jzsa-grid-columns-tablet', columnsTablet);
-        $container[0].style.setProperty('--jzsa-grid-columns-mobile', columnsMobile);
+        $container[0].style.setProperty('--jzsa-gallery-columns',        columns);
+        $container[0].style.setProperty('--jzsa-gallery-columns-tablet', columnsTablet);
+        $container[0].style.setProperty('--jzsa-gallery-columns-mobile', columnsMobile);
 
         var html = '';
         pageItems.forEach(function(item) {
@@ -2244,32 +2251,32 @@
             var globalIndex = item.index;
             var src = photo.preview || photo.full;
             html +=
-                '<div class="jzsa-grid-item" data-index="' + globalIndex + '">' +
-                    '<img class="jzsa-grid-thumb' + tileFillClass + '"' +
+                '<div class="jzsa-gallery-item" data-index="' + globalIndex + '">' +
+                    '<img class="jzsa-gallery-thumb' + tileFillClass + '"' +
                     ' src="' + src + '"' +
                     (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
                     ' data-index="' + globalIndex + '"' +
                     ' alt="Photo ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
                     ' loading="lazy"' + tileStyleAttr + '>' +
-                    '<div class="jzsa-grid-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open photo ' + (globalIndex + 1) + ' in fullscreen"></div>' +
+                    '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open photo ' + (globalIndex + 1) + ' in fullscreen"></div>' +
                 '</div>';
         });
 
         for (var i = 0; i < placeholderCount; i++) {
-            html += '<div class="jzsa-grid-placeholder' + tileFillClass + '" aria-hidden="true"' + tileStyleAttr + '></div>';
+            html += '<div class="jzsa-gallery-placeholder' + tileFillClass + '" aria-hidden="true"' + tileStyleAttr + '></div>';
         }
 
-        renderGridMarkup($container, html);
+        renderGalleryMarkup($container, html);
     }
 
     /**
-     * Render grid HTML while preserving transient overlay nodes (like loader).
+     * Render gallery HTML while preserving transient overlay nodes (like loader).
      *
-     * @param {jQuery} $container Grid album element.
-     * @param {string} html       Grid markup to render.
+     * @param {jQuery} $container Gallery album element.
+     * @param {string} html       Gallery markup to render.
      */
-    function renderGridMarkup($container, html) {
+    function renderGalleryMarkup($container, html) {
         var $loader = $container.children('.jzsa-loader').detach();
         $container.html(html);
         if ($loader.length) {
@@ -2278,12 +2285,12 @@
     }
 
     /**
-     * Measure grid width with a safe fallback.
+     * Measure gallery width with a safe fallback.
      *
-     * @param {jQuery} $container Grid album element.
+     * @param {jQuery} $container Gallery album element.
      * @return {number}
      */
-    function getGridContainerWidth($container) {
+    function getGalleryContainerWidth($container) {
         var containerWidth = $container.width();
         if (!containerWidth || containerWidth < 10) {
             return 800;
@@ -2294,7 +2301,7 @@
     /**
      * Render precomputed justified rows into `$container`.
      *
-     * @param {jQuery} $container      Grid album element.
+     * @param {jQuery} $container      Gallery album element.
      * @param {Array}  rows            Array of justified rows.
      * @param {number} containerWidth  Available width in pixels.
      * @param {number} targetHeight    Row height in pixels.
@@ -2312,8 +2319,8 @@
                 var width = Math.round((item.ratio / totalRatio) * availableWidth);
                 var src   = item.photo.preview || item.photo.full;
                 html +=
-                    '<div class="jzsa-grid-item" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
-                        '<img class="jzsa-grid-thumb jzsa-justified-thumb"' +
+                    '<div class="jzsa-gallery-item" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
+                        '<img class="jzsa-gallery-thumb jzsa-justified-thumb"' +
                         ' src="' + src + '"' +
                         (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
                         ' data-index="' + item.index + '"' +
@@ -2321,25 +2328,25 @@
                         ' draggable="false"' +
                         ' loading="lazy"' +
                         ' style="width:100%;height:100%;">' +
-                        '<div class="jzsa-grid-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open photo ' + (item.index + 1) + ' in fullscreen"></div>' +
+                        '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open photo ' + (item.index + 1) + ' in fullscreen"></div>' +
                     '</div>';
             });
             html += '</div>';
         });
 
-        renderGridMarkup($container, html);
+        renderGalleryMarkup($container, html);
     }
 
     /**
-     * Determine the active uniform-grid column count for the current viewport.
+     * Determine the active uniform-gallery column count for the current viewport.
      *
-     * @param {jQuery} $container Grid album element.
+     * @param {jQuery} $container Gallery album element.
      * @return {number}
      */
     function getUniformColumnsForViewport($container) {
-        var columnsDesktop = parseInt($container.attr('data-grid-columns'), 10) || 3;
-        var columnsTablet  = parseInt($container.attr('data-grid-columns-tablet'), 10) || 2;
-        var columnsMobile  = parseInt($container.attr('data-grid-columns-mobile'), 10) || 1;
+        var columnsDesktop = parseInt(readGalleryAttr($container, 'columns'), 10) || 3;
+        var columnsTablet  = parseInt(readGalleryAttr($container, 'columns-tablet'), 10) || 2;
+        var columnsMobile  = parseInt(readGalleryAttr($container, 'columns-mobile'), 10) || 1;
         var viewportWidth  = window.innerWidth || document.documentElement.clientWidth || 1024;
 
         if (viewportWidth <= 480) {
@@ -2354,14 +2361,14 @@
     }
 
     /**
-     * Build a page slice of photos for the grid renderer.
+     * Build a page slice of photos for the gallery renderer.
      *
      * @param {Array}  allPhotos Full ordered photo array.
      * @param {number} pageIndex Zero-based page index.
      * @param {number} pageSize  Photos per page.
      * @return {Array} Array of objects: { photo, index }.
      */
-    function getGridPageItems(allPhotos, pageIndex, pageSize) {
+    function getGalleryPageItems(allPhotos, pageIndex, pageSize) {
         var items = [];
         var safePageSize = pageSize > 0 ? pageSize : (allPhotos.length || 1);
         var start = pageIndex * safePageSize;
@@ -2378,25 +2385,25 @@
     }
 
     /**
-     * Ensure the grid container is wrapped by a positioned shell for overlay controls.
+     * Ensure the gallery container is wrapped by a positioned shell for overlay controls.
      *
-     * @param {jQuery} $container Grid album element.
+     * @param {jQuery} $container Gallery album element.
      * @return {jQuery} Shell element.
      */
-    function ensureGridShell($container) {
-        var $shell = $container.parent('.jzsa-grid-shell');
+    function ensureGalleryShell($container) {
+        var $shell = $container.parent('.jzsa-gallery-shell');
 
         if (!$shell.length) {
-            $container.wrap('<div class="jzsa-grid-shell"></div>');
-            $shell = $container.parent('.jzsa-grid-shell');
+            $container.wrap('<div class="jzsa-gallery-shell"></div>');
+            $shell = $container.parent('.jzsa-gallery-shell');
         }
 
         // Keep shell dimensions aligned with explicit shortcode size so
-        // overlaid grid controls (prev/next/counter) stay within the same box.
+        // overlaid gallery controls (prev/next/counter) stay within the same box.
         // Use renderer-provided explicit attributes to avoid style drift when
         // JS temporarily sets container width/height to percentages.
-        var explicitWidthPx = parseInt($container.attr('data-grid-explicit-width'), 10);
-        var explicitHeightPx = parseInt($container.attr('data-grid-explicit-height'), 10);
+        var explicitWidthPx = parseInt(readGalleryAttr($container, 'explicit-width'), 10);
+        var explicitHeightPx = parseInt(readGalleryAttr($container, 'explicit-height'), 10);
 
         var explicitWidth = (!isNaN(explicitWidthPx) && explicitWidthPx > 0)
             ? explicitWidthPx + 'px'
@@ -2407,9 +2414,9 @@
 
         $shell.css('width', explicitWidth || '');
         $shell.css('height', explicitHeight || '');
-        $shell.toggleClass('jzsa-grid-shell-bounded', !!(explicitWidth || explicitHeight));
+        $shell.toggleClass('jzsa-gallery-shell-bounded', !!(explicitWidth || explicitHeight));
 
-        // When shell is explicitly bounded, keep grid content inside that box.
+        // When shell is explicitly bounded, keep gallery content inside that box.
         if (explicitWidth) {
             $container.css('width', '100%');
         } else {
@@ -2425,22 +2432,22 @@
     }
 
     /**
-     * Build/update grid pagination controls using existing Swiper-style controls.
+     * Build/update gallery pagination controls using existing Swiper-style controls.
      *
-     * @param {jQuery}   $container    Grid album element.
+     * @param {jQuery}   $container    Gallery album element.
      * @param {Object}   state         Pagination state object.
      * @param {Function} onPageChange  Callback invoked with next page index.
      * @param {Object}   options       Optional controls config.
      */
-    function setupGridPaginationControls($container, state, onPageChange, options) {
+    function setupGalleryPaginationControls($container, state, onPageChange, options) {
         var config = options || {};
         var showCounter = config.showCounter !== false;
         var showAutoplayProgress = !!config.showAutoplayProgress;
         var showAutoplayControls = !!config.showAutoplayControls;
         var isAutoplayRunning = typeof config.isAutoplayRunning === 'function' ? config.isAutoplayRunning : null;
         var onToggleAutoplay = typeof config.onToggleAutoplay === 'function' ? config.onToggleAutoplay : null;
-        var controlsId = $container.attr('id') + '-grid-controls';
-        var $shell = ensureGridShell($container);
+        var controlsId = $container.attr('id') + '-gallery-controls';
+        var $shell = ensureGalleryShell($container);
         var $controls = $('#' + controlsId);
 
         if (state.totalPages <= 1) {
@@ -2450,12 +2457,12 @@
 
         if (!$controls.length) {
             var html =
-                '<div id="' + controlsId + '" class="jzsa-grid-controls jzsa-album" role="group" aria-label="Grid page navigation">' +
-                    '<div class="swiper-button-prev" role="button" tabindex="0" aria-label="Previous grid page"></div>' +
+                '<div id="' + controlsId + '" class="jzsa-gallery-controls jzsa-album" role="group" aria-label="Gallery page navigation">' +
+                    '<div class="swiper-button-prev" role="button" tabindex="0" aria-label="Previous gallery page"></div>' +
                     '<div class="swiper-pagination" aria-live="polite"></div>' +
                     '<button class="swiper-button-play-pause" title="Play/Pause" aria-label="Pause autoplay"></button>' +
                     '<div class="swiper-autoplay-progress" aria-hidden="true"><div class="swiper-autoplay-progress-bar"></div></div>' +
-                    '<div class="swiper-button-next" role="button" tabindex="0" aria-label="Next grid page"></div>' +
+                    '<div class="swiper-button-next" role="button" tabindex="0" aria-label="Next gallery page"></div>' +
                 '</div>';
 
             $shell.append(html);
@@ -2479,7 +2486,7 @@
                     return;
                 }
                 e.preventDefault();
-                if ($container.data('jzsaGridAnimating')) {
+                if ($container.data('jzsaGalleryAnimating')) {
                     return;
                 }
 
@@ -2493,23 +2500,23 @@
                 onPageChange(nextPage, direction);
             }
 
-            $el.off('click.jzsaGrid keydown.jzsaGrid');
-            $el.on('click.jzsaGrid', activate);
-            $el.on('keydown.jzsaGrid', activate);
+            $el.off('click.jzsaGallery keydown.jzsaGallery');
+            $el.on('click.jzsaGallery', activate);
+            $el.on('keydown.jzsaGallery', activate);
         }
 
         bindControl($prev, -1);
         bindControl($next, 1);
 
-        $controls.toggleClass('jzsa-grid-autoplay-enabled', showAutoplayControls);
+        $controls.toggleClass('jzsa-gallery-autoplay-enabled', showAutoplayControls);
         if (showAutoplayControls) {
             var running = isAutoplayRunning ? isAutoplayRunning() : false;
             $playPause.toggleClass('playing', !!running);
             $playPause.attr('aria-label', running ? 'Pause autoplay' : 'Resume autoplay');
             $playPause.attr('title', running ? 'Pause autoplay' : 'Resume autoplay');
 
-            $playPause.off('click.jzsaGrid keydown.jzsaGrid');
-            $playPause.on('click.jzsaGrid keydown.jzsaGrid', function(e) {
+            $playPause.off('click.jzsaGallery keydown.jzsaGallery');
+            $playPause.on('click.jzsaGallery keydown.jzsaGallery', function(e) {
                 if (e.type === 'keydown' && !isActivationKey(e)) {
                     return;
                 }
@@ -2520,7 +2527,7 @@
                 }
             });
         } else {
-            $playPause.off('click.jzsaGrid keydown.jzsaGrid');
+            $playPause.off('click.jzsaGallery keydown.jzsaGallery');
             $playPause.removeClass('playing');
         }
 
@@ -2539,29 +2546,29 @@
     }
 
     /**
-     * Remove grid pagination controls if they are present.
+     * Remove gallery pagination controls if they are present.
      *
-     * @param {jQuery} $container Grid album element.
+     * @param {jQuery} $container Gallery album element.
      */
-    function removeGridPaginationControls($container) {
-        $('#' + $container.attr('id') + '-grid-controls').remove();
+    function removeGalleryPaginationControls($container) {
+        $('#' + $container.attr('id') + '-gallery-controls').remove();
     }
 
     /**
-     * Enable or disable fixed-height grid scrolling.
+     * Enable or disable fixed-height gallery scrolling.
      *
-     * @param {jQuery} $container Grid album element.
+     * @param {jQuery} $container Gallery album element.
      * @param {boolean} enabled   Whether scrolling mode is enabled.
      * @param {number} maxHeight  Max visible height in pixels.
      */
-    function setGridScrollableState($container, enabled, maxHeight) {
+    function setGalleryScrollableState($container, enabled, maxHeight) {
         if (!enabled) {
-            $container.removeClass('jzsa-grid-scrollable');
+            $container.removeClass('jzsa-gallery-scrollable');
             $container.css('max-height', '');
             return;
         }
 
-        $container.addClass('jzsa-grid-scrollable');
+        $container.addClass('jzsa-gallery-scrollable');
 
         if (typeof maxHeight === 'number' && maxHeight > 0) {
             $container.css('max-height', Math.floor(maxHeight) + 'px');
@@ -2571,13 +2578,13 @@
     }
 
     /**
-     * Keep paginated grid height stable across pages to avoid layout jumps.
+     * Keep paginated gallery height stable across pages to avoid layout jumps.
      *
-     * @param {jQuery} $container Grid album element.
+     * @param {jQuery} $container Gallery album element.
      * @param {boolean} enabled   Whether fixed-height pagination is enabled.
      * @param {number} height     Target minimum height in pixels.
      */
-    function setGridPaginationHeightState($container, enabled, height) {
+    function setGalleryPaginationHeightState($container, enabled, height) {
         if (!enabled || typeof height !== 'number' || height <= 0) {
             $container.css('min-height', '');
             return;
@@ -2587,16 +2594,16 @@
     }
 
     /**
-     * Build a stable visual snapshot of the current grid markup for transitions.
+     * Build a stable visual snapshot of the current gallery markup for transitions.
      *
-     * @param {jQuery} $source Grid album element.
+     * @param {jQuery} $source Gallery album element.
      * @return {jQuery} Snapshot node.
      */
-    function createGridTransitionSnapshot($source) {
+    function createGalleryTransitionSnapshot($source) {
         var $snapshot = $source.clone(false, false);
-        var isCssGrid = false;
+        var isCssGallery = false;
         $snapshot.removeAttr('id');
-        $snapshot.removeClass('jzsa-grid-scrollable jzsa-grid-transition-target');
+        $snapshot.removeClass('jzsa-gallery-scrollable jzsa-gallery-transition-target');
         $snapshot.css({
             maxHeight: '',
             overflowY: '',
@@ -2616,7 +2623,7 @@
         if ($source[0] && window.getComputedStyle) {
             var sourceStyle = window.getComputedStyle($source[0]);
             if (sourceStyle && sourceStyle.display === 'grid') {
-                isCssGrid = true;
+                isCssGallery = true;
                 $snapshot.css({
                     display: 'grid',
                     gridTemplateColumns: sourceStyle.gridTemplateColumns,
@@ -2626,8 +2633,8 @@
             }
         }
 
-        var sourceThumbs = $source.find('.jzsa-grid-thumb');
-        var snapshotThumbs = $snapshot.find('.jzsa-grid-thumb');
+        var sourceThumbs = $source.find('.jzsa-gallery-thumb');
+        var snapshotThumbs = $snapshot.find('.jzsa-gallery-thumb');
         snapshotThumbs.each(function(i) {
             var sourceThumb = sourceThumbs.get(i);
             if (!sourceThumb) {
@@ -2635,7 +2642,7 @@
             }
 
             var rect = sourceThumb.getBoundingClientRect();
-            if (!isCssGrid && rect.width > 0 && rect.height > 0) {
+            if (!isCssGallery && rect.width > 0 && rect.height > 0) {
                 this.style.width = rect.width + 'px';
                 this.style.height = rect.height + 'px';
                 this.style.aspectRatio = '';
@@ -2649,15 +2656,15 @@
     }
 
     /**
-     * Enable desktop mouse drag behavior for grid pagination/scrolling.
+     * Enable desktop mouse drag behavior for gallery pagination/scrolling.
      *
-     * @param {jQuery} $container Grid album element.
+     * @param {jQuery} $container Gallery album element.
      * @param {Object} config     { enabled, mode, onPageSwipe, onPageDragStart }.
      */
-    function setupGridMouseInteractions($container, config) {
-        var id = $container.attr('id') || 'grid';
-        var ns = '.jzsaGridMouse-' + id;
-        var $shell = ensureGridShell($container);
+    function setupGalleryMouseInteractions($container, config) {
+        var id = $container.attr('id') || 'gallery';
+        var ns = '.jzsaGalleryMouse-' + id;
+        var $shell = ensureGalleryShell($container);
         var options = config || {};
         var mode = options.mode || '';
         var enabled = !!options.enabled;
@@ -2666,16 +2673,16 @@
 
         $container.off(ns);
         $(document).off(ns);
-        $container.removeClass('jzsa-grid-draggable jzsa-grid-grabbing');
-        $shell.removeClass('jzsa-grid-draggable jzsa-grid-grabbing');
-        $container.removeData('jzsaGridSuppressClick');
+        $container.removeClass('jzsa-gallery-draggable jzsa-gallery-grabbing');
+        $shell.removeClass('jzsa-gallery-draggable jzsa-gallery-grabbing');
+        $container.removeData('jzsaGallerySuppressClick');
 
         if (!enabled) {
             return;
         }
 
-        $container.addClass('jzsa-grid-draggable');
-        $shell.addClass('jzsa-grid-draggable');
+        $container.addClass('jzsa-gallery-draggable');
+        $shell.addClass('jzsa-gallery-draggable');
 
         var state = {
             active: false,
@@ -2691,16 +2698,16 @@
         };
 
         function suppressNextThumbClick() {
-            $container.data('jzsaGridSuppressClick', true);
+            $container.data('jzsaGallerySuppressClick', true);
             window.setTimeout(function() {
-                $container.removeData('jzsaGridSuppressClick');
+                $container.removeData('jzsaGallerySuppressClick');
             }, 180);
         }
 
         function stopDraggingState() {
             state.active = false;
-            $container.removeClass('jzsa-grid-grabbing');
-            $shell.removeClass('jzsa-grid-grabbing');
+            $container.removeClass('jzsa-gallery-grabbing');
+            $shell.removeClass('jzsa-gallery-grabbing');
         }
 
         function finalizePaginationDragSession() {
@@ -2728,18 +2735,18 @@
             return true;
         }
 
-        $container.on('dragstart' + ns, '.jzsa-grid-thumb', function(e) {
+        $container.on('dragstart' + ns, '.jzsa-gallery-thumb', function(e) {
             e.preventDefault();
         });
 
-        $container.on('click' + ns, '.jzsa-grid-thumb', function(e) {
-            if ($container.data('jzsaGridSuppressClick')) {
+        $container.on('click' + ns, '.jzsa-gallery-thumb', function(e) {
+            if ($container.data('jzsaGallerySuppressClick')) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
             }
         });
-        $container.on('click' + ns, '.jzsa-grid-thumb-fs-btn', function(e) {
-            if ($container.data('jzsaGridSuppressClick')) {
+        $container.on('click' + ns, '.jzsa-gallery-thumb-fs-btn', function(e) {
+            if ($container.data('jzsaGallerySuppressClick')) {
                 e.preventDefault();
                 e.stopImmediatePropagation();
             }
@@ -2750,7 +2757,7 @@
                 return;
             }
 
-            if ($(e.target).closest('.swiper-button-prev, .swiper-button-next, .jzsa-grid-thumb-fs-btn').length) {
+            if ($(e.target).closest('.swiper-button-prev, .swiper-button-next, .jzsa-gallery-thumb-fs-btn').length) {
                 return;
             }
 
@@ -2765,8 +2772,8 @@
             state.dragDirection = 0;
             state.dragSession = null;
 
-            $container.addClass('jzsa-grid-grabbing');
-            $shell.addClass('jzsa-grid-grabbing');
+            $container.addClass('jzsa-gallery-grabbing');
+            $shell.addClass('jzsa-gallery-grabbing');
             e.preventDefault();
         });
 
@@ -2859,16 +2866,16 @@
     }
 
     /**
-     * Create an interactive drag session for grid page transitions.
+     * Create an interactive drag session for gallery page transitions.
      *
-     * @param {jQuery}   $container         Grid album element.
+     * @param {jQuery}   $container         Gallery album element.
      * @param {number}   direction          +1 next page, -1 previous page.
      * @param {Function} renderIncomingPage Renders the target page into $container.
      * @param {Function} renderOutgoingPage Renders the current page into $container.
      * @param {Function} onFinish           Callback called with committed boolean.
      * @return {?Object} Session with update(deltaX) and finish(commit).
      */
-    function createGridPageDragTransition($container, direction, renderIncomingPage, renderOutgoingPage, onFinish) {
+    function createGalleryPageDragTransition($container, direction, renderIncomingPage, renderOutgoingPage, onFinish) {
         var DRAG_SETTLE_MS = 220;
 
         if (
@@ -2880,11 +2887,11 @@
             return null;
         }
 
-        if ($container.data('jzsaGridAnimating')) {
+        if ($container.data('jzsaGalleryAnimating')) {
             return null;
         }
 
-        var $shell = ensureGridShell($container);
+        var $shell = ensureGalleryShell($container);
         var outgoingRect = $container[0] ? $container[0].getBoundingClientRect() : null;
         var outgoingHeight = outgoingRect ? outgoingRect.height : $container.outerHeight();
         var outgoingWidth = outgoingRect ? outgoingRect.width : $container.outerWidth();
@@ -2892,14 +2899,14 @@
             return null;
         }
 
-        var $outgoingSnapshot = createGridTransitionSnapshot($container);
+        var $outgoingSnapshot = createGalleryTransitionSnapshot($container);
 
-        $shell.addClass('jzsa-grid-transitioning');
-        $container.data('jzsaGridAnimating', true);
+        $shell.addClass('jzsa-gallery-transitioning');
+        $container.data('jzsaGalleryAnimating', true);
         $container.css('visibility', 'hidden');
 
         renderIncomingPage();
-        var $incomingSnapshot = createGridTransitionSnapshot($container);
+        var $incomingSnapshot = createGalleryTransitionSnapshot($container);
 
         var stageHeight = outgoingHeight;
         if (stageHeight > 0) {
@@ -2909,12 +2916,12 @@
             });
         }
 
-        $shell.find('.jzsa-grid-slide-stage').remove();
+        $shell.find('.jzsa-gallery-slide-stage').remove();
 
-        var $stage = $('<div class="jzsa-grid-slide-stage"></div>');
-        var $track = $('<div class="jzsa-grid-slide-track"></div>');
-        var $panelA = $('<div class="jzsa-grid-slide-panel"></div>');
-        var $panelB = $('<div class="jzsa-grid-slide-panel"></div>');
+        var $stage = $('<div class="jzsa-gallery-slide-stage"></div>');
+        var $track = $('<div class="jzsa-gallery-slide-track"></div>');
+        var $panelA = $('<div class="jzsa-gallery-slide-panel"></div>');
+        var $panelB = $('<div class="jzsa-gallery-slide-panel"></div>');
         var slideDistance = outgoingWidth;
         if (!slideDistance || slideDistance <= 0) {
             var shellRect = $shell[0] ? $shell[0].getBoundingClientRect() : null;
@@ -2975,14 +2982,14 @@
 
             $stage.remove();
             $container.css('visibility', '');
-            $shell.removeClass('jzsa-grid-transitioning');
+            $shell.removeClass('jzsa-gallery-transitioning');
             $shell.css({
                 height: '',
                 minHeight: ''
             });
             // Restore bounded shell dimensions (when explicit width/height are set).
-            ensureGridShell($container);
-            $container.data('jzsaGridAnimating', false);
+            ensureGalleryShell($container);
+            $container.data('jzsaGalleryAnimating', false);
 
             if (typeof onFinish === 'function') {
                 onFinish(committed);
@@ -3028,25 +3035,25 @@
     }
 
     /**
-     * Animate grid page changes with a horizontal slide similar to single mode.
+     * Animate gallery page changes with a horizontal slide similar to single mode.
      *
-     * @param {jQuery}  $container     Grid album element.
+     * @param {jQuery}  $container     Gallery album element.
      * @param {number}  direction      +1 next page, -1 previous page.
      * @param {Function} renderNewPage Callback that renders the next page into $container.
      */
-    function animateGridPageTransition($container, direction, renderNewPage) {
-        var GRID_PAGE_TRANSITION_MS = 600;
+    function animateGalleryPageTransition($container, direction, renderNewPage) {
+        var GALLERY_PAGE_TRANSITION_MS = 600;
 
         if (!$container || !$container.length || typeof renderNewPage !== 'function') {
             return;
         }
 
-        if ($container.data('jzsaGridAnimating')) {
+        if ($container.data('jzsaGalleryAnimating')) {
             renderNewPage();
             return;
         }
 
-        var $shell = ensureGridShell($container);
+        var $shell = ensureGalleryShell($container);
         var outgoingRect = $container[0] ? $container[0].getBoundingClientRect() : null;
         var outgoingHeight = outgoingRect ? outgoingRect.height : $container.outerHeight();
         var outgoingWidth = outgoingRect ? outgoingRect.width : $container.outerWidth();
@@ -3056,15 +3063,15 @@
             return;
         }
 
-        var $outgoingSnapshot = createGridTransitionSnapshot($container);
+        var $outgoingSnapshot = createGalleryTransitionSnapshot($container);
 
-        $shell.addClass('jzsa-grid-transitioning');
-        $container.data('jzsaGridAnimating', true);
+        $shell.addClass('jzsa-gallery-transitioning');
+        $container.data('jzsaGalleryAnimating', true);
         $container.css('visibility', 'hidden');
 
         renderNewPage();
 
-        var $incomingSnapshot = createGridTransitionSnapshot($container);
+        var $incomingSnapshot = createGalleryTransitionSnapshot($container);
 
         // Keep shell height fixed during transition to avoid temporary layout shifts.
         var stageHeight = outgoingHeight;
@@ -3075,12 +3082,12 @@
             });
         }
 
-        $shell.find('.jzsa-grid-slide-stage').remove();
+        $shell.find('.jzsa-gallery-slide-stage').remove();
 
-        var $stage = $('<div class="jzsa-grid-slide-stage"></div>');
-        var $track = $('<div class="jzsa-grid-slide-track"></div>');
-        var $panelA = $('<div class="jzsa-grid-slide-panel"></div>');
-        var $panelB = $('<div class="jzsa-grid-slide-panel"></div>');
+        var $stage = $('<div class="jzsa-gallery-slide-stage"></div>');
+        var $track = $('<div class="jzsa-gallery-slide-track"></div>');
+        var $panelA = $('<div class="jzsa-gallery-slide-panel"></div>');
+        var $panelB = $('<div class="jzsa-gallery-slide-panel"></div>');
         var slideDistance = outgoingWidth;
 
         if (stageHeight > 0) {
@@ -3093,7 +3100,7 @@
         }
         $track.css({
             width: (slideDistance * 2) + 'px',
-            transitionDuration: GRID_PAGE_TRANSITION_MS + 'ms'
+            transitionDuration: GALLERY_PAGE_TRANSITION_MS + 'ms'
         });
         $panelA.css({
             width: slideDistance + 'px',
@@ -3135,28 +3142,28 @@
         window.setTimeout(function() {
             $stage.remove();
             $container.css('visibility', '');
-            $shell.removeClass('jzsa-grid-transitioning');
+            $shell.removeClass('jzsa-gallery-transitioning');
             $shell.css({
                 height: '',
                 minHeight: ''
             });
             // Restore bounded shell dimensions (when explicit width/height are set).
-            ensureGridShell($container);
-            $container.data('jzsaGridAnimating', false);
-        }, GRID_PAGE_TRANSITION_MS + 40);
+            ensureGalleryShell($container);
+            $container.data('jzsaGalleryAnimating', false);
+        }, GALLERY_PAGE_TRANSITION_MS + 40);
     }
 
     /**
      * Build justified rows for all photos, preserving global photo indices.
      *
-     * @param {jQuery} $container Grid album element.
+     * @param {jQuery} $container Gallery album element.
      * @param {Array}  allPhotos  Full photo array.
      * @return {Object} { rows, targetHeight, gap, containerWidth }.
      */
     function getJustifiedLayoutData($container, allPhotos) {
-        var targetHeight = parseInt($container.attr('data-grid-row-height'), 10) || 200;
+        var targetHeight = parseInt(readGalleryAttr($container, 'row-height'), 10) || 200;
         var gap = 4;
-        var containerWidth = getGridContainerWidth($container);
+        var containerWidth = getGalleryContainerWidth($container);
 
         var photosWithRatios = allPhotos.map(function(photo, index) {
             return {
@@ -3179,7 +3186,7 @@
      *
      * @param {Object} state Pagination state object.
      */
-    function clampGridPage(state) {
+    function clampGalleryPage(state) {
         if (state.currentPage < 0) {
             state.currentPage = 0;
         }
@@ -3192,15 +3199,15 @@
     }
 
     /**
-     * Initialize a grid-mode gallery.
+     * Initialize a gallery-mode thumbnail gallery.
      * Renders thumbnails and attaches click-to-fullscreen handler.
      *
-     * @param {Element} container The .jzsa-grid-album DOM element.
+     * @param {Element} container The .jzsa-gallery-album DOM element.
      */
-    function initializeGrid(container) {
+    function initializeGallery(container) {
         var $container = $(container);
-        var $shell = ensureGridShell($container);
-        var layout     = $container.attr('data-grid-layout') || 'uniform';
+        var $shell = ensureGalleryShell($container);
+        var layout     = readGalleryAttr($container, 'layout') || 'uniform';
 
         var allPhotosJson = $container.attr('data-all-photos');
         var allPhotos     = allPhotosJson ? JSON.parse(allPhotosJson) : [];
@@ -3209,8 +3216,9 @@
             $container.append(buildLoaderHtml('Loading photos...'));
         }
         $container
+            .addClass('jzsa-gallery-album')
             .removeClass('jzsa-loaded jzsa-loader-visible')
-            .addClass('jzsa-loader-pending jzsa-grid-loading');
+            .addClass('jzsa-loader-pending jzsa-gallery-loading');
         triggerGalleryIntroFade($container);
 
         // Honour the same old-iOS cap as the Swiper path
@@ -3218,19 +3226,19 @@
             allPhotos = allPhotos.slice(0, OLD_IOS_MAX_PHOTOS);
         }
 
-        var requestedGridRows = parseInt($container.attr('data-grid-rows'), 10);
-        var gridRows = (!isNaN(requestedGridRows) && requestedGridRows > 0) ? requestedGridRows : 0;
-        var gridScroller = $container.attr('data-grid-scroller') === 'true';
-        var requestedGridSizingModel = ($container.attr('data-grid-sizing-model') || 'ratio').toLowerCase();
-        var gridSizingModel = requestedGridSizingModel === 'fill' ? 'fill' : 'ratio';
-        var gridAutoplayEnabled = $container.attr('data-autoplay') === 'true';
-        var requestedGridAutoplayDelay = parseInt($container.attr('data-autoplay-delay'), 10);
-        var gridAutoplayDelay = (!isNaN(requestedGridAutoplayDelay) && requestedGridAutoplayDelay > 0)
-            ? requestedGridAutoplayDelay
+        var requestedGalleryRows = parseInt(readGalleryAttr($container, 'rows'), 10);
+        var galleryRows = (!isNaN(requestedGalleryRows) && requestedGalleryRows > 0) ? requestedGalleryRows : 0;
+        var galleryScroller = readGalleryAttr($container, 'scroller') === 'true';
+        var requestedGallerySizingModel = (readGalleryAttr($container, 'sizing-model') || 'ratio').toLowerCase();
+        var gallerySizingModel = requestedGallerySizingModel === 'fill' ? 'fill' : 'ratio';
+        var galleryAutoplayEnabled = $container.attr('data-autoplay') === 'true';
+        var requestedGalleryAutoplayDelay = parseInt($container.attr('data-autoplay-delay'), 10);
+        var galleryAutoplayDelay = (!isNaN(requestedGalleryAutoplayDelay) && requestedGalleryAutoplayDelay > 0)
+            ? requestedGalleryAutoplayDelay
             : 5;
 
         // Normalize for CSS selectors and downstream logic.
-        $container.attr('data-grid-sizing-model', gridSizingModel);
+        writeGalleryAttr($container, 'sizing-model', gallerySizingModel);
 
         // Update data so the fullscreen player gets the same capped photo list.
         $container.attr('data-all-photos', JSON.stringify(allPhotos));
@@ -3239,110 +3247,110 @@
             currentPage: 0,
             totalPages: 1
         };
-        var GRID_AUTOPLAY_RETRY_MS = 120;
-        var GRID_AUTOPLAY_PROGRESS_EXTRA_MS = 500;
-        var gridAutoplayTimer = null;
-        var gridAutoplayPausedByHover = false;
-        var gridAutoplayPausedByUser = false;
+        var GALLERY_AUTOPLAY_RETRY_MS = 120;
+        var GALLERY_AUTOPLAY_PROGRESS_EXTRA_MS = 500;
+        var galleryAutoplayTimer = null;
+        var galleryAutoplayPausedByHover = false;
+        var galleryAutoplayPausedByUser = false;
         var playerId = null;
         var $player = null;
-        var gridLoaderShownAt = 0;
-        var gridHasMarkedLoaded = false;
-        var gridLoaderShowTimer = null;
-        var gridLoaderCommitTimer = null;
-        var gridLoaderFallbackTimer = window.setTimeout(function() {
-            markGridLoaded();
+        var galleryLoaderShownAt = 0;
+        var galleryHasMarkedLoaded = false;
+        var galleryLoaderShowTimer = null;
+        var galleryLoaderCommitTimer = null;
+        var galleryLoaderFallbackTimer = window.setTimeout(function() {
+            markGalleryLoaded();
         }, 3500);
 
-        function clearGridLoaderTimers() {
-            if (gridLoaderShowTimer) {
-                window.clearTimeout(gridLoaderShowTimer);
-                gridLoaderShowTimer = null;
+        function clearGalleryLoaderTimers() {
+            if (galleryLoaderShowTimer) {
+                window.clearTimeout(galleryLoaderShowTimer);
+                galleryLoaderShowTimer = null;
             }
-            if (gridLoaderFallbackTimer) {
-                window.clearTimeout(gridLoaderFallbackTimer);
-                gridLoaderFallbackTimer = null;
+            if (galleryLoaderFallbackTimer) {
+                window.clearTimeout(galleryLoaderFallbackTimer);
+                galleryLoaderFallbackTimer = null;
             }
-            if (gridLoaderCommitTimer) {
-                window.clearTimeout(gridLoaderCommitTimer);
-                gridLoaderCommitTimer = null;
+            if (galleryLoaderCommitTimer) {
+                window.clearTimeout(galleryLoaderCommitTimer);
+                galleryLoaderCommitTimer = null;
             }
         }
 
-        function commitGridLoaded() {
-            clearGridLoaderTimers();
-            $container.find('.jzsa-grid-thumb').off('.jzsaGridLoader');
+        function commitGalleryLoaded() {
+            clearGalleryLoaderTimers();
+            $container.find('.jzsa-gallery-thumb').off('.jzsaGalleryLoader');
             $container
-                .removeClass('jzsa-loader-pending jzsa-loader-visible jzsa-grid-loading')
+                .removeClass('jzsa-loader-pending jzsa-loader-visible jzsa-gallery-loading')
                 .addClass('jzsa-loaded');
         }
 
-        function markGridLoaded() {
-            if (gridHasMarkedLoaded) {
+        function markGalleryLoaded() {
+            if (galleryHasMarkedLoaded) {
                 return;
             }
 
-            gridHasMarkedLoaded = true;
+            galleryHasMarkedLoaded = true;
             var minVisibleRemaining = 0;
-            if (gridLoaderShownAt > 0) {
-                minVisibleRemaining = LOADER_MIN_VISIBLE_MS - (Date.now() - gridLoaderShownAt);
+            if (galleryLoaderShownAt > 0) {
+                minVisibleRemaining = LOADER_MIN_VISIBLE_MS - (Date.now() - galleryLoaderShownAt);
             }
 
             if (minVisibleRemaining > 0) {
-                gridLoaderCommitTimer = window.setTimeout(commitGridLoaded, minVisibleRemaining);
+                galleryLoaderCommitTimer = window.setTimeout(commitGalleryLoaded, minVisibleRemaining);
             } else {
-                commitGridLoaded();
+                commitGalleryLoaded();
             }
         }
 
-        function watchGridInitialThumbLoad() {
-            if (gridHasMarkedLoaded) {
+        function watchGalleryInitialThumbLoad() {
+            if (galleryHasMarkedLoaded) {
                 return;
             }
 
-            var $firstThumb = $container.find('.jzsa-grid-thumb').first();
+            var $firstThumb = $container.find('.jzsa-gallery-thumb').first();
             if (!$firstThumb.length) {
-                window.setTimeout(markGridLoaded, 700);
+                window.setTimeout(markGalleryLoaded, 700);
                 return;
             }
 
             var thumbEl = $firstThumb[0];
-            $container.find('.jzsa-grid-thumb').off('.jzsaGridLoader');
+            $container.find('.jzsa-gallery-thumb').off('.jzsaGalleryLoader');
             if (thumbEl.complete && thumbEl.naturalWidth > 0) {
-                markGridLoaded();
+                markGalleryLoaded();
                 return;
             }
 
-            $firstThumb.one('load.jzsaGridLoader', function() {
-                markGridLoaded();
+            $firstThumb.one('load.jzsaGalleryLoader', function() {
+                markGalleryLoaded();
             });
-            $firstThumb.one('error.jzsaGridLoader', function() {
-                window.setTimeout(markGridLoaded, 500);
+            $firstThumb.one('error.jzsaGalleryLoader', function() {
+                window.setTimeout(markGalleryLoaded, 500);
             });
         }
 
-        gridLoaderShowTimer = window.setTimeout(function() {
-            if (gridHasMarkedLoaded) {
+        galleryLoaderShowTimer = window.setTimeout(function() {
+            if (galleryHasMarkedLoaded) {
                 return;
             }
-            gridLoaderShownAt = Date.now();
+            galleryLoaderShownAt = Date.now();
             $container.addClass('jzsa-loader-visible');
         }, LOADER_SHOW_DELAY_MS);
 
-        function clearGridAutoplayTimer() {
-            if (gridAutoplayTimer) {
-                window.clearTimeout(gridAutoplayTimer);
-                gridAutoplayTimer = null;
+        function clearGalleryAutoplayTimer() {
+            if (galleryAutoplayTimer) {
+                window.clearTimeout(galleryAutoplayTimer);
+                galleryAutoplayTimer = null;
             }
         }
 
-        function shouldShowGridAutoplayProgress() {
-            var useScroller = gridScroller && gridRows > 0;
-            return gridAutoplayEnabled && !gridAutoplayPausedByUser && !useScroller && paginationState.totalPages > 1;
+        function shouldShowGalleryAutoplayProgress() {
+            var useScroller = galleryScroller && galleryRows > 0;
+            return galleryAutoplayEnabled && !galleryAutoplayPausedByUser && !useScroller && paginationState.totalPages > 1;
         }
 
-        function canRunGridAutoplay() {
-            if (!shouldShowGridAutoplayProgress() || gridAutoplayPausedByHover) {
+        function canRunGalleryAutoplay() {
+            if (!shouldShowGalleryAutoplayProgress() || galleryAutoplayPausedByHover) {
                 return false;
             }
 
@@ -3353,8 +3361,8 @@
             return true;
         }
 
-        function setGridAutoplayProgressVisible(visible) {
-            var controlsId = $container.attr('id') + '-grid-controls';
+        function setGalleryAutoplayProgressVisible(visible) {
+            var controlsId = $container.attr('id') + '-gallery-controls';
             var $controls = $('#' + controlsId);
             var $progressContainer = $controls.find('.swiper-autoplay-progress');
             var $progressBar = $controls.find('.swiper-autoplay-progress-bar');
@@ -3370,18 +3378,18 @@
             $progressContainer.css('display', visible ? 'block' : 'none');
         }
 
-        function startGridAutoplayProgressCycle() {
-            var controlsId = $container.attr('id') + '-grid-controls';
+        function startGalleryAutoplayProgressCycle() {
+            var controlsId = $container.attr('id') + '-gallery-controls';
             var $controls = $('#' + controlsId);
             var $progressContainer = $controls.find('.swiper-autoplay-progress');
             var $progressBar = $controls.find('.swiper-autoplay-progress-bar');
-            var delayMs = gridAutoplayDelay * MILLISECONDS_PER_SECOND;
+            var delayMs = galleryAutoplayDelay * MILLISECONDS_PER_SECOND;
 
             if (!$progressContainer.length || !$progressBar.length || delayMs <= 0) {
                 return;
             }
 
-            var progressDuration = delayMs + GRID_AUTOPLAY_PROGRESS_EXTRA_MS;
+            var progressDuration = delayMs + GALLERY_AUTOPLAY_PROGRESS_EXTRA_MS;
             if (progressDuration < 0) {
                 progressDuration = delayMs;
             }
@@ -3402,31 +3410,31 @@
             });
         }
 
-        function scheduleGridAutoplay() {
-            clearGridAutoplayTimer();
+        function scheduleGalleryAutoplay() {
+            clearGalleryAutoplayTimer();
 
-            if (!shouldShowGridAutoplayProgress()) {
-                setGridAutoplayProgressVisible(false);
+            if (!shouldShowGalleryAutoplayProgress()) {
+                setGalleryAutoplayProgressVisible(false);
                 return;
             }
 
-            if (!canRunGridAutoplay()) {
-                setGridAutoplayProgressVisible(true);
+            if (!canRunGalleryAutoplay()) {
+                setGalleryAutoplayProgressVisible(true);
                 return;
             }
 
-            if ($container.data('jzsaGridAnimating')) {
-                setGridAutoplayProgressVisible(true);
-                gridAutoplayTimer = window.setTimeout(function() {
-                    scheduleGridAutoplay();
-                }, GRID_AUTOPLAY_RETRY_MS);
+            if ($container.data('jzsaGalleryAnimating')) {
+                setGalleryAutoplayProgressVisible(true);
+                galleryAutoplayTimer = window.setTimeout(function() {
+                    scheduleGalleryAutoplay();
+                }, GALLERY_AUTOPLAY_RETRY_MS);
                 return;
             }
 
-            startGridAutoplayProgressCycle();
-            gridAutoplayTimer = window.setTimeout(function() {
-                if (!canRunGridAutoplay() || $container.data('jzsaGridAnimating')) {
-                    scheduleGridAutoplay();
+            startGalleryAutoplayProgressCycle();
+            galleryAutoplayTimer = window.setTimeout(function() {
+                if (!canRunGalleryAutoplay() || $container.data('jzsaGalleryAnimating')) {
+                    scheduleGalleryAutoplay();
                     return;
                 }
 
@@ -3436,33 +3444,33 @@
                 }
 
                 paginationState.currentPage = nextPage;
-                renderCurrentGridPage({
+                renderCurrentGalleryPage({
                     animate: true,
                     direction: 1
                 });
-            }, gridAutoplayDelay * MILLISECONDS_PER_SECOND);
+            }, galleryAutoplayDelay * MILLISECONDS_PER_SECOND);
         }
 
-        function syncGridAutoplayState() {
-            clearGridAutoplayTimer();
-            scheduleGridAutoplay();
+        function syncGalleryAutoplayState() {
+            clearGalleryAutoplayTimer();
+            scheduleGalleryAutoplay();
         }
 
-        var gridAutoplayNamespace = '.jzsaGridAutoplay-' + ($container.attr('id') || 'grid');
-        $shell.off('mouseenter' + gridAutoplayNamespace + ' mouseleave' + gridAutoplayNamespace);
-        $shell.on('mouseenter' + gridAutoplayNamespace, function() {
-            gridAutoplayPausedByHover = true;
-            clearGridAutoplayTimer();
-            scheduleGridAutoplay();
+        var galleryAutoplayNamespace = '.jzsaGalleryAutoplay-' + ($container.attr('id') || 'gallery');
+        $shell.off('mouseenter' + galleryAutoplayNamespace + ' mouseleave' + galleryAutoplayNamespace);
+        $shell.on('mouseenter' + galleryAutoplayNamespace, function() {
+            galleryAutoplayPausedByHover = true;
+            clearGalleryAutoplayTimer();
+            scheduleGalleryAutoplay();
         });
-        $shell.on('mouseleave' + gridAutoplayNamespace, function() {
-            gridAutoplayPausedByHover = false;
-            scheduleGridAutoplay();
+        $shell.on('mouseleave' + galleryAutoplayNamespace, function() {
+            galleryAutoplayPausedByHover = false;
+            scheduleGalleryAutoplay();
         });
 
-        function renderCurrentGridPage(options) {
+        function renderCurrentGalleryPage(options) {
             var renderOptions = options || {};
-            var useScroller = gridScroller && gridRows > 0;
+            var useScroller = galleryScroller && galleryRows > 0;
             var gap = 4;
 
             if (layout === 'justified') {
@@ -3478,31 +3486,31 @@
                     );
 
                     var totalJustifiedRows = justified.rows.length;
-                    var isJustifiedScrollable = totalJustifiedRows > gridRows;
+                    var isJustifiedScrollable = totalJustifiedRows > galleryRows;
                     if (isJustifiedScrollable) {
-                        var visibleHeight = (gridRows * justified.targetHeight) + ((gridRows - 1) * gap);
-                        setGridScrollableState($container, true, visibleHeight);
+                        var visibleHeight = (galleryRows * justified.targetHeight) + ((galleryRows - 1) * gap);
+                        setGalleryScrollableState($container, true, visibleHeight);
                     } else {
-                        setGridScrollableState($container, false);
+                        setGalleryScrollableState($container, false);
                     }
 
                     paginationState.currentPage = 0;
                     paginationState.totalPages = 1;
-                    removeGridPaginationControls($container);
-                    setGridPaginationHeightState($container, false);
-                    setupGridMouseInteractions($container, {
+                    removeGalleryPaginationControls($container);
+                    setGalleryPaginationHeightState($container, false);
+                    setupGalleryMouseInteractions($container, {
                         enabled: isJustifiedScrollable,
                         mode: 'scroll'
                     });
                 } else {
-                    setGridScrollableState($container, false);
+                    setGalleryScrollableState($container, false);
 
-                    var rowsPerPage = gridRows > 0 ? gridRows : (justified.rows.length || 1);
+                    var rowsPerPage = galleryRows > 0 ? galleryRows : (justified.rows.length || 1);
                     paginationState.totalPages = justified.rows.length > 0 ? Math.ceil(justified.rows.length / rowsPerPage) : 1;
-                    clampGridPage(paginationState);
+                    clampGalleryPage(paginationState);
 
                     var rowStart = paginationState.currentPage * rowsPerPage;
-                    var rowsForPage = (gridRows > 0)
+                    var rowsForPage = (galleryRows > 0)
                         ? justified.rows.slice(rowStart, rowStart + rowsPerPage)
                         : justified.rows;
 
@@ -3517,16 +3525,16 @@
                     };
 
                     if (renderOptions.animate) {
-                        animateGridPageTransition($container, renderOptions.direction || 1, renderJustifiedPage);
+                        animateGalleryPageTransition($container, renderOptions.direction || 1, renderJustifiedPage);
                     } else {
                         renderJustifiedPage();
                     }
 
-                    var fixedJustifiedRows = gridRows > 0 ? gridRows : rowsPerPage;
+                    var fixedJustifiedRows = galleryRows > 0 ? galleryRows : rowsPerPage;
                     var fixedJustifiedHeight =
                         (fixedJustifiedRows * justified.targetHeight) +
                         ((fixedJustifiedRows - 1) * gap);
-                    setGridPaginationHeightState(
+                    setGalleryPaginationHeightState(
                         $container,
                         paginationState.totalPages > 1 && fixedJustifiedRows > 0,
                         fixedJustifiedHeight
@@ -3534,30 +3542,30 @@
 
                     var onJustifiedPageChange = function(nextPage, direction) {
                         paginationState.currentPage = nextPage;
-                        renderCurrentGridPage({
+                        renderCurrentGalleryPage({
                             animate: true,
                             direction: direction
                         });
                     };
 
-                    setupGridPaginationControls($container, paginationState, onJustifiedPageChange, {
+                    setupGalleryPaginationControls($container, paginationState, onJustifiedPageChange, {
                         showCounter: $container.attr('data-show-counter') !== 'false',
-                        showAutoplayProgress: shouldShowGridAutoplayProgress(),
-                        showAutoplayControls: gridAutoplayEnabled,
+                        showAutoplayProgress: shouldShowGalleryAutoplayProgress(),
+                        showAutoplayControls: galleryAutoplayEnabled,
                         isAutoplayRunning: function() {
-                            return gridAutoplayEnabled && !gridAutoplayPausedByUser;
+                            return galleryAutoplayEnabled && !galleryAutoplayPausedByUser;
                         },
                         onToggleAutoplay: function() {
-                            gridAutoplayPausedByUser = !gridAutoplayPausedByUser;
-                            syncGridAutoplayState();
-                            renderCurrentGridPage();
+                            galleryAutoplayPausedByUser = !galleryAutoplayPausedByUser;
+                            syncGalleryAutoplayState();
+                            renderCurrentGalleryPage();
                         }
                     });
-                    setupGridMouseInteractions($container, {
+                    setupGalleryMouseInteractions($container, {
                         enabled: paginationState.totalPages > 1,
                         mode: 'pagination',
                         onPageSwipe: function(direction) {
-                            if ($container.data('jzsaGridAnimating')) {
+                            if ($container.data('jzsaGalleryAnimating')) {
                                 return;
                             }
 
@@ -3571,7 +3579,7 @@
                             onJustifiedPageChange(nextPage, direction);
                         },
                         onPageDragStart: function(direction) {
-                            if ($container.data('jzsaGridAnimating')) {
+                            if ($container.data('jzsaGalleryAnimating')) {
                                 return null;
                             }
 
@@ -3584,11 +3592,11 @@
                             }
 
                             var nextRowStart = nextPage * rowsPerPage;
-                            var nextRowsForPage = (gridRows > 0)
+                            var nextRowsForPage = (galleryRows > 0)
                                 ? justified.rows.slice(nextRowStart, nextRowStart + rowsPerPage)
                                 : justified.rows;
 
-                            return createGridPageDragTransition(
+                            return createGalleryPageDragTransition(
                                 $container,
                                 direction,
                                 function() {
@@ -3611,7 +3619,7 @@
                                 },
                                 function(committed) {
                                     paginationState.currentPage = committed ? nextPage : currentPage;
-                                    renderCurrentGridPage();
+                                    renderCurrentGalleryPage();
                                 }
                             );
                         }
@@ -3619,40 +3627,40 @@
                 }
             } else {
                 var activeColumns = getUniformColumnsForViewport($container);
-                var allItems = getGridPageItems(allPhotos, 0, allPhotos.length || 1);
-                var explicitUniformHeight = parseInt($container.attr('data-grid-explicit-height'), 10);
+                var allItems = getGalleryPageItems(allPhotos, 0, allPhotos.length || 1);
+                var explicitUniformHeight = parseInt(readGalleryAttr($container, 'explicit-height'), 10);
                 var fillUniformRowHeight = 0;
 
-                if (gridSizingModel === 'fill' && gridRows > 0 && !isNaN(explicitUniformHeight) && explicitUniformHeight > 0) {
-                    fillUniformRowHeight = (explicitUniformHeight - ((gridRows - 1) * gap)) / gridRows;
+                if (gallerySizingModel === 'fill' && galleryRows > 0 && !isNaN(explicitUniformHeight) && explicitUniformHeight > 0) {
+                    fillUniformRowHeight = (explicitUniformHeight - ((galleryRows - 1) * gap)) / galleryRows;
                     if (!(fillUniformRowHeight > 0)) {
                         fillUniformRowHeight = 0;
                     }
                 }
 
                 if (useScroller) {
-                    buildUniformGrid($container, allItems, {
+                    buildUniformGallery($container, allItems, {
                         tileHeight: fillUniformRowHeight
                     });
 
                     var totalUniformRows = activeColumns > 0 ? Math.ceil(allPhotos.length / activeColumns) : 0;
-                    var isUniformScrollable = totalUniformRows > gridRows;
+                    var isUniformScrollable = totalUniformRows > galleryRows;
                     if (isUniformScrollable) {
                         var rowHeight = fillUniformRowHeight;
 
                         if (!(rowHeight > 0)) {
-                            var $firstThumb = $container.find('.jzsa-grid-thumb').first();
+                            var $firstThumb = $container.find('.jzsa-gallery-thumb').first();
                             rowHeight = $firstThumb.length ? $firstThumb.outerHeight() : 0;
                         }
 
                         if (!rowHeight || rowHeight <= 0) {
-                            var containerWidth = getGridContainerWidth($container);
+                            var containerWidth = getGalleryContainerWidth($container);
                             var cellWidth = (containerWidth - (gap * (activeColumns - 1))) / activeColumns;
                             rowHeight = cellWidth * 0.75; // 4:3 aspect ratio in uniform layout
                         }
 
-                        var visibleUniformHeight = (gridRows * rowHeight) + ((gridRows - 1) * gap);
-                        setGridScrollableState($container, true, visibleUniformHeight);
+                        var visibleUniformHeight = (galleryRows * rowHeight) + ((galleryRows - 1) * gap);
+                        setGalleryScrollableState($container, true, visibleUniformHeight);
 
                         // Second pass: once scrollbar appears, available width can
                         // shrink slightly, which changes thumbnail height. Re-measure
@@ -3660,63 +3668,63 @@
                         // of the next row.
                         var adjustedRowHeight = fillUniformRowHeight;
                         if (!(adjustedRowHeight > 0)) {
-                            var $adjustedThumb = $container.find('.jzsa-grid-thumb').first();
+                            var $adjustedThumb = $container.find('.jzsa-gallery-thumb').first();
                             adjustedRowHeight = $adjustedThumb.length ? $adjustedThumb.outerHeight() : 0;
                         }
                         if (adjustedRowHeight && adjustedRowHeight > 0) {
-                            var adjustedVisibleHeight = (gridRows * adjustedRowHeight) + ((gridRows - 1) * gap) - 1;
-                            setGridScrollableState($container, true, adjustedVisibleHeight);
+                            var adjustedVisibleHeight = (galleryRows * adjustedRowHeight) + ((galleryRows - 1) * gap) - 1;
+                            setGalleryScrollableState($container, true, adjustedVisibleHeight);
                         }
                     } else {
-                        setGridScrollableState($container, false);
+                        setGalleryScrollableState($container, false);
                     }
 
                     paginationState.currentPage = 0;
                     paginationState.totalPages = 1;
-                    removeGridPaginationControls($container);
-                    setGridPaginationHeightState($container, false);
-                    setupGridMouseInteractions($container, {
+                    removeGalleryPaginationControls($container);
+                    setGalleryPaginationHeightState($container, false);
+                    setupGalleryMouseInteractions($container, {
                         enabled: isUniformScrollable,
                         mode: 'scroll'
                     });
                 } else {
-                    setGridScrollableState($container, false);
+                    setGalleryScrollableState($container, false);
 
-                    var photosPerPage = gridRows > 0 ? (gridRows * activeColumns) : allPhotos.length;
+                    var photosPerPage = galleryRows > 0 ? (galleryRows * activeColumns) : allPhotos.length;
                     if (photosPerPage <= 0) {
                         photosPerPage = allPhotos.length > 0 ? allPhotos.length : 1;
                     }
 
                     paginationState.totalPages = allPhotos.length > 0 ? Math.ceil(allPhotos.length / photosPerPage) : 1;
-                    clampGridPage(paginationState);
+                    clampGalleryPage(paginationState);
 
-                    var pageItems = getGridPageItems(allPhotos, paginationState.currentPage, photosPerPage);
-                    var shouldRenderPlaceholders = paginationState.totalPages > 1 && gridRows > 0;
+                    var pageItems = getGalleryPageItems(allPhotos, paginationState.currentPage, photosPerPage);
+                    var shouldRenderPlaceholders = paginationState.totalPages > 1 && galleryRows > 0;
                     var placeholderCount = shouldRenderPlaceholders
                         ? Math.max(0, photosPerPage - pageItems.length)
                         : 0;
                     var pageTileHeight = fillUniformRowHeight;
                     var renderUniformPage = function() {
-                        buildUniformGrid($container, pageItems, {
+                        buildUniformGallery($container, pageItems, {
                             placeholderCount: placeholderCount,
                             tileHeight: pageTileHeight
                         });
                     };
 
                     if (renderOptions.animate) {
-                        animateGridPageTransition($container, renderOptions.direction || 1, renderUniformPage);
+                        animateGalleryPageTransition($container, renderOptions.direction || 1, renderUniformPage);
                     } else {
                         renderUniformPage();
                     }
 
-                    var fixedUniformRows = gridRows > 0 ? gridRows : Math.max(1, Math.ceil(allPhotos.length / activeColumns));
+                    var fixedUniformRows = galleryRows > 0 ? galleryRows : Math.max(1, Math.ceil(allPhotos.length / activeColumns));
                     var fixedUniformRowHeight = pageTileHeight;
                     if (!(fixedUniformRowHeight > 0)) {
-                        var $fixedThumb = $container.find('.jzsa-grid-thumb').first();
+                        var $fixedThumb = $container.find('.jzsa-gallery-thumb').first();
                         fixedUniformRowHeight = $fixedThumb.length ? $fixedThumb.outerHeight() : 0;
                     }
                     if (!fixedUniformRowHeight || fixedUniformRowHeight <= 0) {
-                        var fixedContainerWidth = getGridContainerWidth($container);
+                        var fixedContainerWidth = getGalleryContainerWidth($container);
                         var fixedCellWidth = (fixedContainerWidth - (gap * (activeColumns - 1))) / activeColumns;
                         fixedUniformRowHeight = fixedCellWidth * 0.75; // 4:3 aspect ratio in uniform layout
                     }
@@ -3724,7 +3732,7 @@
                     var fixedUniformHeight =
                         (fixedUniformRows * fixedUniformRowHeight) +
                         ((fixedUniformRows - 1) * gap);
-                    setGridPaginationHeightState(
+                    setGalleryPaginationHeightState(
                         $container,
                         paginationState.totalPages > 1 && fixedUniformRows > 0,
                         fixedUniformHeight
@@ -3732,30 +3740,30 @@
 
                     var onUniformPageChange = function(nextPage, direction) {
                         paginationState.currentPage = nextPage;
-                        renderCurrentGridPage({
+                        renderCurrentGalleryPage({
                             animate: true,
                             direction: direction
                         });
                     };
 
-                    setupGridPaginationControls($container, paginationState, onUniformPageChange, {
+                    setupGalleryPaginationControls($container, paginationState, onUniformPageChange, {
                         showCounter: $container.attr('data-show-counter') !== 'false',
-                        showAutoplayProgress: shouldShowGridAutoplayProgress(),
-                        showAutoplayControls: gridAutoplayEnabled,
+                        showAutoplayProgress: shouldShowGalleryAutoplayProgress(),
+                        showAutoplayControls: galleryAutoplayEnabled,
                         isAutoplayRunning: function() {
-                            return gridAutoplayEnabled && !gridAutoplayPausedByUser;
+                            return galleryAutoplayEnabled && !galleryAutoplayPausedByUser;
                         },
                         onToggleAutoplay: function() {
-                            gridAutoplayPausedByUser = !gridAutoplayPausedByUser;
-                            syncGridAutoplayState();
-                            renderCurrentGridPage();
+                            galleryAutoplayPausedByUser = !galleryAutoplayPausedByUser;
+                            syncGalleryAutoplayState();
+                            renderCurrentGalleryPage();
                         }
                     });
-                    setupGridMouseInteractions($container, {
+                    setupGalleryMouseInteractions($container, {
                         enabled: paginationState.totalPages > 1,
                         mode: 'pagination',
                         onPageSwipe: function(direction) {
-                            if ($container.data('jzsaGridAnimating')) {
+                            if ($container.data('jzsaGalleryAnimating')) {
                                 return;
                             }
 
@@ -3769,7 +3777,7 @@
                             onUniformPageChange(nextPage, direction);
                         },
                         onPageDragStart: function(direction) {
-                            if ($container.data('jzsaGridAnimating')) {
+                            if ($container.data('jzsaGalleryAnimating')) {
                                 return null;
                             }
 
@@ -3781,29 +3789,29 @@
                                 nextPage = 0;
                             }
 
-                            var nextPageItems = getGridPageItems(allPhotos, nextPage, photosPerPage);
+                            var nextPageItems = getGalleryPageItems(allPhotos, nextPage, photosPerPage);
                             var nextPlaceholderCount = shouldRenderPlaceholders
                                 ? Math.max(0, photosPerPage - nextPageItems.length)
                                 : 0;
 
-                            return createGridPageDragTransition(
+                            return createGalleryPageDragTransition(
                                 $container,
                                 direction,
                                 function() {
-                                    buildUniformGrid($container, nextPageItems, {
+                                    buildUniformGallery($container, nextPageItems, {
                                         placeholderCount: nextPlaceholderCount,
                                         tileHeight: pageTileHeight
                                     });
                                 },
                                 function() {
-                                    buildUniformGrid($container, pageItems, {
+                                    buildUniformGallery($container, pageItems, {
                                         placeholderCount: placeholderCount,
                                         tileHeight: pageTileHeight
                                     });
                                 },
                                 function(committed) {
                                     paginationState.currentPage = committed ? nextPage : currentPage;
-                                    renderCurrentGridPage();
+                                    renderCurrentGalleryPage();
                                 }
                             );
                         }
@@ -3811,32 +3819,32 @@
                 }
             }
 
-            watchGridInitialThumbLoad();
-            scheduleGridAutoplay();
+            watchGalleryInitialThumbLoad();
+            scheduleGalleryAutoplay();
         }
 
-        renderCurrentGridPage();
+        renderCurrentGalleryPage();
 
-        // Re-render grid page on resize:
+        // Re-render gallery page on resize:
         // - justified layout depends on container width
         // - uniform layout pagination depends on active breakpoint/column count
-        var resizeNamespace = 'resize.jzsa-grid-' + $container.attr('id');
+        var resizeNamespace = 'resize.jzsa-gallery-' + $container.attr('id');
         $(window).off(resizeNamespace);
         var resizeTimer;
         $(window).on(resizeNamespace, function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
-                renderCurrentGridPage();
+                renderCurrentGalleryPage();
             }, 150);
         });
 
         // Build the fullscreen player and initialize it eagerly (same as
         // player/carousel modes — Swiper is always ready, not lazily created).
-        playerId = buildGridPlayer($container);
+        playerId = buildGalleryPlayer($container);
         $player = $('#' + playerId);
         initializeSwiper($player[0], 'player');
 
-        var fullscreenSyncNamespace = '.jzsaGridFullscreen-' + ($container.attr('id') || 'grid');
+        var fullscreenSyncNamespace = '.jzsaGalleryFullscreen-' + ($container.attr('id') || 'gallery');
         $(document).off(
             'fullscreenchange' + fullscreenSyncNamespace +
             ' webkitfullscreenchange' + fullscreenSyncNamespace +
@@ -3849,7 +3857,7 @@
             ' mozfullscreenchange' + fullscreenSyncNamespace +
             ' MSFullscreenChange' + fullscreenSyncNamespace,
             function() {
-                window.setTimeout(syncGridAutoplayState, 80);
+                window.setTimeout(syncGalleryAutoplayState, 80);
             }
         );
 
@@ -3863,16 +3871,14 @@
             ' dblclick' + fullscreenSyncNamespace +
             ' touchend' + fullscreenSyncNamespace,
             function() {
-                window.setTimeout(syncGridAutoplayState, 80);
+                window.setTimeout(syncGalleryAutoplayState, 80);
             }
         );
 
         var fullScreenSwitch =
-            $container.attr('data-full-screen-toggle') ||
-            $container.attr('data-full-screen-switch') ||
-            'single-click';
+            $container.attr('data-full-screen-toggle') || 'single-click';
 
-        function openGridPlayerAtIndex(index) {
+        function openGalleryPlayerAtIndex(index) {
             var safeIndex = typeof index === 'number' && index >= 0 ? index : 0;
             var swiper = swipers[playerId];
             if (swiper) {
@@ -3882,11 +3888,11 @@
                     swiper.slideTo(safeIndex, 0, false);
                 }
             }
-            clearGridAutoplayTimer();
+            clearGalleryAutoplayTimer();
             toggleFullscreen($player[0]);
         }
 
-        function getGridPhotoIndexFromElement(targetEl) {
+        function getGalleryPhotoIndexFromElement(targetEl) {
             var $target = $(targetEl);
             var direct = parseInt($target.attr('data-index'), 10);
             if (!isNaN(direct) && direct >= 0) {
@@ -3901,62 +3907,62 @@
             return 0;
         }
 
-        function openGridPlayerFromThumb(targetEl) {
-            var index = getGridPhotoIndexFromElement(targetEl);
-            openGridPlayerAtIndex(index);
+        function openGalleryPlayerFromThumb(targetEl) {
+            var index = getGalleryPhotoIndexFromElement(targetEl);
+            openGalleryPlayerAtIndex(index);
         }
 
         if (fullScreenSwitch === 'single-click') {
-            $container.on('click', '.jzsa-grid-thumb', function(e) {
-                if ($container.data('jzsaGridSuppressClick')) {
+            $container.on('click', '.jzsa-gallery-thumb', function(e) {
+                if ($container.data('jzsaGallerySuppressClick')) {
                     return;
                 }
                 e.preventDefault();
-                openGridPlayerFromThumb(this);
+                openGalleryPlayerFromThumb(this);
             });
         } else if (fullScreenSwitch === 'double-click') {
-            $container.on('dblclick', '.jzsa-grid-thumb', function(e) {
+            $container.on('dblclick', '.jzsa-gallery-thumb', function(e) {
                 e.preventDefault();
-                openGridPlayerFromThumb(this);
+                openGalleryPlayerFromThumb(this);
             });
 
             // Mobile/touch fallback for double-click mode.
-            $container.on('touchend', '.jzsa-grid-thumb', function(e) {
-                if ($container.data('jzsaGridSuppressClick')) {
+            $container.on('touchend', '.jzsa-gallery-thumb', function(e) {
+                if ($container.data('jzsaGallerySuppressClick')) {
                     return;
                 }
                 handleDoubleTap(e, function() {
-                    openGridPlayerFromThumb(e.currentTarget || e.target);
+                    openGalleryPlayerFromThumb(e.currentTarget || e.target);
                 });
             });
         }
 
         // Always attach fullscreen button click/keyboard handlers (button is rendered in all modes).
-        $container.on('click', '.jzsa-grid-thumb-fs-btn', function(e) {
+        $container.on('click', '.jzsa-gallery-thumb-fs-btn', function(e) {
             e.preventDefault();
             e.stopPropagation();
-            openGridPlayerFromThumb(this);
+            openGalleryPlayerFromThumb(this);
         });
-        $container.on('keydown', '.jzsa-grid-thumb-fs-btn', function(e) {
+        $container.on('keydown', '.jzsa-gallery-thumb-fs-btn', function(e) {
             if (e.key !== 'Enter' && e.key !== ' ' && e.keyCode !== 13 && e.keyCode !== 32) {
                 return;
             }
             e.preventDefault();
             e.stopPropagation();
-            openGridPlayerFromThumb(this);
+            openGalleryPlayerFromThumb(this);
         });
 
         jzsaDebug(
-            '✅ Grid initialized:',
+            '✅ Gallery initialized:',
             $container.attr('id'),
             '| layout:',
             layout,
             '| photos:',
             allPhotos.length,
             '| rows:',
-            gridRows > 0 ? gridRows : 'all',
+            galleryRows > 0 ? galleryRows : 'all',
             '| scroller:',
-            gridScroller ? 'true' : 'false',
+            galleryScroller ? 'true' : 'false',
             '| pages:',
             paginationState.totalPages
         );
@@ -3967,7 +3973,7 @@
     // ============================================================================
 
     function initializeAllGalleries() {
-        $('.jzsa-album').not('.jzsa-grid-player, .jzsa-grid-controls').each(function(index) {
+        $('.jzsa-album').not('.jzsa-gallery-player, .jzsa-gallery-controls').each(function(index) {
             var $gallery = $(this);
 
             // Generate unique ID if not present
@@ -3979,8 +3985,8 @@
             var mode = $gallery.attr('data-mode') || 'player';
 
             // Dispatch to the correct initializer
-            if (mode === 'grid') {
-                initializeGrid(this);
+            if (mode === 'gallery') {
+                initializeGallery(this);
             } else {
                 initializeSwiper(this, mode);
             }
@@ -4002,7 +4008,7 @@
     window.SharedGooglePhotos = {
         swipers: swipers,
         initialize: initializeSwiper,
-        initializeGrid: initializeGrid,
+        initializeGallery: initializeGallery,
         reinitialize: initializeAllGalleries
     };
 

@@ -199,7 +199,6 @@ class JZSA_Shared_Albums {
 			'jzsaAjax',
 			array(
 				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-				'nonce'        => $download_nonce, // kept for backward compatibility
 				'downloadNonce'=> $download_nonce,
 				'previewNonce' => $preview_nonce,
 			)
@@ -360,15 +359,15 @@ class JZSA_Shared_Albums {
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
 
-			// Grid mode
-			'grid-layout'         => $this->parse_grid_layout( $atts ),
-			'grid-sizing-model'   => $this->parse_grid_sizing_model( $atts ),
-			'grid-columns'        => $this->parse_grid_int( $atts, 'grid-columns', 3 ),
-			'grid-columns-tablet' => $this->parse_grid_int( $atts, 'grid-columns-tablet', 2 ),
-			'grid-columns-mobile' => $this->parse_grid_int( $atts, 'grid-columns-mobile', 1 ),
-			'grid-row-height'     => $this->parse_grid_row_height( $atts ),
-			'grid-rows'           => $this->parse_grid_rows( $atts ),
-			'grid-scroller'       => $this->parse_bool( $atts, 'grid-scroller', false ),
+			// Gallery mode (thumbnail layout)
+			'gallery-layout'         => $this->parse_gallery_layout( $atts ),
+			'gallery-sizing-model'   => $this->parse_gallery_sizing_model( $atts ),
+			'gallery-columns'        => $this->parse_gallery_int( $atts, 'gallery-columns', 3 ),
+			'gallery-columns-tablet' => $this->parse_gallery_int( $atts, 'gallery-columns-tablet', 2 ),
+			'gallery-columns-mobile' => $this->parse_gallery_int( $atts, 'gallery-columns-mobile', 1 ),
+			'gallery-row-height'     => $this->parse_gallery_row_height( $atts ),
+			'gallery-rows'           => $this->parse_gallery_rows( $atts ),
+			'gallery-scroller'       => $this->parse_bool( $atts, 'gallery-scroller', false ),
 		);
 
 		return $config;
@@ -430,8 +429,7 @@ class JZSA_Shared_Albums {
 	/**
 	 * Parse starting slide position.
 	 *
-	 * New parameter: start-at="random" (default) or a 1-based slide number.
-	 * Legacy support: legacy boolean flag mapping to "random" or "1".
+	 * Parameter: start-at="random" (default) or a 1-based slide number.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return string "random" or a numeric string >= 1
@@ -454,12 +452,6 @@ class JZSA_Shared_Albums {
 
 			// Fallback to random on invalid input.
 			return 'random';
-		}
-
-		// Backward compatibility: interpret legacy boolean flag.
-		if ( isset( $atts['start-at-random-photo'] ) ) {
-			$random_flag = $this->parse_bool( $atts, 'start-at-random-photo', true );
-			return $random_flag ? 'random' : '1';
 		}
 
 		// Default.
@@ -553,39 +545,39 @@ class JZSA_Shared_Albums {
 	 * Parse mode attribute
 	 *
 	 * @param array $atts Attributes
-	 * @return string Mode: 'carousel', 'single', or 'grid'
+	 * @return string Mode: 'carousel', 'single', or 'gallery'
 	 */
 	private function parse_mode( $atts ) {
 		if ( ! isset( $atts['mode'] ) ) {
-			// Default to 'single'
-			return 'single';
+			// Default to 'gallery'
+			return 'gallery';
 		}
 
 		$mode = strtolower( trim( $atts['mode'] ) );
 
-		// Valid modes: 'carousel', 'single', 'grid'
-		$valid_modes = array( 'carousel', 'single', 'grid' );
+		// Valid modes: 'carousel', 'single', 'gallery'
+		$valid_modes = array( 'carousel', 'single', 'gallery' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;
 		}
 
 		// Default fallback
-		return 'single';
+		return 'gallery';
 	}
 
 	/**
-	 * Parse grid-layout attribute.
+	 * Parse gallery-layout attribute.
 	 *
 	 * @param array $atts Attributes.
 	 * @return string 'uniform' or 'justified'
 	 */
-	private function parse_grid_layout( $atts ) {
-		if ( ! isset( $atts['grid-layout'] ) ) {
+	private function parse_gallery_layout( $atts ) {
+		if ( ! isset( $atts['gallery-layout'] ) ) {
 			return 'uniform';
 		}
 
-		$value = strtolower( trim( $atts['grid-layout'] ) );
+		$value = strtolower( trim( $atts['gallery-layout'] ) );
 
 		if ( in_array( $value, array( 'uniform', 'justified' ), true ) ) {
 			return $value;
@@ -595,17 +587,17 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse grid-sizing-model attribute.
+	 * Parse gallery-sizing-model attribute.
 	 *
 	 * @param array $atts Attributes.
 	 * @return string 'ratio' or 'fill'
 	 */
-	private function parse_grid_sizing_model( $atts ) {
-		if ( ! isset( $atts['grid-sizing-model'] ) ) {
+	private function parse_gallery_sizing_model( $atts ) {
+		if ( ! isset( $atts['gallery-sizing-model'] ) ) {
 			return 'ratio';
 		}
 
-		$value = strtolower( trim( $atts['grid-sizing-model'] ) );
+		$value = strtolower( trim( $atts['gallery-sizing-model'] ) );
 
 		if ( in_array( $value, array( 'ratio', 'fill' ), true ) ) {
 			return $value;
@@ -615,14 +607,14 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse an integer grid column/row count attribute.
+	 * Parse an integer gallery column/row count attribute.
 	 *
 	 * @param array  $atts    Attributes.
-	 * @param string $key     Attribute key.
+	 * @param string $key     Canonical key.
 	 * @param int    $default Default value.
 	 * @return int
 	 */
-	private function parse_grid_int( $atts, $key, $default ) {
+	private function parse_gallery_int( $atts, $key, $default ) {
 		if ( ! isset( $atts[ $key ] ) ) {
 			return $default;
 		}
@@ -633,36 +625,36 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse grid-row-height attribute (pixels, 50–800).
+	 * Parse gallery-row-height attribute (pixels, 50–800).
 	 *
 	 * @param array $atts Attributes.
 	 * @return int
 	 */
-	private function parse_grid_row_height( $atts ) {
-		if ( ! isset( $atts['grid-row-height'] ) ) {
+	private function parse_gallery_row_height( $atts ) {
+		if ( ! isset( $atts['gallery-row-height'] ) ) {
 			return 200;
 		}
 
-		$value = intval( $atts['grid-row-height'] );
+		$value = intval( $atts['gallery-row-height'] );
 
 		return ( $value >= 50 && $value <= 800 ) ? $value : 200;
 	}
 
 	/**
-	 * Parse grid-rows attribute.
+	 * Parse gallery-rows attribute.
 	 *
-	 * Controls how many grid rows are shown per page.
+	 * Controls how many gallery rows are shown per page.
 	 * Use 0 (or omit) to show all rows on one page.
 	 *
 	 * @param array $atts Attributes.
 	 * @return int
 	 */
-	private function parse_grid_rows( $atts ) {
-		if ( ! isset( $atts['grid-rows'] ) ) {
+	private function parse_gallery_rows( $atts ) {
+		if ( ! isset( $atts['gallery-rows'] ) ) {
 			return 0;
 		}
 
-		$value = intval( $atts['grid-rows'] );
+		$value = intval( $atts['gallery-rows'] );
 
 		if ( $value <= 0 ) {
 			return 0;
@@ -678,26 +670,16 @@ class JZSA_Shared_Albums {
 	/**
 	 * Parse full screen toggle mode attribute.
 	 *
-	 * Backward compatibility: accept legacy full-screen-switch too.
-	 *
 	 * @param array $atts Attributes
 	 * @return string Full screen toggle mode: 'button-only', 'single-click', or 'double-click'
 	 */
 	private function parse_fullscreen_toggle_mode( $atts ) {
-		$raw_mode = null;
-
-		if ( isset( $atts['full-screen-toggle'] ) ) {
-			$raw_mode = $atts['full-screen-toggle'];
-		} elseif ( isset( $atts['full-screen-switch'] ) ) {
-			$raw_mode = $atts['full-screen-switch'];
-		}
-
-		if ( null === $raw_mode ) {
+		if ( ! isset( $atts['full-screen-toggle'] ) ) {
 			// Default to 'single-click'
 			return 'single-click';
 		}
 
-		$mode = strtolower( trim( (string) $raw_mode ) );
+		$mode = strtolower( trim( (string) $atts['full-screen-toggle'] ) );
 
 		// Valid modes: 'single-click', 'double-click', 'button-only'
 		$valid_modes = array( 'single-click', 'double-click', 'button-only' );

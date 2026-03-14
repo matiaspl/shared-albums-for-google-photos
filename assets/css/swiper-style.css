@@ -659,7 +659,7 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-prev,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-next,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-pagination,
-.jzsa-album.jzsa-fullscreen-waiting .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.jzsa-fullscreen-waiting .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-play-pause,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-download,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-external-link,
@@ -675,7 +675,7 @@ body.jzsa-no-scroll {
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-prev,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-next,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-pagination,
-.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-play-pause,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-download,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-external-link,
@@ -695,7 +695,7 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-loader-pending .swiper-button-prev,
 .jzsa-album.jzsa-loader-pending .swiper-button-next,
 .jzsa-album.jzsa-loader-pending .swiper-pagination,
-.jzsa-album.jzsa-loader-pending .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.jzsa-loader-pending .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
 .jzsa-album.jzsa-loader-pending .swiper-button-play-pause,
 .jzsa-album.jzsa-loader-pending .swiper-button-download,
 .jzsa-album.jzsa-loader-pending .swiper-button-external-link,
@@ -709,7 +709,7 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-loaded .swiper-button-prev,
 .jzsa-album.jzsa-loaded .swiper-button-next,
 .jzsa-album.jzsa-loaded .swiper-pagination,
-.jzsa-album.jzsa-loaded .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+.jzsa-album.jzsa-loaded .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
 .jzsa-album.jzsa-loaded .swiper-button-play-pause,
 .jzsa-album.jzsa-loaded .swiper-button-download,
 .jzsa-album.jzsa-loaded .swiper-button-external-link,
@@ -718,22 +718,22 @@ body.jzsa-no-scroll {
     animation: jzsa-controls-fade-in-soft 1000ms ease-out both;
 }
 
-/* Grid controls live in a sibling overlay shell; hide them while the grid is pending. */
-.jzsa-grid-shell > .jzsa-grid-album.jzsa-loader-pending ~ .jzsa-grid-controls {
+/* Gallery controls live in a sibling overlay shell; hide them while content is pending. */
+.jzsa-gallery-shell > .jzsa-gallery-album.jzsa-loader-pending ~ .jzsa-gallery-controls {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     animation: none;
 }
 
-.jzsa-grid-shell > .jzsa-grid-album:not(.jzsa-loaded) ~ .jzsa-grid-controls {
+.jzsa-gallery-shell > .jzsa-gallery-album:not(.jzsa-loaded) ~ .jzsa-gallery-controls {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
     animation: none;
 }
 
-.jzsa-grid-shell > .jzsa-grid-album.jzsa-loaded ~ .jzsa-grid-controls {
+.jzsa-gallery-shell > .jzsa-gallery-album.jzsa-loaded ~ .jzsa-gallery-controls {
     visibility: visible;
     animation: jzsa-controls-fade-in 1000ms ease-out both;
 }
@@ -814,52 +814,52 @@ body.jzsa-no-scroll {
 }
 
 /* ============================================================================
-   Grid mode
+   Gallery mode
    ============================================================================ */
 
-/* Grid container: reset swiper height so the grid grows with its content */
-.jzsa-grid-album {
+/* Gallery container: reset swiper height so it grows with its content */
+.jzsa-gallery-album {
     height: auto;
     background-color: var(--gallery-bg-color, #FFFFFF);
     position: static;
 }
 
-.jzsa-grid-album.jzsa-grid-loading {
+.jzsa-gallery-album.jzsa-gallery-loading {
     min-height: 140px;
 }
 
-.jzsa-grid-album.jzsa-grid-loading .jzsa-loader {
+.jzsa-gallery-album.jzsa-gallery-loading .jzsa-loader {
     background: radial-gradient(circle at top, rgba(255, 255, 255, 0.12), rgba(0, 0, 0, 0.58));
 }
 
-/* Uniform grid layout */
-.jzsa-grid-album[data-grid-layout="uniform"] {
+/* Uniform gallery layout */
+.jzsa-gallery-album[data-gallery-layout="uniform"] {
     display: grid;
-    grid-template-columns: repeat(var(--jzsa-grid-columns, 3), 1fr);
+    grid-template-columns: repeat(var(--jzsa-gallery-columns, 3), 1fr);
     gap: 4px;
     align-content: start;
 }
 
 @media (max-width: 768px) {
-    .jzsa-grid-album[data-grid-layout="uniform"] {
-        grid-template-columns: repeat(var(--jzsa-grid-columns-tablet, 2), 1fr);
+    .jzsa-gallery-album[data-gallery-layout="uniform"] {
+        grid-template-columns: repeat(var(--jzsa-gallery-columns-tablet, 2), 1fr);
     }
 }
 
 @media (max-width: 480px) {
-    .jzsa-grid-album[data-grid-layout="uniform"] {
-        grid-template-columns: repeat(var(--jzsa-grid-columns-mobile, 1), 1fr);
+    .jzsa-gallery-album[data-gallery-layout="uniform"] {
+        grid-template-columns: repeat(var(--jzsa-gallery-columns-mobile, 1), 1fr);
     }
 }
 
-.jzsa-grid-album[data-grid-layout="uniform"] .jzsa-grid-thumb {
+.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-thumb {
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
     display: block;
 }
 
-.jzsa-grid-album[data-grid-layout="uniform"] .jzsa-grid-placeholder {
+.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-placeholder {
     width: 100%;
     aspect-ratio: 4 / 3;
     display: block;
@@ -871,57 +871,57 @@ body.jzsa-no-scroll {
     user-select: none;
 }
 
-.jzsa-grid-album[data-grid-layout="uniform"] .jzsa-grid-tile-fill {
+.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-tile-fill {
     aspect-ratio: auto;
 }
-.jzsa-grid-album[data-grid-layout="uniform"][data-image-fit="contain"] .jzsa-grid-thumb {
+.jzsa-gallery-album[data-gallery-layout="uniform"][data-image-fit="contain"] .jzsa-gallery-thumb {
     object-fit: contain;
 }
-.jzsa-grid-album[data-grid-layout="uniform"][data-image-fit="stretch"] .jzsa-grid-thumb {
+.jzsa-gallery-album[data-gallery-layout="uniform"][data-image-fit="stretch"] .jzsa-gallery-thumb {
     object-fit: fill;
 }
 
-/* Justified grid layout */
-.jzsa-grid-album[data-grid-layout="justified"] .jzsa-justified-row {
+/* Justified gallery layout */
+.jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-justified-row {
     display: flex;
     gap: 4px;
     margin-bottom: 4px;
     overflow: hidden;
 }
 
-.jzsa-grid-album[data-grid-layout="justified"] .jzsa-justified-row:last-child {
+.jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-justified-row:last-child {
     margin-bottom: 0;
 }
 
-.jzsa-grid-album[data-grid-layout="justified"] .jzsa-grid-thumb {
+.jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-gallery-thumb {
     object-fit: cover;
     flex-shrink: 0;
     display: block;
 }
-.jzsa-grid-album[data-grid-layout="justified"][data-image-fit="contain"] .jzsa-grid-thumb {
+.jzsa-gallery-album[data-gallery-layout="justified"][data-image-fit="contain"] .jzsa-gallery-thumb {
     object-fit: contain;
 }
-.jzsa-grid-album[data-grid-layout="justified"][data-image-fit="stretch"] .jzsa-grid-thumb {
+.jzsa-gallery-album[data-gallery-layout="justified"][data-image-fit="stretch"] .jzsa-gallery-thumb {
     object-fit: fill;
 }
 
 /* Shared thumbnail hover */
-.jzsa-grid-thumb {
+.jzsa-gallery-thumb {
     cursor: pointer;
     transition: opacity 0.15s ease;
     -webkit-user-drag: none;
     user-select: none;
 }
 
-.jzsa-grid-thumb:hover {
+.jzsa-gallery-thumb:hover {
     opacity: 0.85;
 }
 
-.jzsa-grid-item {
+.jzsa-gallery-item {
     position: relative;
 }
 
-.jzsa-grid-item .jzsa-grid-thumb-fs-btn {
+.jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
     position: absolute;
     top: 8px;
     right: 8px;
@@ -932,72 +932,71 @@ body.jzsa-no-scroll {
                 opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
 }
 
-.jzsa-grid-album .jzsa-grid-item:hover .jzsa-grid-thumb-fs-btn,
-.jzsa-grid-album .jzsa-grid-item:focus-within .jzsa-grid-thumb-fs-btn {
+.jzsa-gallery-album .jzsa-gallery-item:hover .jzsa-gallery-thumb-fs-btn,
+.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-gallery-thumb-fs-btn {
     opacity: var(--jzsa-controls-visible-opacity);
     pointer-events: auto;
 }
 
 @media (hover: none) {
-    .jzsa-grid-album[data-full-screen-toggle="button-only"] .jzsa-grid-item .jzsa-grid-thumb-fs-btn,
-    .jzsa-grid-album[data-full-screen-switch="button-only"] .jzsa-grid-item .jzsa-grid-thumb-fs-btn {
+    .jzsa-gallery-album[data-full-screen-toggle="button-only"] .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
 }
 
-.jzsa-grid-album.jzsa-grid-draggable {
+.jzsa-gallery-album.jzsa-gallery-draggable {
     cursor: grab;
     user-select: none;
 }
 
-.jzsa-grid-shell.jzsa-grid-draggable {
+.jzsa-gallery-shell.jzsa-gallery-draggable {
     cursor: grab;
 }
 
-.jzsa-grid-album.jzsa-grid-draggable .jzsa-grid-thumb {
+.jzsa-gallery-album.jzsa-gallery-draggable .jzsa-gallery-thumb {
     cursor: inherit;
 }
 
-.jzsa-grid-album.jzsa-grid-draggable.jzsa-grid-grabbing {
+.jzsa-gallery-album.jzsa-gallery-draggable.jzsa-gallery-grabbing {
     cursor: grabbing;
 }
 
-.jzsa-grid-shell.jzsa-grid-draggable.jzsa-grid-grabbing {
+.jzsa-gallery-shell.jzsa-gallery-draggable.jzsa-gallery-grabbing {
     cursor: grabbing;
 }
 
-.jzsa-grid-album.jzsa-grid-draggable.jzsa-grid-grabbing .jzsa-grid-thumb {
+.jzsa-gallery-album.jzsa-gallery-draggable.jzsa-gallery-grabbing .jzsa-gallery-thumb {
     cursor: inherit;
 }
 
-.jzsa-grid-shell.jzsa-grid-draggable .jzsa-grid-slide-stage,
-.jzsa-grid-shell.jzsa-grid-draggable .jzsa-grid-slide-track,
-.jzsa-grid-shell.jzsa-grid-draggable .jzsa-grid-slide-panel {
+.jzsa-gallery-shell.jzsa-gallery-draggable .jzsa-gallery-slide-stage,
+.jzsa-gallery-shell.jzsa-gallery-draggable .jzsa-gallery-slide-track,
+.jzsa-gallery-shell.jzsa-gallery-draggable .jzsa-gallery-slide-panel {
     cursor: inherit;
 }
 
-.jzsa-grid-album.jzsa-grid-scrollable {
+.jzsa-gallery-album.jzsa-gallery-scrollable {
     overflow-y: auto;
     overscroll-behavior: contain;
     -webkit-overflow-scrolling: touch;
     scrollbar-gutter: stable;
 }
 
-/* Grid pagination controls (uses existing Swiper-style controls) */
-.jzsa-grid-shell {
+/* Gallery pagination controls (uses existing Swiper-style controls) */
+.jzsa-gallery-shell {
     position: relative;
 }
 
-.jzsa-grid-shell.jzsa-grid-shell-bounded {
+.jzsa-gallery-shell.jzsa-gallery-shell-bounded {
     overflow: hidden;
 }
 
-.jzsa-grid-shell.jzsa-grid-transitioning {
+.jzsa-gallery-shell.jzsa-gallery-transitioning {
     overflow: hidden;
 }
 
-.jzsa-grid-controls {
+.jzsa-gallery-controls {
     position: absolute;
     inset: 0;
     z-index: 20;
@@ -1005,15 +1004,15 @@ body.jzsa-no-scroll {
     pointer-events: none;
 }
 
-.jzsa-grid-controls .swiper-button-prev,
-.jzsa-grid-controls .swiper-button-next {
+.jzsa-gallery-controls .swiper-button-prev,
+.jzsa-gallery-controls .swiper-button-next {
     margin-top: 0;
     top: 50%;
     transform: translateY(-50%);
     pointer-events: auto;
 }
 
-.jzsa-grid-controls .swiper-pagination {
+.jzsa-gallery-controls .swiper-pagination {
     top: auto;
     bottom: 10px;
     left: 10px;
@@ -1025,64 +1024,64 @@ body.jzsa-no-scroll {
     opacity: var(--jzsa-controls-visible-opacity);
 }
 
-.jzsa-grid-controls .swiper-button-fullscreen {
+.jzsa-gallery-controls .swiper-button-fullscreen {
     pointer-events: auto;
 }
 
-.jzsa-grid-controls .swiper-button-play-pause {
+.jzsa-gallery-controls .swiper-button-play-pause {
     width: var(--jzsa-controls-circle-size);
     height: var(--jzsa-controls-circle-size);
     bottom: 40px;
     pointer-events: none;
 }
 
-.jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+.jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
     display: flex;
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .jzsa-grid-controls .swiper-button-prev,
-    .jzsa-grid-controls .swiper-button-next,
-    .jzsa-grid-controls .swiper-button-fullscreen {
+    .jzsa-gallery-controls .swiper-button-prev,
+    .jzsa-gallery-controls .swiper-button-next,
+    .jzsa-gallery-controls .swiper-button-fullscreen {
         opacity: 0;
         pointer-events: none;
     }
 
-    .jzsa-grid-shell:hover .jzsa-grid-controls .swiper-button-prev,
-    .jzsa-grid-shell:hover .jzsa-grid-controls .swiper-button-next,
-    .jzsa-grid-shell:hover .jzsa-grid-controls .swiper-button-fullscreen,
-    .jzsa-grid-shell:focus-within .jzsa-grid-controls .swiper-button-prev,
-    .jzsa-grid-shell:focus-within .jzsa-grid-controls .swiper-button-next,
-    .jzsa-grid-shell:focus-within .jzsa-grid-controls .swiper-button-fullscreen {
+    .jzsa-gallery-shell:hover .jzsa-gallery-controls .swiper-button-prev,
+    .jzsa-gallery-shell:hover .jzsa-gallery-controls .swiper-button-next,
+    .jzsa-gallery-shell:hover .jzsa-gallery-controls .swiper-button-fullscreen,
+    .jzsa-gallery-shell:focus-within .jzsa-gallery-controls .swiper-button-prev,
+    .jzsa-gallery-shell:focus-within .jzsa-gallery-controls .swiper-button-next,
+    .jzsa-gallery-shell:focus-within .jzsa-gallery-controls .swiper-button-fullscreen {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
 
-    .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+    .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
         opacity: 0;
         pointer-events: none;
     }
 
-    .jzsa-grid-shell:hover .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause,
-    .jzsa-grid-shell:focus-within .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+    .jzsa-gallery-shell:hover .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause,
+    .jzsa-gallery-shell:focus-within .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
 }
 
 @media (hover: none), (pointer: coarse) {
-    .jzsa-grid-controls.jzsa-grid-autoplay-enabled .swiper-button-play-pause {
+    .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
         display: none;
         opacity: 0;
         pointer-events: none;
     }
 }
 
-/* Single mode (desktop): hide primary controls until hover/focus, matching grid UX. */
+/* Single mode (desktop): hide primary controls until hover/focus, matching gallery UX. */
 @media (hover: hover) and (pointer: fine) {
     .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-prev,
     .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-next,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
     .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-play-pause {
         opacity: 0;
         pointer-events: none;
@@ -1091,18 +1090,18 @@ body.jzsa-no-scroll {
 
     .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-prev,
     .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-next,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
     .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .swiper-button-play-pause,
     .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-prev,
     .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-next,
-    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-fullscreen:not(.jzsa-grid-thumb-fs-btn),
+    .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
     .jzsa-album[data-mode="single"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .swiper-button-play-pause {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
 }
 
-.jzsa-grid-slide-stage {
+.jzsa-gallery-slide-stage {
     position: absolute;
     top: 0;
     left: 0;
@@ -1113,45 +1112,45 @@ body.jzsa-no-scroll {
     z-index: 15;
 }
 
-.jzsa-grid-slide-track {
+.jzsa-gallery-slide-track {
     display: flex;
     width: 200%;
     transition: transform 0.6s ease;
 }
 
-.jzsa-grid-slide-panel {
+.jzsa-gallery-slide-panel {
     flex: 0 0 50%;
     max-width: 50%;
     overflow: hidden;
 }
 
-.jzsa-grid-slide-panel .jzsa-justified-row:last-child {
+.jzsa-gallery-slide-panel .jzsa-justified-row:last-child {
     margin-bottom: 0;
 }
 
-.jzsa-grid-slide-panel .jzsa-grid-thumb {
+.jzsa-gallery-slide-panel .jzsa-gallery-thumb {
     display: block;
 }
 
-.jzsa-grid-slide-panel .jzsa-grid-thumb:hover {
+.jzsa-gallery-slide-panel .jzsa-gallery-thumb:hover {
     opacity: 1;
 }
 
-.jzsa-grid-slide-panel .jzsa-grid-thumb,
-.jzsa-grid-slide-panel .jzsa-justified-row,
-.jzsa-grid-slide-panel img {
+.jzsa-gallery-slide-panel .jzsa-gallery-thumb,
+.jzsa-gallery-slide-panel .jzsa-justified-row,
+.jzsa-gallery-slide-panel img {
     pointer-events: none;
 }
 
 /* ============================================================================
-   Grid fullscreen player (hidden until fullscreen is entered)
+   Gallery fullscreen player (hidden until fullscreen is entered)
    ============================================================================ */
 
-/* Grid fullscreen player: rendered off-screen at viewport size so Swiper can
+/* Gallery fullscreen player: rendered off-screen at viewport size so Swiper can
    measure dimensions during init. The existing .jzsa-album:fullscreen and
    .jzsa-album.jzsa-pseudo-fullscreen CSS handles the rest — exactly the same
-   mechanism used by player/carousel/grid modes. */
-.jzsa-grid-player {
+   mechanism used by player/carousel/gallery modes. */
+.jzsa-gallery-player {
     position: fixed;
     left: -200vw;
     width: 100vw;

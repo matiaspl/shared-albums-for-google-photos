@@ -33,9 +33,9 @@ class JZSA_Renderer {
 			$html .= $this->render_deprecation_notice();
 		}
 
-		// Grid mode: plain thumbnail grid, no Swiper structure
-		if ( 'grid' === $config['mode'] ) {
-			$html .= $this->build_grid_container( $gallery_id, $config );
+		// Gallery mode: plain thumbnail gallery, no Swiper structure
+		if ( 'gallery' === $config['mode'] ) {
+			$html .= $this->build_thumbnail_gallery_container( $gallery_id, $config );
 			return $html;
 		}
 
@@ -248,14 +248,14 @@ class JZSA_Renderer {
 	}
 
 	/**
-	 * Build grid gallery container HTML (no Swiper — plain thumbnail grid).
+	 * Build gallery-mode container HTML (no Swiper — plain thumbnail gallery).
 	 * Thumbnails and layout are rendered by JS after page load.
 	 *
 	 * @param string $gallery_id Gallery ID.
 	 * @param array  $config     Configuration.
 	 * @return string HTML.
 	 */
-	private function build_grid_container( $gallery_id, $config ) {
+	private function build_thumbnail_gallery_container( $gallery_id, $config ) {
 		$attrs = array();
 
 		if ( ! empty( $config['photos'] ) ) {
@@ -263,20 +263,32 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-total-count="%d"', count( $config['photos'] ) );
 		}
 
-		$attrs[] = 'data-mode="grid"';
-		$attrs[] = sprintf( 'data-grid-layout="%s"', esc_attr( $config['grid-layout'] ) );
-		$attrs[] = sprintf( 'data-grid-sizing-model="%s"', esc_attr( $config['grid-sizing-model'] ) );
-		$attrs[] = sprintf( 'data-grid-columns="%d"', intval( $config['grid-columns'] ) );
-		$attrs[] = sprintf( 'data-grid-columns-tablet="%d"', intval( $config['grid-columns-tablet'] ) );
-		$attrs[] = sprintf( 'data-grid-columns-mobile="%d"', intval( $config['grid-columns-mobile'] ) );
-		$attrs[] = sprintf( 'data-grid-row-height="%d"', intval( $config['grid-row-height'] ) );
-		$attrs[] = sprintf( 'data-grid-rows="%d"', intval( $config['grid-rows'] ) );
-		$attrs[] = sprintf( 'data-grid-scroller="%s"', ! empty( $config['grid-scroller'] ) ? 'true' : 'false' );
+		$gallery_layout       = isset( $config['gallery-layout'] ) ? $config['gallery-layout'] : 'uniform';
+		$gallery_sizing_model = isset( $config['gallery-sizing-model'] ) ? $config['gallery-sizing-model'] : 'ratio';
+		$gallery_columns      = isset( $config['gallery-columns'] ) ? intval( $config['gallery-columns'] ) : 3;
+		$gallery_columns_t    = isset( $config['gallery-columns-tablet'] ) ? intval( $config['gallery-columns-tablet'] ) : 2;
+		$gallery_columns_m    = isset( $config['gallery-columns-mobile'] ) ? intval( $config['gallery-columns-mobile'] ) : 1;
+		$gallery_row_height   = isset( $config['gallery-row-height'] ) ? intval( $config['gallery-row-height'] ) : 200;
+		$gallery_rows         = isset( $config['gallery-rows'] ) ? intval( $config['gallery-rows'] ) : 0;
+		$gallery_scroller     = ! empty( $config['gallery-scroller'] );
+
+		$attrs[] = 'data-mode="gallery"';
+
+		// Canonical gallery-* attributes.
+		$attrs[] = sprintf( 'data-gallery-layout="%s"', esc_attr( $gallery_layout ) );
+		$attrs[] = sprintf( 'data-gallery-sizing-model="%s"', esc_attr( $gallery_sizing_model ) );
+		$attrs[] = sprintf( 'data-gallery-columns="%d"', $gallery_columns );
+		$attrs[] = sprintf( 'data-gallery-columns-tablet="%d"', $gallery_columns_t );
+		$attrs[] = sprintf( 'data-gallery-columns-mobile="%d"', $gallery_columns_m );
+		$attrs[] = sprintf( 'data-gallery-row-height="%d"', $gallery_row_height );
+		$attrs[] = sprintf( 'data-gallery-rows="%d"', $gallery_rows );
+		$attrs[] = sprintf( 'data-gallery-scroller="%s"', $gallery_scroller ? 'true' : 'false' );
+
 		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
-			$attrs[] = sprintf( 'data-grid-explicit-width="%d"', intval( $config['width'] ) );
+			$attrs[] = sprintf( 'data-gallery-explicit-width="%d"', intval( $config['width'] ) );
 		}
 		if ( ! empty( $config['height-explicit'] ) && isset( $config['height'] ) && $config['height'] !== 'auto' ) {
-			$attrs[] = sprintf( 'data-grid-explicit-height="%d"', intval( $config['height'] ) );
+			$attrs[] = sprintf( 'data-gallery-explicit-height="%d"', intval( $config['height'] ) );
 		}
 
 		if ( isset( $config['autoplay'] ) ) {
@@ -295,7 +307,7 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-album-title="%s"', esc_attr( $config['album-title'] ) );
 		}
 
-		// Fullscreen player settings (grid click opens fullscreen with full player experience)
+		// Fullscreen player settings (gallery click opens fullscreen with full player experience)
 		$player_booleans = array(
 			'full-screen-autoplay' => 'data-full-screen-autoplay',
 			'show-title'           => 'data-show-title',
@@ -333,7 +345,7 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-background-color="%s"', esc_attr( $config['background-color'] ) );
 		}
 
-		// Grid should keep its traditional responsive sizing unless width/height
+		// Gallery mode should keep responsive sizing unless width/height
 		// were explicitly provided in shortcode.
 		$styles = array();
 		if ( ! empty( $config['background-color'] ) && $config['background-color'] !== 'transparent' ) {
@@ -348,7 +360,7 @@ class JZSA_Renderer {
 		$style_attr = ! empty( $styles ) ? sprintf( ' style="%s"', esc_attr( implode( '; ', $styles ) ) ) : '';
 
 		return sprintf(
-			'<div id="%s" class="jzsa-album jzsa-grid-album jzsa-loader-pending jzsa-grid-loading jzsa-content-intro" %s%s></div>',
+			'<div id="%s" class="jzsa-album jzsa-gallery-album jzsa-loader-pending jzsa-gallery-loading jzsa-content-intro" %s%s></div>',
 			esc_attr( $gallery_id ),
 			implode( ' ', $attrs ),
 			$style_attr
