@@ -3228,7 +3228,7 @@
 
         var requestedGalleryRows = parseInt(readGalleryAttr($container, 'rows'), 10);
         var galleryRows = (!isNaN(requestedGalleryRows) && requestedGalleryRows > 0) ? requestedGalleryRows : 0;
-        var galleryScroller = readGalleryAttr($container, 'scroller') === 'true';
+        var galleryScroll = readGalleryAttr($container, 'scroll') === 'true';
         var requestedGallerySizingModel = (readGalleryAttr($container, 'sizing-model') || 'ratio').toLowerCase();
         var gallerySizingModel = requestedGallerySizingModel === 'fill' ? 'fill' : 'ratio';
         var galleryAutoplayEnabled = $container.attr('data-autoplay') === 'true';
@@ -3345,7 +3345,7 @@
         }
 
         function shouldShowGalleryAutoplayProgress() {
-            var useScroller = galleryScroller && galleryRows > 0;
+            var useScroller = galleryScroll && galleryRows > 0;
             return galleryAutoplayEnabled && !galleryAutoplayPausedByUser && !useScroller && paginationState.totalPages > 1;
         }
 
@@ -3470,7 +3470,7 @@
 
         function renderCurrentGalleryPage(options) {
             var renderOptions = options || {};
-            var useScroller = galleryScroller && galleryRows > 0;
+            var useScroller = galleryScroll && galleryRows > 0;
             var gap = 4;
 
             if (layout === 'justified') {
@@ -3961,8 +3961,8 @@
             allPhotos.length,
             '| rows:',
             galleryRows > 0 ? galleryRows : 'all',
-            '| scroller:',
-            galleryScroller ? 'true' : 'false',
+            '| scroll:',
+            galleryScroll ? 'true' : 'false',
             '| pages:',
             paginationState.totalPages
         );

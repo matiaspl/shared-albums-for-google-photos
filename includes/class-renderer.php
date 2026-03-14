@@ -270,7 +270,7 @@ class JZSA_Renderer {
 		$gallery_columns_m    = isset( $config['gallery-columns-mobile'] ) ? intval( $config['gallery-columns-mobile'] ) : 1;
 		$gallery_row_height   = isset( $config['gallery-row-height'] ) ? intval( $config['gallery-row-height'] ) : 200;
 		$gallery_rows         = isset( $config['gallery-rows'] ) ? intval( $config['gallery-rows'] ) : 0;
-		$gallery_scroller     = ! empty( $config['gallery-scroller'] );
+		$gallery_scroll       = ! empty( $config['gallery-scroll'] );
 
 		$attrs[] = 'data-mode="gallery"';
 
@@ -282,7 +282,7 @@ class JZSA_Renderer {
 		$attrs[] = sprintf( 'data-gallery-columns-mobile="%d"', $gallery_columns_m );
 		$attrs[] = sprintf( 'data-gallery-row-height="%d"', $gallery_row_height );
 		$attrs[] = sprintf( 'data-gallery-rows="%d"', $gallery_rows );
-		$attrs[] = sprintf( 'data-gallery-scroller="%s"', $gallery_scroller ? 'true' : 'false' );
+		$attrs[] = sprintf( 'data-gallery-scroll="%s"', $gallery_scroll ? 'true' : 'false' );
 
 		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
 			$attrs[] = sprintf( 'data-gallery-explicit-width="%d"', intval( $config['width'] ) );

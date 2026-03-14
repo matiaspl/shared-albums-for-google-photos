@@ -596,15 +596,15 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Gallery Mode – Scrolling Rows', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Use gallery-scroller="true" with gallery-rows to show a fixed-height, vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Use gallery-scroll="true" with gallery-rows to show a fixed-height, vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" gallery-layout="uniform" gallery-columns="3" gallery-rows="2" gallery-scroller="true" max-photos-per-album="18"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" gallery-layout="uniform" gallery-columns="3" gallery-rows="2" gallery-scroll="true" max-photos-per-album="18"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-gallery-scroller" style="height:auto;">
+					<div class="jzsa-preview-container jzsa-preview-container-gallery-scroll" style="height:auto;">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" gallery-layout="uniform" gallery-columns="3" gallery-rows="2" gallery-scroller="true" max-photos-per-album="18"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" gallery-layout="uniform" gallery-columns="3" gallery-rows="2" gallery-scroll="true" max-photos-per-album="18"]' );
 						?>
 					</div>
 					</div>
@@ -717,7 +717,7 @@ class JZSA_Settings_Page {
 								<td>Gallery mode:<br>
 									• "single": Single photo viewer with zoom support (pinch on touch devices)<br>
 									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop). Clicking a photo opens it in a single-photo fullscreen viewer<br>
-									• "gallery": Thumbnail gallery with optional paging or scrolling via <code>gallery-rows</code> and <code>gallery-scroller</code>; click any thumbnail to open it in a fullscreen viewer</td>
+									• "gallery": Thumbnail gallery with optional paging or scrolling via <code>gallery-rows</code> and <code>gallery-scroll</code>; click any thumbnail to open it in a fullscreen viewer</td>
 								<td>gallery</td>
 							</tr>
 						</tbody>
@@ -791,7 +791,7 @@ class JZSA_Settings_Page {
 						<tbody>
 							<tr>
 								<td><code>autoplay</code></td>
-								<td>Enable autoplay in normal mode: "true" or "false". In <code>mode="gallery"</code> with pagination (<code>gallery-rows &gt; 0</code> and <code>gallery-scroller="false"</code>), this advances gallery pages automatically.</td>
+								<td>Enable autoplay in normal mode: "true" or "false". In <code>mode="gallery"</code> with pagination (<code>gallery-rows &gt; 0</code> and <code>gallery-scroll="false"</code>), this advances gallery pages automatically.</td>
 								<td>true</td>
 							</tr>
 							<tr>
@@ -939,11 +939,11 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>gallery-rows</code></td>
-								<td><?php esc_html_e( 'Number of visible gallery rows when row limiting is enabled. If more rows are available, gallery uses paging by default or scrolling when gallery-scroller="true". Use 0 to show all rows.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Number of visible gallery rows when row limiting is enabled. If more rows are available, gallery uses paging by default or scrolling when gallery-scroll="true". Use 0 to show all rows.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>0 (all rows)</td>
 							</tr>
 							<tr>
-								<td><code>gallery-scroller</code></td>
+								<td><code>gallery-scroll</code></td>
 								<td><?php esc_html_e( 'When set to "true" (and gallery-rows > 0), uses a single vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>false</td>
 							</tr>

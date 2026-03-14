@@ -21,7 +21,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 = Features =
 
 * **Gallery Mode (Default)** - Display photos as a thumbnail gallery with uniform/justified layouts
-* **Gallery Paging Or Scrolling** - Use `gallery-rows` with optional `gallery-scroller` to choose page controls or a single scrollable gallery
+* **Gallery Paging Or Scrolling** - Use `gallery-rows` with optional `gallery-scroll` to choose page controls or a single scrollable gallery
 * **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
 * **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
@@ -203,7 +203,7 @@ The plugin provides clear feedback:
 
 = 1.0.8 =
 * Gallery mode support
-* Default values changes (Breaking change, apologies!)
+* Default values changes (Breaking changes. Apologies!)
 
 = 1.0.6 =
 * New animated logo

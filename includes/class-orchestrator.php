@@ -367,7 +367,7 @@ class JZSA_Shared_Albums {
 			'gallery-columns-mobile' => $this->parse_gallery_int( $atts, 'gallery-columns-mobile', 1 ),
 			'gallery-row-height'     => $this->parse_gallery_row_height( $atts ),
 			'gallery-rows'           => $this->parse_gallery_rows( $atts ),
-			'gallery-scroller'       => $this->parse_bool( $atts, 'gallery-scroller', false ),
+			'gallery-scroll'       => $this->parse_bool( $atts, 'gallery-scroll', false ),
 		);
 
 		return $config;
