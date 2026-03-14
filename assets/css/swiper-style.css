@@ -70,13 +70,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     height: 100%;
 }
 
-/* image-fit="stretch" - fill container, may distort */
-.jzsa-album[data-image-fit="stretch"] .swiper-slide img {
-    width: 100%;
-    height: 100%;
-    object-fit: fill;
-}
-
 /* full-screen-image-fit overrides image-fit when in fullscreen.
    Each vendor prefix MUST be in its own rule — grouping them causes browsers
    to drop the entire rule when they encounter an unrecognised pseudo-class. */
@@ -124,22 +117,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 .jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
     object-fit: cover;
-    width: 100%;
-    height: 100%;
-}
-
-.jzsa-album:fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img {
-    object-fit: fill;
-    width: 100%;
-    height: 100%;
-}
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="stretch"] .swiper-slide img {
-    object-fit: fill;
-    width: 100%;
-    height: 100%;
-}
-.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="stretch"] .swiper-slide img {
-    object-fit: fill;
     width: 100%;
     height: 100%;
 }
@@ -887,9 +864,6 @@ body.jzsa-no-scroll {
 .jzsa-gallery-album[data-gallery-layout="uniform"][data-image-fit="fit"] .jzsa-gallery-thumb {
     object-fit: contain;
 }
-.jzsa-gallery-album[data-gallery-layout="uniform"][data-image-fit="stretch"] .jzsa-gallery-thumb {
-    object-fit: fill;
-}
 
 /* Justified gallery layout */
 .jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-justified-row {
@@ -914,10 +888,6 @@ body.jzsa-no-scroll {
 .jzsa-gallery-album[data-gallery-layout="justified"][data-image-fit="fit"] .jzsa-gallery-thumb {
     object-fit: contain;
 }
-.jzsa-gallery-album[data-gallery-layout="justified"][data-image-fit="stretch"] .jzsa-gallery-thumb {
-    object-fit: fill;
-}
-
 /* Shared thumbnail hover */
 .jzsa-gallery-thumb {
     cursor: pointer;

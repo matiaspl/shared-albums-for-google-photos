@@ -29,7 +29,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 * **Play/Pause Control** - Fullscreen play/pause button with spacebar keyboard shortcut
 * **Fullscreen Navigation** - In fullscreen, single-click/tap navigates previous/next photos
 * **Fullscreen Toggle Modes** - `full-screen-toggle` supports `single-click`, `double-click`, and `button-only`
-* **Fullscreen Image Fit** - `full-screen-image-fit` supports `fit` (default), `contain`, `cover`, and `stretch`
+* **Fullscreen Image Fit** - `full-screen-image-fit` supports `fit` (default), `contain`, and `cover`
 * **Dual-Mode Autoplay** - Separate autoplay settings for normal and fullscreen modes
 * **Zoom Support** - Pinch-to-zoom on touch devices
 * **Keyboard Navigation** - Use arrow keys to navigate, spacebar to play/pause in fullscreen
