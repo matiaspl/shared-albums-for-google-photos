@@ -165,7 +165,7 @@ class JZSA_Renderer {
 			$styles[] = 'height: ' . intval( $config['height'] ) . 'px';
 		}
 
-		if ( ! empty( $config['background-color'] ) && $config['background-color'] !== 'transparent' ) {
+		if ( ! empty( $config['background-color'] ) ) {
 			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
 		}
 
@@ -348,7 +348,7 @@ class JZSA_Renderer {
 		// Gallery mode should keep responsive sizing unless width/height
 		// were explicitly provided in shortcode.
 		$styles = array();
-		if ( ! empty( $config['background-color'] ) && $config['background-color'] !== 'transparent' ) {
+		if ( ! empty( $config['background-color'] ) ) {
 			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
 		}
 		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {

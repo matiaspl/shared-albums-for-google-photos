@@ -715,9 +715,9 @@ class JZSA_Settings_Page {
 							<tr>
 								<td><code>mode</code></td>
 								<td>Gallery mode:<br>
+									• "gallery": Thumbnail gallery with optional paging or scrolling via <code>gallery-rows</code> and <code>gallery-scroll</code>; click any thumbnail to open it in a fullscreen viewer<br>
 									• "single": Single photo viewer with zoom support (pinch on touch devices)<br>
-									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop). Clicking a photo opens it in a single-photo fullscreen viewer<br>
-									• "gallery": Thumbnail gallery with optional paging or scrolling via <code>gallery-rows</code> and <code>gallery-scroll</code>; click any thumbnail to open it in a fullscreen viewer</td>
+									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop). Clicking a photo opens it in a single-photo fullscreen viewer</td>
 								<td>gallery</td>
 							</tr>
 							<tr>
@@ -739,7 +739,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Gallery Mode Options', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'These parameters only apply when mode="gallery".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php esc_html_e( 'These parameters only apply when mode="gallery", which is the default mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<table class="jzsa-settings-table">
 						<thead>
 							<tr>
@@ -903,8 +903,8 @@ class JZSA_Settings_Page {
 						<tbody>
 							<tr>
 								<td><code>show-title</code></td>
-								<td>Display album title: "true" or "false"</td>
-								<td>true</td>
+								<td>Display album title: "false" or "true"</td>
+								<td>false</td>
 							</tr>
 							<tr>
 								<td><code>show-counter</code></td>
@@ -913,12 +913,12 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>show-link-button</code></td>
-								<td>Show external link button to open album in Google Photos: "true" or "false"</td>
+								<td>Show external link button to open album in Google Photos: "false" or "true"</td>
 								<td>false</td>
 							</tr>
 							<tr>
 								<td><code>show-download-button</code></td>
-								<td>Show download button to save current photo: "true" or "false"</td>
+								<td>Show download button to save current photo: "false" or "true"</td>
 								<td>false</td>
 							</tr>
 						</tbody>

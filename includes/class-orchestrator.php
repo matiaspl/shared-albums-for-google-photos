@@ -462,7 +462,7 @@ class JZSA_Shared_Albums {
 	 * Parse image fit mode.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string One of 'contain', 'cover', or 'stretch'.
+	 * @return string One of 'cover', 'contain', or 'stretch'.
 	 */
 	private function parse_image_fit( $atts ) {
 		if ( ! isset( $atts['image-fit'] ) ) {
@@ -472,7 +472,7 @@ class JZSA_Shared_Albums {
 
 		$value = strtolower( trim( (string) $atts['image-fit'] ) );
 
-		if ( in_array( $value, array( 'contain', 'cover', 'stretch' ), true ) ) {
+		if ( in_array( $value, array( 'cover', 'contain', 'stretch' ), true ) ) {
 			return $value;
 		}
 
@@ -545,7 +545,7 @@ class JZSA_Shared_Albums {
 	 * Parse mode attribute
 	 *
 	 * @param array $atts Attributes
-	 * @return string Mode: 'carousel', 'single', or 'gallery'
+	 * @return string Mode: 'gallery', 'single', or 'carousel'
 	 */
 	private function parse_mode( $atts ) {
 		if ( ! isset( $atts['mode'] ) ) {
@@ -555,8 +555,8 @@ class JZSA_Shared_Albums {
 
 		$mode = strtolower( trim( $atts['mode'] ) );
 
-		// Valid modes: 'carousel', 'single', 'gallery'
-		$valid_modes = array( 'carousel', 'single', 'gallery' );
+		// Valid modes: 'gallery', 'single', 'carousel'
+		$valid_modes = array( 'gallery', 'single', 'carousel' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;
@@ -671,7 +671,7 @@ class JZSA_Shared_Albums {
 	 * Parse full screen toggle mode attribute.
 	 *
 	 * @param array $atts Attributes
-	 * @return string Full screen toggle mode: 'button-only', 'single-click', or 'double-click'
+	 * @return string Full screen toggle mode: 'single-click', 'double-click', or 'button-only'
 	 */
 	private function parse_fullscreen_toggle_mode( $atts ) {
 		if ( ! isset( $atts['full-screen-toggle'] ) ) {
