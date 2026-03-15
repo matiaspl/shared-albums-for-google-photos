@@ -927,6 +927,25 @@ class JZSA_Settings_Page {
 						</tbody>
 					</table>
 
+					<h3><?php esc_html_e( 'Video Support (Experimental)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<p><?php esc_html_e( 'Video support is an experimental feature. Albums containing videos will attempt to detect and play them using the native browser video player.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Description', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+								<th><?php esc_html_e( 'Default', 'janzeman-shared-albums-for-google-photos' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>show-videos</code></td>
+								<td><?php esc_html_e( 'Include videos from mixed albums: "true" or "false". Set to "false" to display only photos and filter out all video items.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>true</td>
+							</tr>
+						</tbody>
+					</table>
+
 				</div>
 
 				<!-- Troubleshooting -->

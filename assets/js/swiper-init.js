@@ -2381,16 +2381,31 @@
             var isVideo = photo.type === 'video';
             var itemClass = 'jzsa-gallery-item' + (isVideo ? ' jzsa-gallery-item-video' : '');
             var mediaLabel = isVideo ? 'video' : 'photo';
-            html +=
-                '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
+            var mediaHtml;
+
+            if (isVideo) {
+                var videoSrc = photo.video || src;
+                mediaHtml =
+                    '<video class="jzsa-gallery-thumb jzsa-gallery-video-thumb' + tileFillClass + '"' +
+                    ' src="' + videoSrc + '"' +
+                    ' data-index="' + globalIndex + '"' +
+                    ' aria-label="Video ' + (globalIndex + 1) + '"' +
+                    ' draggable="false"' +
+                    ' controls playsinline preload="metadata"' + tileStyleAttr + '></video>';
+            } else {
+                mediaHtml =
                     '<img class="jzsa-gallery-thumb' + tileFillClass + '"' +
                     ' src="' + src + '"' +
                     (src !== photo.full ? ' data-full-src="' + photo.full + '"' : '') +
                     ' data-index="' + globalIndex + '"' +
                     ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
-                    ' loading="lazy"' + tileStyleAttr + '>' +
-                    (isVideo ? '<div class="jzsa-video-badge"><div class="jzsa-video-badge-icon"></div></div>' : '') +
+                    ' loading="lazy"' + tileStyleAttr + '>';
+            }
+
+            html +=
+                '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
+                    mediaHtml +
                     (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>' : '') +
                 '</div>';
         });
@@ -2453,8 +2468,20 @@
                 var isVideo = item.photo.type === 'video';
                 var itemClass = 'jzsa-gallery-item' + (isVideo ? ' jzsa-gallery-item-video' : '');
                 var mediaLabel = isVideo ? 'video' : 'photo';
-                html +=
-                    '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
+                var mediaHtml;
+
+                if (isVideo) {
+                    var videoSrc = item.photo.video || src;
+                    mediaHtml =
+                        '<video class="jzsa-gallery-thumb jzsa-gallery-video-thumb jzsa-justified-thumb"' +
+                        ' src="' + videoSrc + '"' +
+                        ' data-index="' + item.index + '"' +
+                        ' aria-label="Video ' + (item.index + 1) + '"' +
+                        ' draggable="false"' +
+                        ' controls playsinline preload="metadata"' +
+                        ' style="width:100%;height:100%;"></video>';
+                } else {
+                    mediaHtml =
                         '<img class="jzsa-gallery-thumb jzsa-justified-thumb"' +
                         ' src="' + src + '"' +
                         (src !== item.photo.full ? ' data-full-src="' + item.photo.full + '"' : '') +
@@ -2462,8 +2489,12 @@
                         ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (item.index + 1) + '"' +
                         ' draggable="false"' +
                         ' loading="lazy"' +
-                        ' style="width:100%;height:100%;">' +
-                        (isVideo ? '<div class="jzsa-video-badge"><div class="jzsa-video-badge-icon"></div></div>' : '') +
+                        ' style="width:100%;height:100%;">';
+                }
+
+                html +=
+                    '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
+                        mediaHtml +
                         (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>' : '') +
                     '</div>';
             });
@@ -2871,6 +2902,10 @@
             return true;
         }
 
+        function isGalleryVideoTarget(target) {
+            return $(target).closest('video.jzsa-gallery-video-thumb').length > 0;
+        }
+
         $container.on('dragstart' + ns, '.jzsa-gallery-thumb', function(e) {
             e.preventDefault();
         });
@@ -2890,6 +2925,10 @@
 
         $container.on('mousedown' + ns, function(e) {
             if (e.which !== 1) {
+                return;
+            }
+
+            if (isGalleryVideoTarget(e.target)) {
                 return;
             }
 
@@ -4048,9 +4087,16 @@
             openGalleryPlayerAtIndex(index);
         }
 
+        function isGalleryVideoInteractionTarget(targetEl) {
+            return $(targetEl).closest('video.jzsa-gallery-video-thumb').length > 0;
+        }
+
         if (fullScreenSwitch === 'single-click') {
             $container.on('click', '.jzsa-gallery-thumb', function(e) {
                 if ($container.data('jzsaGallerySuppressClick')) {
+                    return;
+                }
+                if (isGalleryVideoInteractionTarget(e.target)) {
                     return;
                 }
                 e.preventDefault();
@@ -4058,6 +4104,9 @@
             });
         } else if (fullScreenSwitch === 'double-click') {
             $container.on('dblclick', '.jzsa-gallery-thumb', function(e) {
+                if (isGalleryVideoInteractionTarget(e.target)) {
+                    return;
+                }
                 e.preventDefault();
                 openGalleryPlayerFromThumb(this);
             });
@@ -4065,6 +4114,9 @@
             // Mobile/touch fallback for double-click mode.
             $container.on('touchend', '.jzsa-gallery-thumb', function(e) {
                 if ($container.data('jzsaGallerySuppressClick')) {
+                    return;
+                }
+                if (isGalleryVideoInteractionTarget(e.target)) {
                     return;
                 }
                 handleDoubleTap(e, function() {

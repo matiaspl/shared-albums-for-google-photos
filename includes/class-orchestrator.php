@@ -266,7 +266,8 @@ class JZSA_Shared_Albums {
 				$config['image-height'],
 				self::DEFAULT_PREVIEW_WIDTH,
 				self::DEFAULT_PREVIEW_HEIGHT,
-				$config['max-photos-per-album']
+				$config['max-photos-per-album'],
+				$config['show-videos']
 			);
 			$config['album-title']              = $cached_data['title'] ?? null;
 			$config['show-deprecation-warning'] = $cached_data['is_deprecated'];
@@ -303,7 +304,8 @@ class JZSA_Shared_Albums {
 			$config['image-height'],
 			self::DEFAULT_PREVIEW_WIDTH,
 			self::DEFAULT_PREVIEW_HEIGHT,
-			$config['max-photos-per-album']
+			$config['max-photos-per-album'],
+			$config['show-videos']
 		);
 
 		$config['album-title']              = $result['data']['title'] ?? null;
@@ -358,6 +360,11 @@ class JZSA_Shared_Albums {
 
 			// Photo count
 			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
+
+			// Video support (experimental) — accept both 'show-videos' and 'show-video'
+			'show-videos'            => isset( $atts['show-video'] ) && ! isset( $atts['show-videos'] )
+				? $this->parse_bool( $atts, 'show-video', true )
+				: $this->parse_bool( $atts, 'show-videos', true ),
 
 			// Gallery mode (thumbnail layout)
 			'gallery-layout'         => $this->parse_gallery_layout( $atts ),
@@ -733,7 +740,7 @@ class JZSA_Shared_Albums {
 	 * @param int   $max_photos     Maximum number of photos to include from the album.
 	 * @return array Photo objects with preview and full URLs.
 	 */
-	private function prepare_photo_urls( $base_items, $full_width, $full_height, $preview_width = null, $preview_height = null, $max_photos = self::DEFAULT_MAX_PHOTOS_PER_ALBUM ) {
+	private function prepare_photo_urls( $base_items, $full_width, $full_height, $preview_width = null, $preview_height = null, $max_photos = self::DEFAULT_MAX_PHOTOS_PER_ALBUM, $show_videos = true ) {
 		// Determine effective limit: requested per-album limit clamped to global MAX_PHOTOS.
 		$limit = intval( $max_photos );
 
@@ -756,6 +763,11 @@ class JZSA_Shared_Albums {
 			} else {
 				$base = $item;
 				$type = 'image';
+			}
+
+			// Filter out videos when show-videos is disabled.
+			if ( ! $show_videos && 'video' === $type ) {
+				continue;
 			}
 
 			$photo = array(
