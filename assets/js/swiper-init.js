@@ -398,9 +398,16 @@
             probe = null;
         }
         probe.onloadedmetadata = function() {
-            if (videoEl._jzsaPlyr && videoEl._jzsaPlyr.duration === 0) {
-                videoEl.preload = 'metadata';
-                videoEl.load();
+            // Update Plyr duration display without touching the original video element.
+            // Calling videoEl.load() would reset Plyr's internal state and break playback.
+            if (probe.duration && isFinite(probe.duration) && videoEl._jzsaPlyr) {
+                var durationEl = $(videoEl).closest('.jzsa-video-wrapper')
+                    .find('.plyr__time--duration');
+                if (durationEl.length && !durationEl.text().trim()) {
+                    var mins = Math.floor(probe.duration / 60);
+                    var secs = Math.floor(probe.duration % 60);
+                    durationEl.text(mins + ':' + (secs < 10 ? '0' : '') + secs);
+                }
             }
             cleanupProbe();
             processNextMetadata(queue);
