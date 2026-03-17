@@ -352,6 +352,101 @@
         });
     }
 
+    // ========================================================================
+    // Tiered video preloading
+    // ========================================================================
+
+    /**
+     * Tier 1 — Background metadata preload for all videos on the page.
+     * Runs after the browser is idle. Fetches only metadata (duration, dimensions)
+     * via a temporary <video> element, then updates the corresponding Plyr instance.
+     * Processes one video at a time to avoid network contention.
+     */
+    function scheduleMetadataPreload() {
+        var schedule = window.requestIdleCallback || function(cb) { setTimeout(cb, 2000); };
+        schedule(function() {
+            var videos = document.querySelectorAll('video.jzsa-video-player');
+            if (!videos.length) return;
+            var queue = Array.prototype.slice.call(videos);
+            processNextMetadata(queue);
+        });
+    }
+
+    function processNextMetadata(queue) {
+        if (!queue.length) return;
+        var videoEl = queue.shift();
+        // Skip if already has duration (e.g. user already played it)
+        if (videoEl.duration && isFinite(videoEl.duration)) {
+            processNextMetadata(queue);
+            return;
+        }
+        var src = videoEl.src || videoEl.getAttribute('src');
+        if (!src) {
+            processNextMetadata(queue);
+            return;
+        }
+        // Use a temporary video element to fetch metadata without disturbing Plyr
+        var probe = document.createElement('video');
+        probe.preload = 'metadata';
+        var handled = false;
+        function cleanupProbe() {
+            if (handled) return;
+            handled = true;
+            probe.onloadedmetadata = null;
+            probe.onerror = null;
+            probe.src = '';
+            probe = null;
+        }
+        probe.onloadedmetadata = function() {
+            if (videoEl._jzsaPlyr && videoEl._jzsaPlyr.duration === 0) {
+                videoEl.preload = 'metadata';
+                videoEl.load();
+            }
+            cleanupProbe();
+            processNextMetadata(queue);
+        };
+        probe.onerror = function() {
+            cleanupProbe();
+            processNextMetadata(queue);
+        };
+        probe.src = src;
+    }
+
+    /**
+     * Tier 2 — Full preload for adjacent slides in slider/carousel mode.
+     * Called on slide change. Sets preload="auto" on videos within ±range slides
+     * of the active index, reverts others back to "none".
+     *
+     * @param {Object} swiper  Swiper instance.
+     * @param {number} [range] Number of slides each direction to preload (default 1).
+     */
+    function preloadAdjacentVideos(swiper, range) {
+        if (!swiper || !swiper.slides) return;
+        range = range || 1;
+        var active = swiper.activeIndex;
+        var total = swiper.slides.length;
+        swiper.slides.forEach(function(slide, i) {
+            var video = slide.querySelector('video.jzsa-video-player');
+            if (!video) return;
+            var distance = Math.abs(i - active);
+            // Handle loop mode wrap-around
+            if (swiper.params.loop) {
+                distance = Math.min(distance, total - distance);
+            }
+            if (distance <= range) {
+                if (video.preload !== 'auto') {
+                    video.preload = 'auto';
+                }
+            } else {
+                // Don't downgrade if user already started playing
+                if (!video.paused) return;
+                if (video.preload !== 'none') {
+                    video.preload = 'none';
+                }
+            }
+        });
+    }
+
     // Helper: Build slides HTML structure (for photo/video array)
     function buildSlidesHtml(photos, options) {
         var config = options || {};
@@ -2240,6 +2335,21 @@
             setupVideoHandling(swiper, $container, fullscreenChangeParams);
             initPlyrInContainer($container);
 
+            // Tier 1: background metadata preload after idle
+            scheduleMetadataPreload();
+
+            // Tier 2: full preload for adjacent video slides (slider/carousel)
+            // Deferred until after page load to avoid competing with page resources
+            if (mode === 'slider' || mode === 'carousel') {
+                var tier2Schedule = window.requestIdleCallback || function(cb) { setTimeout(cb, 500); };
+                tier2Schedule(function() {
+                    preloadAdjacentVideos(swiper, 1);
+                });
+                swiper.on('slideChangeTransitionEnd', function() {
+                    preloadAdjacentVideos(swiper, 1);
+                });
+            }
+
             console.log('✅ Swiper initialized:', galleryId);
             console.log('  - Normal mode autoplay:', autoplay ? 'Enabled (delay: ' + autoplayDelay + 's)' : 'Disabled');
             console.log('  - Fullscreen mode autoplay:', fullScreenAutoplay ? 'Enabled (delay: ' + fullScreenAutoplayDelay + 's)' : 'Disabled');
@@ -2497,6 +2607,7 @@
             $container.append($loader);
         }
         initPlyrInContainer($container);
+        scheduleMetadataPreload();
     }
 
     /**
