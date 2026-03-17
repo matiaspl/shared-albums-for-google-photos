@@ -298,11 +298,58 @@
             '<video' +
             ' src="' + src + '"' +
             posterAttr +
-            ' controls playsinline preload="metadata"' +
+            ' playsinline preload="none"' +
             ' class="jzsa-video-player' + extraClass + '"' +
             styleAttr +
             '></video>' +
             '</div>';
+    }
+
+    /**
+     * Initialise Plyr on all uninitialised .jzsa-video-player elements
+     * inside the given container.
+     *
+     * @param {jQuery} $container Parent element to search within.
+     */
+    function initPlyrInContainer($container) {
+        if (typeof Plyr === 'undefined') {
+            console.warn('⚠️ Plyr not loaded');
+            return;
+        }
+        var videos = $container.find('video.jzsa-video-player');
+        console.log('🎬 initPlyrInContainer: found', videos.length, 'videos');
+        videos.each(function() {
+            if (this._jzsaPlyr) {
+                return;
+            }
+            var wrapper = $(this).closest('.jzsa-video-wrapper')[0];
+            this._jzsaPlyr = new Plyr(this, {
+                iconUrl: (typeof jzsaAjax !== 'undefined' && jzsaAjax.plyrSvgUrl) || '',
+                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume'],
+                clickToPlay: true,
+                hideControls: true,
+                resetOnEnd: true,
+                invertTime: false,
+                disableContextMenu: false,
+                fullscreen: { enabled: false }
+            });
+            // DEBUG: turn wrapper blue to confirm Plyr initialized
+            if (wrapper) { wrapper.style.background = 'blue'; }
+        });
+    }
+
+    /**
+     * Destroy any Plyr instances inside the given container.
+     *
+     * @param {jQuery} $container Parent element to search within.
+     */
+    function destroyPlyrInContainer($container) {
+        $container.find('video.jzsa-video-player').each(function() {
+            if (this._jzsaPlyr) {
+                try { this._jzsaPlyr.destroy(); } catch (e) { /* ignore */ }
+                this._jzsaPlyr = null;
+            }
+        });
     }
 
     // Helper: Build slides HTML structure (for photo/video array)
@@ -2191,6 +2238,7 @@
             // ------------------------------------------------------------------------
 
             setupVideoHandling(swiper, $container, fullscreenChangeParams);
+            initPlyrInContainer($container);
 
             console.log('✅ Swiper initialized:', galleryId);
             console.log('  - Normal mode autoplay:', autoplay ? 'Enabled (delay: ' + autoplayDelay + 's)' : 'Disabled');
@@ -2442,11 +2490,13 @@
      * @param {string} html       Gallery markup to render.
      */
     function renderGalleryMarkup($container, html) {
+        destroyPlyrInContainer($container);
         var $loader = $container.children('.jzsa-loader').detach();
         $container.html(html);
         if ($loader.length) {
             $container.append($loader);
         }
+        initPlyrInContainer($container);
     }
 
     /**

@@ -171,6 +171,22 @@ class JZSA_Shared_Albums {
 			true
 		);
 
+		// Plyr video player (bundled locally)
+		wp_enqueue_style(
+			'plyr-css',
+			plugins_url( 'assets/vendor/plyr/plyr.css', $this->plugin_file ),
+			array(),
+			'3.7.8'
+		);
+
+		wp_enqueue_script(
+			'plyr-js',
+			plugins_url( 'assets/vendor/plyr/plyr.min.js', $this->plugin_file ),
+			array(),
+			'3.7.8',
+			true
+		);
+
 		// Custom assets
 		$style_version = $this->get_asset_version( 'assets/css/swiper-style.css' );
 		$script_version = $this->get_asset_version( 'assets/js/swiper-init.js' );
@@ -178,14 +194,14 @@ class JZSA_Shared_Albums {
 		wp_enqueue_style(
 			'jzsa-style',
 			plugins_url( 'assets/css/swiper-style.css', $this->plugin_file ),
-			array( 'swiper-css' ),
+			array( 'swiper-css', 'plyr-css' ),
 			$style_version
 		);
 
 		wp_enqueue_script(
 			'jzsa-init',
 			plugins_url( 'assets/js/swiper-init.js', $this->plugin_file ),
-			array( 'jquery', 'swiper-js' ),
+			array( 'jquery', 'swiper-js', 'plyr-js' ),
 			$script_version,
 			true
 		);
@@ -201,6 +217,7 @@ class JZSA_Shared_Albums {
 				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 				'downloadNonce'=> $download_nonce,
 				'previewNonce' => $preview_nonce,
+				'plyrSvgUrl'   => plugins_url( 'assets/vendor/plyr/plyr.svg', $this->plugin_file ),
 			)
 		);
 	}

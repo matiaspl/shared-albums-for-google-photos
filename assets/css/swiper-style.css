@@ -1191,6 +1191,30 @@ body.jzsa-no-scroll {
     object-fit: cover;
 }
 
+/* --- Plyr integration --- */
+
+/* Plyr container fills the video wrapper (inside the 16px padding) */
+.jzsa-video-wrapper .plyr {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.jzsa-video-wrapper .plyr__video-wrapper {
+    height: 100%;
+}
+
+/* Plyr controls must sit above the video (z-index 11) */
+.jzsa-video-wrapper .plyr__control--overlaid,
+.jzsa-video-wrapper .plyr__controls {
+    z-index: 15;
+}
+
+/* DEBUG: make Plyr big play button bright pink so we can see if it renders */
+.jzsa-video-wrapper .plyr__control--overlaid {
+    background: hotpink !important;
+}
+
 
 /* --- Video badge on gallery thumbnails --- */
 
