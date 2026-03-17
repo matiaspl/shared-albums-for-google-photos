@@ -339,9 +339,9 @@
                 plyrContainer.hide();
             }
             // Add duration label below the play-large button (starts as loading placeholder)
-            var $playLarge = $(wrapper).find('.plyr__control--overlaid');
-            if ($playLarge.length && !$playLarge.find('.jzsa-video-duration').length) {
-                $playLarge.append('<span class="jzsa-video-duration jzsa-video-duration--loading"></span>');
+            var $plyrEl = $(wrapper).find('.plyr');
+            if ($plyrEl.length && !$plyrEl.find('.jzsa-video-duration').length) {
+                $plyrEl.append('<span class="jzsa-video-duration jzsa-video-duration--loading"></span>');
             }
             this._jzsaPlyr.on('play', function() {
                 plyrContainer.show();

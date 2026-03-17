@@ -1210,33 +1210,39 @@ body.jzsa-no-scroll {
     z-index: 15;
 }
 
-/* DEBUG: make Plyr big play button bright pink so we can see if it renders */
+/* Play-large button uses accent color */
 .jzsa-video-wrapper .plyr__control--overlaid {
-    background: hotpink !important;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    background: var(--jzsa-accent-color, #FF69B4) !important;
 }
 
-/* Duration label below the play-large button */
+/* Plyr control bar accent */
+.jzsa-video-wrapper .plyr {
+    --plyr-color-main: var(--jzsa-accent-color, #FF69B4);
+}
+
+/* Duration label — positioned below the play-large button, centered */
 .jzsa-video-duration {
-    display: block;
-    margin-top: 8px;
+    position: absolute;
+    left: 50%;
+    top: calc(50% + 36px);
+    transform: translateX(-50%);
     font-size: 13px;
     line-height: 1;
     color: #fff;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 4px 10px;
+    background: var(--jzsa-accent-color, #FF69B4);
+    padding: 5px 12px;
     border-radius: 4px;
     white-space: nowrap;
     pointer-events: none;
-    min-width: 36px;
+    width: 48px;
+    height: 13px;
     text-align: center;
+    z-index: 16;
+    box-sizing: content-box;
 }
 
 /* Subtle pulsing placeholder while loading metadata */
 .jzsa-video-duration--loading {
-    min-height: 13px;
     animation: jzsa-duration-pulse 1.5s ease-in-out infinite;
 }
 
@@ -1247,12 +1253,12 @@ body.jzsa-no-scroll {
 
 /* Fade in when duration arrives */
 .jzsa-video-duration--ready {
-    animation: jzsa-duration-fade-in 0.5s ease-out;
+    animation: jzsa-duration-fade-in 0.5s ease-out forwards;
 }
 
 @keyframes jzsa-duration-fade-in {
-    0%   { opacity: 0; transform: translateY(4px); }
-    100% { opacity: 1; transform: translateY(0); }
+    0%   { opacity: 0; }
+    100% { opacity: 1; }
 }
 
 

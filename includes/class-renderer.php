@@ -170,6 +170,9 @@ class JZSA_Renderer {
 		if ( ! empty( $config['background-color'] ) ) {
 			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
 		}
+		if ( ! empty( $config['accent-color'] ) ) {
+			$styles[] = '--jzsa-accent-color: ' . esc_attr( $config['accent-color'] );
+		}
 
 		return implode( '; ', $styles );
 	}
@@ -352,6 +355,9 @@ class JZSA_Renderer {
 		$styles = array();
 		if ( ! empty( $config['background-color'] ) ) {
 			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
+		}
+		if ( ! empty( $config['accent-color'] ) ) {
+			$styles[] = '--jzsa-accent-color: ' . esc_attr( $config['accent-color'] );
 		}
 		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
 			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';
