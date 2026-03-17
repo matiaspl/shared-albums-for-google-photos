@@ -1213,6 +1213,46 @@ body.jzsa-no-scroll {
 /* DEBUG: make Plyr big play button bright pink so we can see if it renders */
 .jzsa-video-wrapper .plyr__control--overlaid {
     background: hotpink !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Duration label below the play-large button */
+.jzsa-video-duration {
+    display: block;
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 4px 10px;
+    border-radius: 4px;
+    white-space: nowrap;
+    pointer-events: none;
+    min-width: 36px;
+    text-align: center;
+}
+
+/* Subtle pulsing placeholder while loading metadata */
+.jzsa-video-duration--loading {
+    min-height: 13px;
+    animation: jzsa-duration-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes jzsa-duration-pulse {
+    0%, 100% { opacity: 0.3; }
+    50%      { opacity: 0.6; }
+}
+
+/* Fade in when duration arrives */
+.jzsa-video-duration--ready {
+    animation: jzsa-duration-fade-in 0.5s ease-out;
+}
+
+@keyframes jzsa-duration-fade-in {
+    0%   { opacity: 0; transform: translateY(4px); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 

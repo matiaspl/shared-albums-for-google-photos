@@ -325,13 +325,31 @@
             var wrapper = $(this).closest('.jzsa-video-wrapper')[0];
             this._jzsaPlyr = new Plyr(this, {
                 iconUrl: (typeof jzsaAjax !== 'undefined' && jzsaAjax.plyrSvgUrl) || '',
-                controls: ['play-large', 'play', 'progress', 'current-time', 'mute', 'volume'],
+                controls: ['play-large', 'play', 'progress', 'current-time', 'duration', 'mute', 'volume'],
                 clickToPlay: true,
                 hideControls: true,
                 resetOnEnd: true,
                 invertTime: false,
                 disableContextMenu: false,
                 fullscreen: { enabled: false }
+            });
+            // Hide bottom control bar until playback starts
+            var plyrContainer = $(this).closest('.jzsa-video-wrapper').find('.plyr__controls');
+            if (plyrContainer.length) {
+                plyrContainer.hide();
+            }
+            // Add duration label below the play-large button (starts as loading placeholder)
+            var $playLarge = $(wrapper).find('.plyr__control--overlaid');
+            if ($playLarge.length && !$playLarge.find('.jzsa-video-duration').length) {
+                $playLarge.append('<span class="jzsa-video-duration jzsa-video-duration--loading"></span>');
+            }
+            this._jzsaPlyr.on('play', function() {
+                plyrContainer.show();
+                $(wrapper).find('.jzsa-video-duration').hide();
+            });
+            this._jzsaPlyr.on('ended', function() {
+                plyrContainer.hide();
+                $(wrapper).find('.jzsa-video-duration').show();
             });
             // DEBUG: turn wrapper blue to confirm Plyr initialized
             if (wrapper) { wrapper.style.background = 'blue'; }
@@ -358,25 +376,30 @@
 
     /**
      * Tier 1 — Background metadata preload for all videos on the page.
-     * Runs after the browser is idle. Fetches only metadata (duration, dimensions)
-     * via a temporary <video> element, then updates the corresponding Plyr instance.
-     * Processes one video at a time to avoid network contention.
+     * Runs after the browser is idle. Fetches metadata (duration) via temporary
+     * <video> elements, then updates the Plyr UI. Runs up to PARALLEL_PROBES
+     * probes concurrently for faster results.
      */
+    var PARALLEL_PROBES = 6;
+
     function scheduleMetadataPreload() {
         var schedule = window.requestIdleCallback || function(cb) { setTimeout(cb, 2000); };
         schedule(function() {
             var videos = document.querySelectorAll('video.jzsa-video-player');
             if (!videos.length) return;
             var queue = Array.prototype.slice.call(videos);
-            processNextMetadata(queue);
+            for (var i = 0; i < PARALLEL_PROBES; i++) {
+                processNextMetadata(queue);
+            }
         });
     }
 
     function processNextMetadata(queue) {
         if (!queue.length) return;
         var videoEl = queue.shift();
-        // Skip if already has duration (e.g. user already played it)
-        if (videoEl.duration && isFinite(videoEl.duration)) {
+        // Skip if already has duration or label is filled
+        var $wrapper = $(videoEl).closest('.jzsa-video-wrapper');
+        if ($wrapper.find('.jzsa-video-duration--ready').length) {
             processNextMetadata(queue);
             return;
         }
@@ -385,7 +408,6 @@
             processNextMetadata(queue);
             return;
         }
-        // Use a temporary video element to fetch metadata without disturbing Plyr
         var probe = document.createElement('video');
         probe.preload = 'metadata';
         var handled = false;
@@ -397,18 +419,27 @@
             probe.src = '';
             probe = null;
         }
-        probe.onloadedmetadata = function() {
-            // Update Plyr duration display without touching the original video element.
-            // Calling videoEl.load() would reset Plyr's internal state and break playback.
-            if (probe.duration && isFinite(probe.duration) && videoEl._jzsaPlyr) {
-                var durationEl = $(videoEl).closest('.jzsa-video-wrapper')
-                    .find('.plyr__time--duration');
-                if (durationEl.length && !durationEl.text().trim()) {
-                    var mins = Math.floor(probe.duration / 60);
-                    var secs = Math.floor(probe.duration % 60);
-                    durationEl.text(mins + ':' + (secs < 10 ? '0' : '') + secs);
+        function applyDuration() {
+            if (probe.duration && isFinite(probe.duration)) {
+                var mins = Math.floor(probe.duration / 60);
+                var secs = Math.floor(probe.duration % 60);
+                var durationText = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                if (videoEl._jzsaPlyr) {
+                    var durationEl = $wrapper.find('.plyr__time--duration');
+                    if (durationEl.length) {
+                        durationEl.text(durationText);
+                    }
+                }
+                var $label = $wrapper.find('.jzsa-video-duration');
+                if ($label.length) {
+                    $label.text(durationText)
+                        .removeClass('jzsa-video-duration--loading')
+                        .addClass('jzsa-video-duration--ready');
                 }
             }
+        }
+        probe.onloadedmetadata = function() {
+            applyDuration();
             cleanupProbe();
             processNextMetadata(queue);
         };
