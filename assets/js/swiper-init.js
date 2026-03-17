@@ -276,6 +276,30 @@
         }
     }
 
+    /**
+     * Build the inner HTML for a video item (wrapper + video element).
+     * Shared across player, carousel, and gallery modes.
+     *
+     * @param {Object} opts
+     * @param {string} opts.src        Video source URL.
+     * @param {string} [opts.extraClass] Additional classes on the <video> element.
+     * @param {string} [opts.style]      Inline style attribute value for the <video>.
+     * @return {string} HTML string.
+     */
+    function buildVideoHtml(opts) {
+        var src = opts.src || '';
+        var extraClass = opts.extraClass ? ' ' + opts.extraClass : '';
+        var styleAttr = opts.style ? ' style="' + opts.style + '"' : '';
+        return '<div class="jzsa-video-wrapper">' +
+            '<video' +
+            ' src="' + src + '"' +
+            ' controls playsinline preload="metadata"' +
+            ' class="jzsa-video-player' + extraClass + '"' +
+            styleAttr +
+            '></video>' +
+            '</div>';
+    }
+
     // Helper: Build slides HTML structure (for photo/video array)
     function buildSlidesHtml(photos, options) {
         var config = options || {};
@@ -287,13 +311,7 @@
 
             if (isVideo) {
                 html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video">' +
-                    '<div class="jzsa-video-wrapper">' +
-                    '<video' +
-                    ' src="' + photo.video + '"' +
-                    ' controls playsinline preload="metadata"' +
-                    ' class="jzsa-video-player"' +
-                    '></video>' +
-                    '</div>' +
+                    buildVideoHtml({ src: photo.video }) +
                     '</div>';
             } else {
                 // Photo format: object with preview and full URLs
@@ -2385,13 +2403,7 @@
 
             if (isVideo) {
                 var videoSrc = photo.video || src;
-                mediaHtml =
-                    '<video class="jzsa-gallery-thumb jzsa-gallery-video-thumb' + tileFillClass + '"' +
-                    ' src="' + videoSrc + '"' +
-                    ' data-index="' + globalIndex + '"' +
-                    ' aria-label="Video ' + (globalIndex + 1) + '"' +
-                    ' draggable="false"' +
-                    ' controls playsinline preload="metadata"' + tileStyleAttr + '></video>';
+                mediaHtml = buildVideoHtml({ src: videoSrc });
             } else {
                 mediaHtml =
                     '<img class="jzsa-gallery-thumb' + tileFillClass + '"' +
