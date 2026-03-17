@@ -1269,18 +1269,19 @@ body.jzsa-no-scroll {
 .jzsa-video-duration {
     position: absolute;
     left: 50%;
-    top: calc(50% + 36px);
+    top: calc(50% + 30px);
     transform: translateX(-50%);
-    font-size: 13px;
+    font-size: 11px;
     line-height: 1;
     color: #fff;
     background: var(--jzsa-accent-color, #FF69B4);
-    padding: 5px 12px;
-    border-radius: 4px;
+    padding: 3px 8px;
+    border-radius: 3px;
     white-space: nowrap;
     pointer-events: none;
-    width: 48px;
-    height: 13px;
+    min-width: 28px;
+    width: auto;
+    height: 11px;
     text-align: center;
     z-index: 16;
     box-sizing: content-box;
