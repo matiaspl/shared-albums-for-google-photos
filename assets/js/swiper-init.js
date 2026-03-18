@@ -345,9 +345,13 @@
             if ($plyrEl.length && !$plyrEl.find('.jzsa-video-duration').length) {
                 $plyrEl.append('<span class="jzsa-video-duration jzsa-video-duration--loading"></span>');
             }
+            var $albumContainer = $(wrapper).closest('.jzsa-album, .jzsa-gallery-album');
+            console.log('🎬 Plyr album container found:', $albumContainer.length, $albumContainer.attr('id'));
             this._jzsaPlyr.on('play', function() {
+                console.log('▶️ Video play — adding jzsa-video-playing');
                 plyrContainer.show();
                 $(wrapper).find('.jzsa-video-duration').hide();
+                $albumContainer.addClass('jzsa-video-playing');
                 // Pause all other videos on the page
                 var currentVideo = this;
                 document.querySelectorAll('video.jzsa-video-player').forEach(function(v) {
@@ -356,9 +360,15 @@
                     }
                 });
             }.bind(this));
+            this._jzsaPlyr.on('pause', function() {
+                plyrContainer.hide();
+                $(wrapper).find('.jzsa-video-duration').show();
+                $albumContainer.removeClass('jzsa-video-playing');
+            });
             this._jzsaPlyr.on('ended', function() {
                 plyrContainer.hide();
                 $(wrapper).find('.jzsa-video-duration').show();
+                $albumContainer.removeClass('jzsa-video-playing');
             });
             // DEBUG: turn wrapper blue to confirm Plyr initialized
             if (wrapper) { wrapper.style.background = 'blue'; }
@@ -1418,31 +1428,45 @@
             });
         }
 
-        // When a video starts playing, pause slider autoplay
-        $container.on('play', '.jzsa-video-player', function() {
+        // When a video starts playing, pause slider autoplay (no inactivity timer —
+        // autoplay stays paused for the entire duration of playback)
+        // Use capture phase because media events don't bubble
+        $container[0].addEventListener('play', function() {
             if (swiper.autoplay && swiper.autoplay.running) {
                 videoAutoplayPaused = true;
                 swiper.autoplay.stop();
+                // Clear any existing inactivity timer so it doesn't fire mid-video
+                if (fullscreenChangeParams.inactivityTimer) {
+                    clearTimeout(fullscreenChangeParams.inactivityTimer);
+                }
                 jzsaDebug('⏸️ Autoplay paused for video playback');
             }
-        });
+        }, true);
 
-        // When a video ends, resume slider autoplay if we paused it
-        $container.on('ended', '.jzsa-video-player', function() {
-            if (videoAutoplayPaused) {
-                videoAutoplayPaused = false;
-                if (swiper.autoplay && !fullscreenChangeParams.autoplayPausedByInteraction) {
-                    swiper.autoplay.start();
-                    jzsaDebug('▶️ Autoplay resumed after video ended');
-                }
-            }
-        });
-
-        // When video is paused manually, allow autoplay to resume
-        $container.on('pause', '.jzsa-video-player', function() {
-            // Only clear our flag; don't auto-resume (user intentionally paused)
+        // When a video ends or is paused, start the inactivity countdown
+        // to resume autoplay after the configured timeout (default 30s)
+        function startAutoplayCountdown() {
+            if (!videoAutoplayPaused) return;
             videoAutoplayPaused = false;
-        });
+
+            // Clear any existing inactivity timer
+            if (fullscreenChangeParams.inactivityTimer) {
+                clearTimeout(fullscreenChangeParams.inactivityTimer);
+            }
+
+            fullscreenChangeParams.autoplayPausedByInteraction = true;
+            var timeoutMs = (fullscreenChangeParams.autoplayInactivityTimeout || 30) * 1000;
+            fullscreenChangeParams.inactivityTimer = setTimeout(function() {
+                if (fullscreenChangeParams.autoplayPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
+                    fullscreenChangeParams.autoplayPausedByInteraction = false;
+                    swiper.autoplay.start();
+                    jzsaDebug('▶️ Autoplay resumed after video inactivity timeout');
+                }
+            }, timeoutMs);
+            jzsaDebug('⏱️ Autoplay inactivity countdown started (' + (fullscreenChangeParams.autoplayInactivityTimeout || 30) + 's)');
+        }
+        $container[0].addEventListener('ended', startAutoplayCountdown, true);
+        $container[0].addEventListener('pause', startAutoplayCountdown, true);
 
         // Toggle class on container so CSS can disable nav overlays on video slides
         function updateVideoActiveClass() {

@@ -1269,6 +1269,17 @@ body.jzsa-no-scroll {
     }
 }
 
+/* Context-aware control layering (Option D):
+   - Video slide, not playing: album controls visible, Plyr bar hidden, play button + duration shown
+   - Video playing: album controls fade out, Plyr bar shown */
+.jzsa-album.jzsa-video-playing .swiper-pagination,
+.jzsa-album.jzsa-video-playing .swiper-button-play-pause,
+.jzsa-album.jzsa-video-playing .swiper-button-fullscreen {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s ease;
+}
+
 /* Duration label — positioned below the play-large button, centered */
 .jzsa-video-duration {
     position: absolute;
