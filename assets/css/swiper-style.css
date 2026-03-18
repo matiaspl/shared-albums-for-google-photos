@@ -22,14 +22,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     position: relative; /* For loader overlay positioning */
 }
 
-/* Smaller slideshow controls on desktop (20% reduction) */
-@media (min-width: 1024px) {
-    .jzsa-album {
-        --jzsa-controls-circle-size: 36px;
-        --jzsa-controls-icon-size: 16px;
-    }
-}
-
 /* Initial gallery fade-in on load (content appears gradually). */
 .jzsa-album.jzsa-content-intro {
     opacity: 0;
@@ -133,12 +125,16 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album .swiper-button-next,
 .jzsa-album .swiper-button-prev {
     color: #fff;
-    background: var(--jzsa-controls-bg);
+    background: transparent !important;
     width: var(--jzsa-controls-circle-size);
     height: var(--jzsa-controls-circle-size);
-    border-radius: 50%;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    border-radius: 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent;
+    opacity: 0.25;
+    transition: opacity 0.15s ease;
 }
 
 .jzsa-album .swiper-button-next:after,
@@ -148,7 +144,17 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 .jzsa-album .swiper-button-next:hover,
 .jzsa-album .swiper-button-prev:hover {
-    background: var(--jzsa-controls-bg-hover);
+    opacity: 0.75;
+}
+
+.jzsa-album .swiper-button-next:hover:after,
+.jzsa-album .swiper-button-prev:hover:after {
+    -webkit-text-stroke: 1px white;
+}
+
+.jzsa-album .swiper-button-next:active,
+.jzsa-album .swiper-button-prev:active {
+    opacity: 1;
 }
 
 .jzsa-album .swiper-button-next.swiper-button-disabled,
@@ -270,16 +276,16 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     transform: translateX(-50%);
     width: var(--jzsa-controls-circle-size);
     height: var(--jzsa-controls-circle-size);
-    background: var(--jzsa-controls-bg);
-    border: none;
-    border-radius: 50%;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0;
     cursor: pointer;
     z-index: 10;
     display: none;
     align-items: center;
     justify-content: center;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    opacity: 0.25;
+    transition: opacity 0.15s ease;
     appearance: none;
     -webkit-appearance: none;
     padding: 0;
@@ -290,14 +296,16 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .jzsa-album .swiper-button-play-pause:focus,
 .jzsa-album .swiper-button-play-pause:focus-visible,
 .jzsa-album .swiper-button-play-pause:active {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95);
-    border: none;
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 
 /* Show play/pause button in fullscreen, and inline when autoplay is enabled */
@@ -337,10 +345,19 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 .jzsa-album .swiper-button-play-pause:hover {
-    background: var(--jzsa-controls-bg-hover);
+    opacity: 0.75;
 }
 
-/* Play icon (default) */
+.jzsa-album .swiper-button-play-pause:active {
+    opacity: 1;
+}
+
+/* Thicker play/pause icon on hover */
+.jzsa-album .swiper-button-play-pause:hover:after {
+    filter: drop-shadow(0 0 1px white);
+}
+
+/* Play icon (default — slideshow paused) */
 .jzsa-album .swiper-button-play-pause:after {
     content: '';
     display: block;
@@ -352,7 +369,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     margin-left: 2px;
 }
 
-/* Pause icon (when playing) */
+/* Pause icon (slideshow running) */
 .jzsa-album .swiper-button-play-pause.playing:after {
     width: 10px;
     height: 14px;
