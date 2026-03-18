@@ -508,43 +508,55 @@
         probe.src = src;
     }
 
-    function bufferVideo(videoEl, src, $wrapper, callback) {
+    function bufferVideo(videoEl, _src, $wrapper, callback) {
         if (videoEl._jzsaBuffered) {
             callback();
             return;
         }
-        var probe = document.createElement('video');
-        probe.preload = 'auto';
+
+        // Buffer directly into the real <video> element that Plyr manages.
+        // Access via plyr.media to ensure we're buffering into the actual
+        // player, not a throwaway probe whose cache gets discarded.
+        var media = (videoEl._jzsaPlyr && videoEl._jzsaPlyr.media) || videoEl;
         var handled = false;
-        function cleanup() {
+
+        function onReady() {
             if (handled) return;
             handled = true;
-            probe.oncanplaythrough = null;
-            probe.onerror = null;
-            probe.src = '';
-            probe = null;
-        }
-        probe.oncanplaythrough = function() {
+            media.removeEventListener('canplaythrough', onReady);
             videoEl._jzsaBuffered = true;
             var $label = $wrapper.find('.jzsa-video-duration');
             if ($label.length) {
                 $label.addClass('jzsa-video-duration--buffered');
             }
-            cleanup();
             callback();
-        };
-        probe.onerror = function() {
-            cleanup();
+        }
+
+        // If already buffered enough, skip
+        if (media.readyState >= 4) { // HAVE_ENOUGH_DATA
+            videoEl._jzsaBuffered = true;
+            var $label = $wrapper.find('.jzsa-video-duration');
+            if ($label.length) {
+                $label.addClass('jzsa-video-duration--buffered');
+            }
             callback();
-        };
-        // Timeout for very large videos
+            return;
+        }
+
+        media.addEventListener('canplaythrough', onReady, { once: true });
+
+        // Tell the real element to start buffering
+        media.preload = 'auto';
+        media.load();
+
+        // Timeout for very large videos — move on, don't block the queue
         setTimeout(function() {
             if (!handled) {
-                cleanup();
+                handled = true;
+                media.removeEventListener('canplaythrough', onReady);
                 callback();
             }
         }, 30000);
-        probe.src = src;
     }
 
     /**
