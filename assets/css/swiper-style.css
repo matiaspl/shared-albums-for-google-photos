@@ -12,13 +12,16 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-controls-fade-easing: linear;
     --jzsa-controls-bg-duration: 0.3s;
     --jzsa-controls-bg-easing: ease;
-    --jzsa-controls-bg: rgba(0, 0, 0, 0.5);
+    --jzsa-controls-bg: rgba(0, 0, 0, 0.35);
     --jzsa-controls-bg-hover: rgba(0, 0, 0, 0.7);
     --jzsa-controls-circle-size: 44px;
     --jzsa-controls-square-size: 40px;
     --jzsa-controls-icon-size: 20px;
     --jzsa-controls-pill-radius: 20px;
     --jzsa-controls-square-radius: 4px;
+    --jzsa-nav-opacity: 0.6;
+    --jzsa-nav-opacity-hover: 0.9;
+    --jzsa-nav-opacity-active: 1;
     position: relative; /* For loader overlay positioning */
 }
 
@@ -133,8 +136,8 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     outline: none !important;
     box-shadow: none !important;
     -webkit-tap-highlight-color: transparent;
-    opacity: 0.25;
-    transition: opacity 0.15s ease;
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
 }
 
 .jzsa-album .swiper-button-next:after,
@@ -144,17 +147,12 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 .jzsa-album .swiper-button-next:hover,
 .jzsa-album .swiper-button-prev:hover {
-    opacity: 0.75;
-}
-
-.jzsa-album .swiper-button-next:hover:after,
-.jzsa-album .swiper-button-prev:hover:after {
-    -webkit-text-stroke: 1px white;
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
 }
 
 .jzsa-album .swiper-button-next:active,
 .jzsa-album .swiper-button-prev:active {
-    opacity: 1;
+    filter: opacity(var(--jzsa-nav-opacity-active)) !important;
 }
 
 .jzsa-album .swiper-button-next.swiper-button-disabled,
@@ -271,7 +269,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Play/Pause button */
 .jzsa-album .swiper-button-play-pause {
     position: absolute;
-    bottom: 41px;
+    bottom: 28px;
     left: 50%;
     transform: translateX(-50%);
     width: var(--jzsa-controls-circle-size);
@@ -284,8 +282,8 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     display: none;
     align-items: center;
     justify-content: center;
-    opacity: 0.25;
-    transition: opacity 0.15s ease;
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
     appearance: none;
     -webkit-appearance: none;
     padding: 0;
@@ -311,7 +309,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Show play/pause button in fullscreen, and inline when autoplay is enabled */
 .jzsa-album.jzsa-is-fullscreen .swiper-button-play-pause {
     display: flex;
-    bottom: 64px;
+    bottom: 46px;
 }
 
 .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
@@ -326,7 +324,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
     .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):hover .swiper-button-play-pause,
     .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):focus-within .swiper-button-play-pause {
-        opacity: var(--jzsa-controls-visible-opacity);
+        opacity: 0.15;
         pointer-events: auto;
     }
 }
@@ -339,23 +337,18 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 @media (hover: none), (pointer: coarse) {
     .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
         display: flex;
-        opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
 }
 
 .jzsa-album .swiper-button-play-pause:hover {
-    opacity: 0.75;
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
 }
 
 .jzsa-album .swiper-button-play-pause:active {
-    opacity: 1;
+    filter: opacity(var(--jzsa-nav-opacity-active)) !important;
 }
 
-/* Thicker play/pause icon on hover */
-.jzsa-album .swiper-button-play-pause:hover:after {
-    filter: drop-shadow(0 0 1px white);
-}
 
 /* Play icon (default — slideshow paused) */
 .jzsa-album .swiper-button-play-pause:after {
@@ -371,13 +364,13 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 /* Pause icon (slideshow running) */
 .jzsa-album .swiper-button-play-pause.playing:after {
-    width: 10px;
-    height: 14px;
-    border-width: 0 2.5px;
+    width: 8px;
+    height: 12px;
+    border-width: 0 2px;
     border-color: white;
     border-style: solid;
-    border-left-width: 2.5px;
-    border-right-width: 2.5px;
+    border-left-width: 2px;
+    border-right-width: 2px;
     border-top-width: 0;
     border-bottom-width: 0;
     margin-left: 0;
@@ -486,6 +479,7 @@ body.jzsa-no-scroll {
     padding: 4px 16px;
     border-radius: var(--jzsa-controls-pill-radius);
     display: inline-block;
+    bottom: 10px;
     left: 10px;
     right: 10px;
     margin: 0 auto;
@@ -502,7 +496,7 @@ body.jzsa-no-scroll {
 
 /* Move pagination up in fullscreen to make room for progress bar below */
 .jzsa-album.jzsa-is-fullscreen .swiper-pagination {
-    bottom: 25px;
+    bottom: 23px;
 }
 
 /* Loading state */
@@ -700,6 +694,14 @@ body.jzsa-no-scroll {
     animation: jzsa-controls-fade-in-soft 1000ms ease-out both;
 }
 
+/* Nav arrows and play/pause use subtle opacity via filter (immune to Swiper's opacity control) */
+.jzsa-album.jzsa-loaded .swiper-button-prev,
+.jzsa-album.jzsa-loaded .swiper-button-next,
+.jzsa-album.jzsa-loaded .swiper-button-play-pause {
+    animation: none;
+    filter: opacity(var(--jzsa-nav-opacity));
+}
+
 /* Gallery controls live in a sibling overlay shell; hide them while content is pending. */
 .jzsa-gallery-shell > .jzsa-gallery-album.jzsa-loader-pending ~ .jzsa-gallery-controls {
     opacity: 0;
@@ -735,6 +737,15 @@ body.jzsa-no-scroll {
     }
     to {
         opacity: var(--jzsa-controls-visible-opacity);
+    }
+}
+
+@keyframes jzsa-controls-fade-in-subtle {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.15;
     }
 }
 
