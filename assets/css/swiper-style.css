@@ -1402,6 +1402,13 @@ body.jzsa-no-scroll {
     background: var(--jzsa-accent-color, #FF69B4);
 }
 
+/* When Plyr is playing, always hide the duration label — mirrors Plyr's own
+   hide of .plyr__control--overlaid so the two never get out of sync. */
+.plyr--playing .jzsa-video-duration {
+    opacity: 0;
+    visibility: hidden;
+}
+
 
 /* --- Video badge on gallery thumbnails --- */
 
