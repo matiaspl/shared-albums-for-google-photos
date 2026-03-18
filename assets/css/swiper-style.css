@@ -1285,21 +1285,17 @@ body.jzsa-no-scroll {
     text-align: center;
     z-index: 16;
     box-sizing: content-box;
+    opacity: 0;
 }
 
-/* Subtle pulsing placeholder while loading metadata */
+/* Hidden while loading — completely invisible */
 .jzsa-video-duration--loading {
-    animation: jzsa-duration-pulse 1.5s ease-in-out infinite;
-}
-
-@keyframes jzsa-duration-pulse {
-    0%, 100% { opacity: 0.3; }
-    50%      { opacity: 0.6; }
+    opacity: 0;
 }
 
 /* Fade in when duration arrives */
 .jzsa-video-duration--ready {
-    animation: jzsa-duration-fade-in 0.5s ease-out forwards;
+    animation: jzsa-duration-fade-in 0.8s ease-out forwards;
 }
 
 @keyframes jzsa-duration-fade-in {
