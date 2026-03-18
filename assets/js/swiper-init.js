@@ -2749,6 +2749,12 @@
      * @param {string} html       Gallery markup to render.
      */
     function renderGalleryMarkup($container, html) {
+        // Pause any playing videos before destroying DOM to prevent orphan audio
+        $container.find('video.jzsa-video-player').each(function() {
+            if (this._jzsaPlyr && this._jzsaPlyr.playing) {
+                this._jzsaPlyr.pause();
+            }
+        });
         destroyPlyrInContainer($container);
         var $loader = $container.children('.jzsa-loader').detach();
         $container.html(html);
