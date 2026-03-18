@@ -72,25 +72,25 @@ class JZSA_Shared_Albums {
 	const DEFAULT_MAX_PHOTOS_PER_ALBUM = 300;
 
 	/**
-	 * Default autoplay delay range (in seconds) - for normal mode
+	 * Default slideshow delay range (in seconds) - for normal mode
 	 *
 	 * @var string
 	 */
-	const DEFAULT_AUTOPLAY_DELAY_RANGE = '5';
+	const DEFAULT_SLIDESHOW_DELAY_RANGE = '5';
 
 	/**
-	 * Default fullscreen autoplay delay (in seconds) - can be single value or range
+	 * Default fullscreen slideshow delay (in seconds) - can be single value or range
 	 *
 	 * @var string
 	 */
-	const DEFAULT_FULLSCREEN_AUTOPLAY_DELAY = '5';
+	const DEFAULT_FULLSCREEN_SLIDESHOW_DELAY = '5';
 
 	/**
-	 * Default autoplay inactivity timeout (in seconds) - time after which autoplay resumes after user interaction
+	 * Default slideshow inactivity timeout (in seconds) - time after which slideshow resumes after user interaction
 	 *
 	 * @var string
 	 */
-	const DEFAULT_AUTOPLAY_INACTIVITY_TIMEOUT = '30';
+	const DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT = '30';
 
 	/**
 	 * Data provider instance
@@ -352,17 +352,17 @@ class JZSA_Shared_Albums {
 			'height-explicit' => isset( $atts['height'] ),
 			'image-width'     => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
 			'image-height'    => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
-			// Autoplay (normal mode)
-			'autoplay'       => $this->parse_bool( $atts, 'autoplay', false ),
-			'autoplay-delay' => $this->parse_delay_range( isset( $atts['autoplay-delay'] ) ? $atts['autoplay-delay'] : self::DEFAULT_AUTOPLAY_DELAY_RANGE ),
+			// Slideshow (normal mode) — supports legacy 'autoplay*' aliases
+			'slideshow'       => $this->parse_bool_with_alias( $atts, 'slideshow', 'autoplay', false ),
+			'slideshow-delay' => $this->parse_delay_range( $this->attr_with_alias( $atts, 'slideshow-delay', 'autoplay-delay', self::DEFAULT_SLIDESHOW_DELAY_RANGE ) ),
 			'start-at'       => $this->parse_start_at( $atts ),
 
-			// Fullscreen autoplay (fullscreen mode only)
-			'full-screen-autoplay'       => $this->parse_bool( $atts, 'full-screen-autoplay', false ),
-			'full-screen-autoplay-delay' => $this->parse_delay_range( isset( $atts['full-screen-autoplay-delay'] ) ? $atts['full-screen-autoplay-delay'] : self::DEFAULT_FULLSCREEN_AUTOPLAY_DELAY ),
+			// Fullscreen slideshow (fullscreen mode only)
+			'full-screen-slideshow'       => $this->parse_bool_with_alias( $atts, 'full-screen-slideshow', 'full-screen-autoplay', false ),
+			'full-screen-slideshow-delay' => $this->parse_delay_range( $this->attr_with_alias( $atts, 'full-screen-slideshow-delay', 'full-screen-autoplay-delay', self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ) ),
 
-			// Autoplay inactivity timeout
-			'autoplay-inactivity-timeout' => isset( $atts['autoplay-inactivity-timeout'] ) ? intval( $atts['autoplay-inactivity-timeout'] ) : intval( self::DEFAULT_AUTOPLAY_INACTIVITY_TIMEOUT ),
+			// Slideshow inactivity timeout
+			'slideshow-inactivity-timeout' => intval( $this->attr_with_alias( $atts, 'slideshow-inactivity-timeout', 'autoplay-inactivity-timeout', self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT ) ),
 
 			// Display
 			'mode'             => $this->parse_mode( $atts ),
@@ -436,6 +436,44 @@ class JZSA_Shared_Albums {
 		}
 
 		return 'true' === strtolower( $atts[ $key ] );
+	}
+
+	/**
+	 * Parse boolean attribute with a legacy alias fallback.
+	 *
+	 * @param array  $atts    Attributes.
+	 * @param string $key     Primary key.
+	 * @param string $alias   Legacy alias key.
+	 * @param bool   $default Default value.
+	 * @return bool
+	 */
+	private function parse_bool_with_alias( $atts, $key, $alias, $default ) {
+		if ( isset( $atts[ $key ] ) ) {
+			return $this->parse_bool( $atts, $key, $default );
+		}
+		if ( isset( $atts[ $alias ] ) ) {
+			return $this->parse_bool( $atts, $alias, $default );
+		}
+		return $default;
+	}
+
+	/**
+	 * Get an attribute value with a legacy alias fallback.
+	 *
+	 * @param array  $atts    Attributes.
+	 * @param string $key     Primary key.
+	 * @param string $alias   Legacy alias key.
+	 * @param mixed  $default Default value.
+	 * @return mixed
+	 */
+	private function attr_with_alias( $atts, $key, $alias, $default ) {
+		if ( isset( $atts[ $key ] ) ) {
+			return $atts[ $key ];
+		}
+		if ( isset( $atts[ $alias ] ) ) {
+			return $atts[ $alias ];
+		}
+		return $default;
 	}
 
 	/**

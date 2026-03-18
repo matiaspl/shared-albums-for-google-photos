@@ -30,7 +30,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 * **Fullscreen Navigation** - In fullscreen, single-click/tap navigates previous/next photos
 * **Fullscreen Toggle Modes** - `full-screen-toggle` supports `button-only` (default), `single-click`, `double-click`, and `disabled`
 * **Fullscreen Image Fit** - `full-screen-image-fit` supports `fit` (default), `contain`, and `cover`
-* **Dual-Mode Autoplay** - Separate autoplay settings for normal and fullscreen modes
+* **Dual-Mode Slideshow** - Separate slideshow settings for normal and fullscreen modes
 * **Zoom Support** - Pinch-to-zoom on touch devices
 * **Keyboard Navigation** - Use arrow keys to navigate, spacebar to play/pause in fullscreen
 * **Progressive Loading** - Loads preview images first, then full-resolution for optimal performance
@@ -38,7 +38,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 * **Lazy Loading** - Images load as needed for optimal performance
 * **Error Recovery** - Graceful fallback with placeholder when images fail to load
 * **Download Button** - Optional download button to save photos to your device
-* **Customizable** - Control dimensions, autoplay, delays, and more
+* **Customizable** - Control dimensions, slideshow, delays, and more
 * **Cached for Performance** - Gallery HTML is cached for 24 hours
 * **Large Album Support** - Handles up to 300 photos per album (Google Photos limitation; very old iOS/WebKit devices may be limited to 25 photos for stability)
 
@@ -83,12 +83,12 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
     image-fit="contain"
     width="500"
     height="375"
-    autoplay="false"
-    autoplay-delay="5"
-    autoplay-inactivity-timeout="60"
+    slideshow="false"
+    slideshow-delay="5"
+    slideshow-inactivity-timeout="60"
     start-at="1"
-    full-screen-autoplay="false"
-    full-screen-autoplay-delay="5"
+    full-screen-slideshow="false"
+    full-screen-slideshow-delay="5"
     full-screen-image-fit="fit"
     full-screen-toggle="button-only"
     show-title="true"
@@ -103,7 +103,7 @@ Tip: `full-screen-image-fit` defaults to `fit`, which preserves the full photo (
 
 The only required parameter is **link** — the Google Photos share URL.
 
-All other parameters are optional and control appearance, autoplay, fullscreen behavior, display options, gallery mode, and gallery layout.
+All other parameters are optional and control appearance, slideshow, fullscreen behavior, display options, gallery mode, and gallery layout.
 
 For the complete list of all parameters with descriptions and defaults, visit the plugin's **Settings** page in your WordPress admin (Settings → Shared Albums for Google Photos). The Settings page also includes a Playground for experimenting with shortcodes and live Samples you can copy.
 
@@ -174,7 +174,7 @@ When enabled with `show-download-button="true"`, a download button appears in th
 
 = How does the play/pause button work? =
 
-In fullscreen mode, a play/pause button appears above the photo counter at the bottom center. Click it or press the spacebar to toggle autoplay on/off. The button shows a play icon (▶) when paused and a pause icon (⏸) when playing. This works regardless of the `full-screen-autoplay` setting - if autoplay is disabled, the button lets you start it manually.
+In fullscreen mode, a play/pause button appears above the photo counter at the bottom center. Click it or press the spacebar to toggle slideshow on/off. The button shows a play icon (▶) when paused and a pause icon (⏸) when playing. This works regardless of the `full-screen-slideshow` setting - if slideshow is disabled, the button lets you start it manually.
 
 = What happens if I update the shortcode? =
 

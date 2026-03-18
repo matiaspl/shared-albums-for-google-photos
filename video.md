@@ -23,7 +23,7 @@ Gallery uniform layout now uses the shared wrapper+video structure.
 
 Gallery justified layout now uses the shared wrapper+video structure.
 
-### Step 4 — CSS: video wrapper+player fit inside gallery items ✅
+### Step 4 — CSS: video wrapper fit inside gallery items ✅
 
 `.jzsa-video-wrapper` and `.jzsa-video-player` work inside `.jzsa-gallery-item-video`
 for both uniform and justified layouts. Debug backgrounds (green/blue) and red border active.

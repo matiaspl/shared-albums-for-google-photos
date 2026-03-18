@@ -123,7 +123,7 @@ class JZSA_Renderer {
 			'<button class="swiper-button-play-pause" title="%s"></button>',
 			esc_attr__( 'Play/Pause (Space)', 'janzeman-shared-albums-for-google-photos' )
 		);
-		$html .= '<div class="swiper-autoplay-progress"><div class="swiper-autoplay-progress-bar"></div></div>';
+		$html .= '<div class="swiper-slideshow-progress"><div class="swiper-slideshow-progress-bar"></div></div>';
 
 		// External link button (if enabled)
 		if ( ! empty( $config['show-link-button'] ) && ! empty( $config['album-url'] ) ) {
@@ -194,8 +194,8 @@ class JZSA_Renderer {
 
 		// Gallery settings
 		$boolean_attrs = array(
-			'autoplay'             => 'data-autoplay',
-			'full-screen-autoplay' => 'data-full-screen-autoplay',
+			'slideshow'             => 'data-slideshow',
+			'full-screen-slideshow' => 'data-full-screen-slideshow',
 			'show-title'           => 'data-show-title',
 			'show-counter'         => 'data-show-counter',
 			'show-link-button'     => 'data-show-link-button',
@@ -210,8 +210,8 @@ class JZSA_Renderer {
 		}
 
 		// Numeric/string attributes
-		if ( isset( $config['autoplay-delay'] ) ) {
-			$attrs[] = sprintf( 'data-autoplay-delay="%s"', esc_attr( $config['autoplay-delay'] ) );
+		if ( isset( $config['slideshow-delay'] ) ) {
+			$attrs[] = sprintf( 'data-slideshow-delay="%s"', esc_attr( $config['slideshow-delay'] ) );
 		}
 
 		if ( ! empty( $config['image-fit'] ) ) {
@@ -226,12 +226,12 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-start-at="%s"', esc_attr( $config['start-at'] ) );
 		}
 
-		if ( isset( $config['full-screen-autoplay-delay'] ) ) {
-			$attrs[] = sprintf( 'data-full-screen-autoplay-delay="%s"', esc_attr( $config['full-screen-autoplay-delay'] ) );
+		if ( isset( $config['full-screen-slideshow-delay'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-slideshow-delay="%s"', esc_attr( $config['full-screen-slideshow-delay'] ) );
 		}
 
-		if ( isset( $config['autoplay-inactivity-timeout'] ) ) {
-			$attrs[] = sprintf( 'data-autoplay-inactivity-timeout="%s"', esc_attr( $config['autoplay-inactivity-timeout'] ) );
+		if ( isset( $config['slideshow-inactivity-timeout'] ) ) {
+			$attrs[] = sprintf( 'data-slideshow-inactivity-timeout="%s"', esc_attr( $config['slideshow-inactivity-timeout'] ) );
 		}
 
 		if ( ! empty( $config['mode'] ) ) {
@@ -297,12 +297,12 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-gallery-explicit-height="%d"', intval( $config['height'] ) );
 		}
 
-		if ( isset( $config['autoplay'] ) ) {
-			$attrs[] = sprintf( 'data-autoplay="%s"', $config['autoplay'] ? 'true' : 'false' );
+		if ( isset( $config['slideshow'] ) ) {
+			$attrs[] = sprintf( 'data-slideshow="%s"', $config['slideshow'] ? 'true' : 'false' );
 		}
 
-		if ( isset( $config['autoplay-delay'] ) ) {
-			$attrs[] = sprintf( 'data-autoplay-delay="%s"', esc_attr( $config['autoplay-delay'] ) );
+		if ( isset( $config['slideshow-delay'] ) ) {
+			$attrs[] = sprintf( 'data-slideshow-delay="%s"', esc_attr( $config['slideshow-delay'] ) );
 		}
 
 		if ( ! empty( $config['album-url'] ) ) {
@@ -313,27 +313,27 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-album-title="%s"', esc_attr( $config['album-title'] ) );
 		}
 
-		// Fullscreen player settings (gallery click opens fullscreen with full player experience)
-		$player_booleans = array(
-			'full-screen-autoplay' => 'data-full-screen-autoplay',
+		// Fullscreen slideshow settings (gallery click opens fullscreen slideshow)
+		$slideshow_booleans = array(
+			'full-screen-slideshow' => 'data-full-screen-slideshow',
 			'show-title'           => 'data-show-title',
 			'show-counter'         => 'data-show-counter',
 			'show-link-button'     => 'data-show-link-button',
 			'show-download-button' => 'data-show-download-button',
 			'video-autohide-controls' => 'data-video-autohide-controls',
 		);
-		foreach ( $player_booleans as $key => $attr_name ) {
+		foreach ( $slideshow_booleans as $key => $attr_name ) {
 			if ( isset( $config[ $key ] ) ) {
 				$attrs[] = sprintf( '%s="%s"', $attr_name, $config[ $key ] ? 'true' : 'false' );
 			}
 		}
 
-		if ( isset( $config['full-screen-autoplay-delay'] ) ) {
-			$attrs[] = sprintf( 'data-full-screen-autoplay-delay="%s"', esc_attr( $config['full-screen-autoplay-delay'] ) );
+		if ( isset( $config['full-screen-slideshow-delay'] ) ) {
+			$attrs[] = sprintf( 'data-full-screen-slideshow-delay="%s"', esc_attr( $config['full-screen-slideshow-delay'] ) );
 		}
 
-		if ( isset( $config['autoplay-inactivity-timeout'] ) ) {
-			$attrs[] = sprintf( 'data-autoplay-inactivity-timeout="%s"', esc_attr( $config['autoplay-inactivity-timeout'] ) );
+		if ( isset( $config['slideshow-inactivity-timeout'] ) ) {
+			$attrs[] = sprintf( 'data-slideshow-inactivity-timeout="%s"', esc_attr( $config['slideshow-inactivity-timeout'] ) );
 		}
 
 		if ( ! empty( $config['full-screen-toggle'] ) ) {

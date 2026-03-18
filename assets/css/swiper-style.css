@@ -237,8 +237,8 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-position: center;
 }
 
-/* Autoplay progress bar (only visible when autoplay is running) */
-.jzsa-album .swiper-autoplay-progress {
+/* Slideshow progress bar (only visible when slideshow is running) */
+.jzsa-album .swiper-slideshow-progress {
     position: absolute;
     bottom: 4px;
     left: 50%;
@@ -254,11 +254,11 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* In fullscreen mode, position it below the raised pagination */
-.jzsa-album.jzsa-is-fullscreen .swiper-autoplay-progress {
+.jzsa-album.jzsa-is-fullscreen .swiper-slideshow-progress {
     bottom: 12px;
 }
 
-.jzsa-album .swiper-autoplay-progress-bar {
+.jzsa-album .swiper-slideshow-progress-bar {
     height: 100%;
     width: 100%;
     background: rgba(255, 255, 255, 0.8);
@@ -306,36 +306,36 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     border: none !important;
 }
 
-/* Show play/pause button in fullscreen, and inline when autoplay is enabled */
+/* Show play/pause button in fullscreen, and inline when slideshow is enabled */
 .jzsa-album.jzsa-is-fullscreen .swiper-button-play-pause {
     display: flex;
     bottom: 46px;
 }
 
-.jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
     display: flex;
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+    .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
         opacity: 0;
         pointer-events: none;
     }
 
-    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):hover .swiper-button-play-pause,
-    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):focus-within .swiper-button-play-pause {
+    .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):hover .swiper-button-play-pause,
+    .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):focus-within .swiper-button-play-pause {
         opacity: 0.15;
         pointer-events: auto;
     }
 }
 
 /* Keep inline hover behavior predictable (do not force opacity via control intro animation). */
-.jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen).jzsa-loaded .swiper-button-play-pause {
+.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen).jzsa-loaded .swiper-button-play-pause {
     animation: none;
 }
 
 @media (hover: none), (pointer: coarse) {
-    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+    .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
         display: flex;
         pointer-events: auto;
     }
@@ -569,7 +569,7 @@ body.jzsa-no-scroll {
     height: 100%;
 }
 
-/* Carousel mode: slides are clickable and open fullscreen player */
+/* Carousel mode: slides are clickable and open fullscreen slideshow */
 .jzsa-album[data-mode="carousel"] .swiper-slide {
     cursor: pointer;
 }
@@ -639,7 +639,7 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-play-pause,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-download,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-external-link,
-.jzsa-album.jzsa-fullscreen-waiting .swiper-autoplay-progress {
+.jzsa-album.jzsa-fullscreen-waiting .swiper-slideshow-progress {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -655,7 +655,7 @@ body.jzsa-no-scroll {
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-play-pause,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-download,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-external-link,
-.jzsa-album.swiper:not(.jzsa-loaded) .swiper-autoplay-progress {
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-slideshow-progress {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -675,7 +675,7 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-loader-pending .swiper-button-play-pause,
 .jzsa-album.jzsa-loader-pending .swiper-button-download,
 .jzsa-album.jzsa-loader-pending .swiper-button-external-link,
-.jzsa-album.jzsa-loader-pending .swiper-autoplay-progress {
+.jzsa-album.jzsa-loader-pending .swiper-slideshow-progress {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -689,7 +689,7 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-loaded .swiper-button-play-pause,
 .jzsa-album.jzsa-loaded .swiper-button-download,
 .jzsa-album.jzsa-loaded .swiper-button-external-link,
-.jzsa-album.jzsa-loaded .swiper-autoplay-progress {
+.jzsa-album.jzsa-loaded .swiper-slideshow-progress {
     visibility: visible;
     animation: jzsa-controls-fade-in-soft 1000ms ease-out both;
 }
@@ -1035,7 +1035,7 @@ body.jzsa-no-scroll {
     pointer-events: none;
 }
 
-.jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
+.jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause {
     display: flex;
 }
 
@@ -1057,20 +1057,20 @@ body.jzsa-no-scroll {
         pointer-events: auto;
     }
 
-    .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
+    .jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause {
         opacity: 0;
         pointer-events: none;
     }
 
-    .jzsa-gallery-shell:hover .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause,
-    .jzsa-gallery-shell:focus-within .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
+    .jzsa-gallery-shell:hover .jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause,
+    .jzsa-gallery-shell:focus-within .jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
 }
 
 @media (hover: none), (pointer: coarse) {
-    .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
+    .jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause {
         display: none;
         opacity: 0;
         pointer-events: none;
@@ -1149,14 +1149,14 @@ body.jzsa-no-scroll {
 }
 
 /* ============================================================================
-   Gallery fullscreen player (hidden until fullscreen is entered)
+   Gallery fullscreen slideshow (hidden until fullscreen is entered)
    ============================================================================ */
 
-/* Gallery fullscreen player: rendered off-screen at viewport size so Swiper can
+/* Gallery fullscreen slideshow: rendered off-screen at viewport size so Swiper can
    measure dimensions during init. The existing .jzsa-album:fullscreen and
    .jzsa-album.jzsa-pseudo-fullscreen CSS handles the rest — exactly the same
-   mechanism used by player/carousel/gallery modes. */
-.jzsa-gallery-player {
+   mechanism used by slideshow/carousel/gallery modes. */
+.jzsa-gallery-slideshow {
     position: fixed;
     left: -200vw;
     width: 100vw;
@@ -1167,7 +1167,7 @@ body.jzsa-no-scroll {
    Video support
    ============================================================================ */
 
-/* --- Video slide in Swiper (slider/carousel/fullscreen player) --- */
+/* --- Video slide in Swiper (slider/carousel/fullscreen slideshow) --- */
 
 /* Video wrapper: shared across slider and gallery modes */
 .jzsa-video-wrapper {
