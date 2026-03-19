@@ -1,0 +1,10 @@
+{
+    "configurations": [
+        {
+            "type": "chrome",
+            "name": "Local",
+            "request": "launch",
+            "url": "http://dev.local/test/"
+        }
+    ]
+}
