@@ -629,6 +629,7 @@ body.jzsa-no-scroll {
 .jzsa-album[data-mode="carousel"] .swiper-slide {
     width: auto;
     height: auto;
+    position: relative;
 }
 
 .jzsa-album[data-mode="carousel"] .swiper-slide img {
@@ -653,6 +654,56 @@ body.jzsa-no-scroll {
     /* Keep cursor feedback for clickability but avoid any dimming/fog effect */
     opacity: 1;
     transition: opacity 0.2s ease;
+}
+
+/* Carousel per-tile fullscreen button */
+.jzsa-album[data-mode="carousel"] .swiper-slide .jzsa-carousel-slide-fs-btn {
+    top: 0;
+    right: 0;
+    z-index: 12;
+    opacity: 0;
+    pointer-events: none;
+    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
+                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+}
+
+/* In carousel preview mode, hide the single container-level fullscreen button.
+   Per-tile buttons are used instead. */
+.jzsa-album.jzsa-carousel-tile-fs-enabled:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) > .swiper-button-fullscreen {
+    display: none !important;
+}
+
+/* Keep the container-level fullscreen button available while fullscreen is active
+   so exiting fullscreen is always obvious. */
+.jzsa-album.jzsa-carousel-tile-fs-enabled:fullscreen > .swiper-button-fullscreen,
+.jzsa-album.jzsa-carousel-tile-fs-enabled:-webkit-full-screen > .swiper-button-fullscreen,
+.jzsa-album.jzsa-carousel-tile-fs-enabled.jzsa-is-fullscreen > .swiper-button-fullscreen,
+.jzsa-album.jzsa-carousel-tile-fs-enabled.jzsa-pseudo-fullscreen > .swiper-button-fullscreen {
+    display: flex !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:hover .jzsa-carousel-slide-fs-btn,
+    .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:focus-within .jzsa-carousel-slide-fs-btn {
+        opacity: var(--jzsa-controls-visible-opacity);
+        pointer-events: auto;
+    }
+}
+
+@media (hover: none), (pointer: coarse) {
+    .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-slide-fs-btn {
+        opacity: var(--jzsa-controls-visible-opacity);
+        pointer-events: auto;
+    }
+}
+
+/* Per-tile buttons are preview-mode affordances only. Hide in fullscreen. */
+.jzsa-album[data-mode="carousel"].jzsa-is-fullscreen .jzsa-carousel-slide-fs-btn,
+.jzsa-album[data-mode="carousel"].jzsa-pseudo-fullscreen .jzsa-carousel-slide-fs-btn,
+.jzsa-album[data-mode="carousel"]:fullscreen .jzsa-carousel-slide-fs-btn,
+.jzsa-album[data-mode="carousel"]:-webkit-full-screen .jzsa-carousel-slide-fs-btn {
+    opacity: 0 !important;
+    pointer-events: none !important;
 }
 
 /* Fullscreen slides: Swiper's own grab/grabbing cursor is used.
@@ -1299,6 +1350,8 @@ body.jzsa-no-scroll {
     height: calc(100% + 2px);
     margin: -1px;
     position: relative;
+    /* Plyr defaults to min-width: 200px; allow narrow carousel cells. */
+    min-width: 0;
 }
 
 .jzsa-video-wrapper .plyr__video-wrapper {
@@ -1383,9 +1436,10 @@ body.jzsa-no-scroll {
 }
 
 /* Responsive Plyr controls — container query based */
-/* Small  (<250px):  play + progress + mute         */
-/* Medium (250px+):  + restart + time               */
-/* Wide   (400px+):  + volume slider                */
+/* Tiny   (<120px):  play + mute                    */
+/* Small  (120px+):  + progress                      */
+/* Medium (240px+):  + restart + time                */
+/* Wide   (360px+):  + volume slider                 */
 
 .jzsa-video-wrapper {
     container-type: inline-size;
@@ -1408,23 +1462,31 @@ body.jzsa-no-scroll {
 /* Mute button never hides — it acts as the right-side boundary
    preventing the progress bar from overflowing. */
 
-/* All sizes: always hide volume slider, restart, time by default */
+/* Tiny default: hide progress + volume slider + restart + time */
+.jzsa-video-wrapper .plyr__controls .plyr__progress__container,
 .jzsa-video-wrapper .plyr__volume input[type="range"],
 .jzsa-video-wrapper .plyr__time,
 .jzsa-video-wrapper [data-plyr="restart"] {
     display: none;
 }
 
-/* Medium (250px+): show restart + time */
-@container (min-width: 250px) {
+/* Small (120px+): show progress */
+@container (min-width: 120px) {
+    .jzsa-video-wrapper .plyr__controls .plyr__progress__container {
+        display: block;
+    }
+}
+
+/* Medium (240px+): show restart + time */
+@container (min-width: 240px) {
     .jzsa-video-wrapper .plyr__time,
     .jzsa-video-wrapper [data-plyr="restart"] {
         display: inline-flex;
     }
 }
 
-/* Wide (400px+): show everything */
-@container (min-width: 400px) {
+/* Wide (360px+): show everything */
+@container (min-width: 360px) {
     .jzsa-video-wrapper .plyr__volume input[type="range"] {
         display: block;
     }

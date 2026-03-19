@@ -708,14 +708,23 @@
         var config = options || {};
         var useLazyHints = !!config.lazyHints;
         var eagerIndex = typeof config.eagerIndex === 'number' ? config.eagerIndex : 0;
+        var mode = config.mode || '';
+        var showCarouselTileFullscreenButtons = !!config.showCarouselTileFullscreenButtons;
         var html = '';
         photos.forEach(function(photo, index) {
             var isVideo = photo.type === 'video';
+            var tileFullscreenBtn = '';
+            if (mode === 'carousel' && showCarouselTileFullscreenButtons) {
+                tileFullscreenBtn =
+                    '<button class="swiper-button-fullscreen jzsa-gallery-thumb-fs-btn jzsa-carousel-slide-fs-btn" type="button" ' +
+                    'aria-label="Open media ' + (index + 1) + ' in fullscreen"></button>';
+            }
 
             if (isVideo) {
                 var posterUrl = photo.preview || photo.full || '';
                 html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video">' +
                     buildVideoHtml({ src: photo.video, poster: posterUrl }) +
+                    tileFullscreenBtn +
                     '</div>';
             } else {
                 // Photo format: object with preview and full URLs
@@ -732,6 +741,7 @@
                     (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
                     'alt="Photo" class="jzsa-progressive-image"' + loadingAttr + ' decoding="async" />' +
                     '</div>' +
+                    tileFullscreenBtn +
                     '</div>';
             }
         });
@@ -1065,6 +1075,23 @@
 			var isCurrentlyFullscreen = isFullscreen();
 
 			if (!isCurrentlyFullscreen) {
+				// In carousel mode, a per-tile fullscreen button should open the
+				// exact clicked tile in fullscreen (not whichever slide is active).
+				if (params.mode === 'carousel') {
+					var $clickedSlide = $(e.target).closest('.swiper-slide');
+					if ($clickedSlide.length) {
+						var realIndexAttr = $clickedSlide.attr('data-swiper-slide-index');
+						var realIndex = realIndexAttr != null ? parseInt(realIndexAttr, 10) : NaN;
+						if (!isNaN(realIndex) && realIndex >= 0) {
+							if (swiper.params.loop && typeof swiper.slideToLoop === 'function') {
+								swiper.slideToLoop(realIndex, 0, false);
+							} else {
+								swiper.slideTo(realIndex, 0, false);
+							}
+						}
+					}
+				}
+
 				// About to enter fullscreen - apply fullscreen autoplay settings immediately (Android workaround)
 				jzsaDebug('🔍 Fullscreen button clicked - entering fullscreen');
                 applyFullscreenAutoplaySettings(swiper, {
@@ -2169,18 +2196,23 @@
         // Keep slider mode one-pass for stable rendering.
         var useDeferredSingleFirstPaint = false;
         var shouldUseLazyHints = mode === 'slider';
-        var slidesRenderOptions = shouldUseLazyHints
-            ? {
-                lazyHints: true,
-                eagerIndex: initialSlide
-            }
-            : null;
+        var showCarouselTileFullscreenButtons =
+            mode === 'carousel' && fullScreenSwitch !== 'disabled';
+        $container.toggleClass('jzsa-carousel-tile-fs-enabled', showCarouselTileFullscreenButtons);
+        var slidesRenderOptions = {
+            mode: mode,
+            showCarouselTileFullscreenButtons: showCarouselTileFullscreenButtons,
+            lazyHints: shouldUseLazyHints,
+            eagerIndex: initialSlide
+        };
 
         function renderSwiperBootstrapSlides() {
             if (useDeferredSingleFirstPaint) {
                 var bootstrapPhoto = allPhotos[initialSlide] || allPhotos[0];
                 $container.find('.swiper-wrapper').html(
                     buildSlidesHtml(bootstrapPhoto ? [bootstrapPhoto] : [], {
+                        mode: mode,
+                        showCarouselTileFullscreenButtons: showCarouselTileFullscreenButtons,
                         lazyHints: true,
                         eagerIndex: 0
                     })
