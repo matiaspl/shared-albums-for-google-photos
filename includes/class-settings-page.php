@@ -943,7 +943,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Video Support (Experimental)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<p><?php esc_html_e( 'Video support is an experimental feature. Albums containing videos will attempt to detect and play them using the native browser video player.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p><?php esc_html_e( 'Albums containing videos will attempt to detect and play them using the native browser video player. This is an experimental feature.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<table class="jzsa-settings-table">
 						<thead>
 							<tr>
