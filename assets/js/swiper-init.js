@@ -388,7 +388,7 @@
             return;
         }
         var $album = $container.closest('.jzsa-album, .jzsa-gallery');
-        var autohide = $album.length ? $album.attr('data-video-autohide-controls') === 'true' : false;
+        var autohide = $album.length ? $album.attr('data-video-controls-autohide') === 'true' : false;
         var videos = $container.find('video.jzsa-video-player');
         // console.log('🎬 initPlyrInContainer: found', videos.length, 'videos');
         videos.each(function() {
@@ -809,7 +809,7 @@
     function applyFullscreenAutoplaySettings(swiper, params) {
         // Only run this workaround on Android devices where fullscreenchange events
         // are known to be unreliable.
-		if (!params.fullScreenSlideshow || !isAndroid()) {
+		if (!params.fullscreenSlideshow || !isAndroid()) {
 			return;
 		}
 
@@ -821,8 +821,8 @@
         }
 
         // Update autoplay delay for fullscreen mode
-			var newDelay = params.fullScreenSlideshowDelay * MILLISECONDS_PER_SECOND;
-			jzsaDebug('🔍 Setting fullscreen autoplay delay to:', newDelay, 'ms (', params.fullScreenSlideshowDelay, 's)');
+			var newDelay = params.fullscreenSlideshowDelay * MILLISECONDS_PER_SECOND;
+			jzsaDebug('🔍 Setting fullscreen autoplay delay to:', newDelay, 'ms (', params.fullscreenSlideshowDelay, 's)');
 
         // Update both params and the active autoplay object
         swiper.params.autoplay.delay = newDelay;
@@ -834,7 +834,7 @@
         setTimeout(function() {
 				if (!params.slideshowPausedByInteraction && swiper.autoplay) {
 					swiper.autoplay.start();
-					jzsaDebug('▶️  Fullscreen autoplay started immediately (delay: ' + params.fullScreenSlideshowDelay + 's)');
+					jzsaDebug('▶️  Fullscreen autoplay started immediately (delay: ' + params.fullscreenSlideshowDelay + 's)');
 				}
         }, 100);
 
@@ -843,7 +843,7 @@
 			var fullscreenCheckTimeout = setTimeout(function() {
 				var nowFullscreen = isFullscreen();
 
-				if (nowFullscreen && params.fullScreenSlideshow) {
+				if (nowFullscreen && params.fullscreenSlideshow) {
 					jzsaDebug('⚠️  Fullscreen change event did not fire - applying settings via fallback (Android workaround)');
 
                 // Ensure settings are applied
@@ -851,7 +851,7 @@
                     swiper.autoplay.stop();
                 }
 
-                var newDelay = params.fullScreenSlideshowDelay * MILLISECONDS_PER_SECOND;
+                var newDelay = params.fullscreenSlideshowDelay * MILLISECONDS_PER_SECOND;
                 swiper.params.autoplay.delay = newDelay;
                 if (swiper.autoplay) {
                     swiper.autoplay.delay = newDelay;
@@ -859,7 +859,7 @@
 
 					if (!params.slideshowPausedByInteraction) {
 						swiper.autoplay.start();
-						jzsaDebug('▶️  Fullscreen autoplay started via fallback (delay: ' + params.fullScreenSlideshowDelay + 's)');
+						jzsaDebug('▶️  Fullscreen autoplay started via fallback (delay: ' + params.fullscreenSlideshowDelay + 's)');
 					}
             }
         }, 300);
@@ -909,20 +909,20 @@
 
             if (!params.browserPrefix) {
                 // Only log detailed debug info for standard API (avoid log spam)
-                // console.log('🔍 fullScreenSlideshow:', params.fullScreenSlideshow);
-                // console.log('🔍 fullScreenSlideshowDelay:', params.fullScreenSlideshowDelay);
+                // console.log('🔍 fullscreenSlideshow:', params.fullscreenSlideshow);
+                // console.log('🔍 fullscreenSlideshowDelay:', params.fullscreenSlideshowDelay);
             }
 
-            if (params.fullScreenSlideshow) {
+            if (params.fullscreenSlideshow) {
                 // Stop current autoplay if running
                 if (swiper.autoplay && swiper.autoplay.running) {
                     swiper.autoplay.stop();
                 }
                 // Update autoplay delay for fullscreen mode
-                var newDelay = params.fullScreenSlideshowDelay * MILLISECONDS_PER_SECOND;
+                var newDelay = params.fullscreenSlideshowDelay * MILLISECONDS_PER_SECOND;
 
 			if (!params.browserPrefix) {
-				jzsaDebug('🔍 Setting fullscreen autoplay delay to:', newDelay, 'ms (', params.fullScreenSlideshowDelay, 's)');
+				jzsaDebug('🔍 Setting fullscreen autoplay delay to:', newDelay, 'ms (', params.fullscreenSlideshowDelay, 's)');
 			}
 
                 // Update both params and the active autoplay object
@@ -939,7 +939,7 @@
                 // Start fullscreen autoplay if enabled and not paused by interaction
 				if (!params.slideshowPausedByInteraction) {
 					swiper.autoplay.start();
-					jzsaDebug('▶️  Fullscreen autoplay started (delay: ' + params.fullScreenSlideshowDelay + 's' + logPrefix + ')');
+					jzsaDebug('▶️  Fullscreen autoplay started (delay: ' + params.fullscreenSlideshowDelay + 's' + logPrefix + ')');
 				}
             }
         } else if (!fullscreenElement && swiper) {
@@ -1112,8 +1112,8 @@
 				// About to enter fullscreen - apply fullscreen autoplay settings immediately (Android workaround)
 				jzsaDebug('🔍 Fullscreen button clicked - entering fullscreen');
                 applyFullscreenAutoplaySettings(swiper, {
-                    fullScreenSlideshow: params.fullScreenSlideshow,
-                    fullScreenSlideshowDelay: params.fullScreenSlideshowDelay,
+                    fullscreenSlideshow: params.fullscreenSlideshow,
+                    fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
                     slideshowPausedByInteraction: params.slideshowPausedByInteraction
                 });
             }
@@ -1397,7 +1397,7 @@
         }
 
         // FULLSCREEN SWITCH HANDLERS
-		if (params.fullScreenSwitch === 'single-click') {
+		if (params.fullscreenTrigger === 'click') {
 			// Single-click enters fullscreen (does not exit — exit via button/Escape)
 			$container.on('click', function(e) {
 				if (!shouldIgnoreClick(e.target) && !isFullscreen()) {
@@ -1411,14 +1411,14 @@
 					focusClickedSlide(e);
 					jzsaDebug('🔍 Single-click entering fullscreen');
 					applyFullscreenAutoplaySettings(swiper, {
-						fullScreenSlideshow: params.fullScreenSlideshow,
-						fullScreenSlideshowDelay: params.fullScreenSlideshowDelay,
+						fullscreenSlideshow: params.fullscreenSlideshow,
+						fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
 						slideshowPausedByInteraction: params.slideshowPausedByInteraction
 					});
 					toggleFullscreen($container[0], params.showHintsOnFullscreen);
                 }
             });
-		} else if (params.fullScreenSwitch === 'double-click') {
+		} else if (params.fullscreenTrigger === 'double-click') {
 			// Double-click toggles fullscreen (both enter and exit)
 			$container.on('dblclick', function(e) {
 				if (!shouldIgnoreClick(e.target)) {
@@ -1429,8 +1429,8 @@
 						focusClickedSlide(e);
 						jzsaDebug('🔍 Double-click entering fullscreen');
 						applyFullscreenAutoplaySettings(swiper, {
-							fullScreenSlideshow: params.fullScreenSlideshow,
-							fullScreenSlideshowDelay: params.fullScreenSlideshowDelay,
+							fullscreenSlideshow: params.fullscreenSlideshow,
+							fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
 							slideshowPausedByInteraction: params.slideshowPausedByInteraction
 						});
 					} else {
@@ -1451,8 +1451,8 @@
 							focusClickedSlide(evt);
 							jzsaDebug('🔍 Double-tap entering fullscreen');
 							applyFullscreenAutoplaySettings(swiper, {
-								fullScreenSlideshow: params.fullScreenSlideshow,
-								fullScreenSlideshowDelay: params.fullScreenSlideshowDelay,
+								fullscreenSlideshow: params.fullscreenSlideshow,
+								fullscreenSlideshowDelay: params.fullscreenSlideshowDelay,
 								slideshowPausedByInteraction: params.slideshowPausedByInteraction
 							});
 						} else {
@@ -1466,10 +1466,10 @@
 		}
 
 		// FULLSCREEN NAVIGATION: single click navigates in fullscreen (all modes).
-		// When fullScreenSwitch is double-click, delay navigation so a double-click
+		// When fullscreenTrigger is double-click, delay navigation so a double-click
 		// to exit fullscreen does not trigger a spurious navigate first.
 		var navClickTimer = null;
-		var NAV_CLICK_DELAY = params.fullScreenSwitch === 'double-click' ? 250 : 0;
+		var NAV_CLICK_DELAY = params.fullscreenTrigger === 'double-click' ? 250 : 0;
 
 		function clearPendingNavClick() {
 			if (navClickTimer) {
@@ -1997,7 +1997,7 @@
             zoom: false,
 
             // Autoplay - enable if either normal mode or fullscreen mode has autoplay enabled
-            autoplay: (params.slideshow || params.fullScreenSlideshow) ? {
+            autoplay: (params.slideshow || params.fullscreenSlideshow) ? {
                 delay: params.slideshowDelay * MILLISECONDS_PER_SECOND,
                 disableOnInteraction: false,
             } : false,
@@ -2148,14 +2148,14 @@
             // Slideshow settings
             slideshow: $container.attr('data-slideshow') === 'true',
             slideshowDelay: parseInt($container.attr('data-slideshow-delay')) || DEFAULT_SLIDESHOW_DELAY_FALLBACK,
-            fullScreenSlideshow: $container.attr('data-full-screen-slideshow') === 'true',
-            fullScreenSlideshowDelay: parseInt($container.attr('data-full-screen-slideshow-delay')) || 5,
+            fullscreenSlideshow: $container.attr('data-fullscreen-slideshow') === 'true',
+            fullscreenSlideshowDelay: parseInt($container.attr('data-fullscreen-slideshow-delay')) || 5,
             slideshowInactivityTimeout: parseInt($container.attr('data-slideshow-inactivity-timeout')) || 30,
 
             // Display settings
             loop: allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
-            fullScreenSwitch:
-                $container.attr('data-full-screen-toggle') || 'button-only',
+            fullscreenTrigger:
+                $container.attr('data-fullscreen-trigger') || 'button-only',
             startAt: $container.attr('data-start-at') || '1',
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
@@ -2186,11 +2186,11 @@
         var totalCount = config.totalCount;
         var slideshow = config.slideshow;
         var slideshowDelay = config.slideshowDelay;
-        var fullScreenSlideshow = config.fullScreenSlideshow;
-        var fullScreenSlideshowDelay = config.fullScreenSlideshowDelay;
+        var fullscreenSlideshow = config.fullscreenSlideshow;
+        var fullscreenSlideshowDelay = config.fullscreenSlideshowDelay;
         var slideshowInactivityTimeout = config.slideshowInactivityTimeout;
         var loop = config.loop;
-        var fullScreenSwitch = config.fullScreenSwitch;
+        var fullscreenTrigger = config.fullscreenTrigger;
         var startAt = config.startAt;
         var showTitle = config.showTitle;
         var showCounter = config.showCounter;
@@ -2205,16 +2205,16 @@
 
         // Debug: Log configuration values
         // console.log('🔍 Configuration debug:');
-        // console.log('  - data-full-screen-slideshow-delay attribute:', $container.attr('data-full-screen-slideshow-delay'));
-        // console.log('  - fullScreenSlideshowDelay parsed:', fullScreenSlideshowDelay);
-        // console.log('  - fullScreenSlideshowDelay in ms:', fullScreenSlideshowDelay * MILLISECONDS_PER_SECOND);
+        // console.log('  - data-fullscreen-slideshow-delay attribute:', $container.attr('data-fullscreen-slideshow-delay'));
+        // console.log('  - fullscreenSlideshowDelay parsed:', fullscreenSlideshowDelay);
+        // console.log('  - fullscreenSlideshowDelay in ms:', fullscreenSlideshowDelay * MILLISECONDS_PER_SECOND);
 
         // Two-phase single bootstrap caused visible re-render flicker on some pages.
         // Keep slider mode one-pass for stable rendering.
         var useDeferredSingleFirstPaint = false;
         var shouldUseLazyHints = mode === 'slider';
         var showCarouselTileFullscreenButtons =
-            mode === 'carousel' && fullScreenSwitch !== 'disabled';
+            mode === 'carousel' && fullscreenTrigger !== 'disabled';
         $container.toggleClass('jzsa-carousel-tile-fs-enabled', showCarouselTileFullscreenButtons);
         var slidesRenderOptions = {
             mode: mode,
@@ -2350,7 +2350,7 @@
                 ZOOM_MAX_RATIO: ZOOM_MAX_RATIO,
                 ZOOM_MIN_RATIO: ZOOM_MIN_RATIO,
                 slideshow: slideshow,
-                fullScreenSlideshow: fullScreenSlideshow,
+                fullscreenSlideshow: fullscreenSlideshow,
                 slideshowDelay: slideshowDelay,
                 loop: loop,
                 LAZY_LOAD_PREV_NEXT_AMOUNT: LAZY_LOAD_PREV_NEXT_AMOUNT,
@@ -2364,7 +2364,7 @@
                 SLIDES_DESKTOP: SLIDES_DESKTOP,
                 SPACING_DESKTOP: SPACING_DESKTOP,
                 BREAKPOINT_DESKTOP: BREAKPOINT_DESKTOP,
-                fullScreenSwitch: fullScreenSwitch
+                fullscreenTrigger: fullscreenTrigger
             });
 
             // Initialize Swiper (pass the DOM element directly to avoid selector resolution issues)
@@ -2378,14 +2378,14 @@
             }
 
             // If normal mode autoplay is disabled but fullscreen autoplay is enabled, stop autoplay initially
-            if (!slideshow && fullScreenSlideshow && swiper.autoplay && swiper.autoplay.running) {
+            if (!slideshow && fullscreenSlideshow && swiper.autoplay && swiper.autoplay.running) {
                 swiper.autoplay.stop();
                 // console.log('⏸️  Autoplay stopped (only enabled in fullscreen mode)');
             }
 
             // Create hint system for fullscreen navigation guidance (not needed for button-only)
             var showHintsOnFullscreen = null;
-            if (fullScreenSwitch !== 'button-only') {
+            if (fullscreenTrigger !== 'button-only') {
                 showHintsOnFullscreen = createHintSystem(galleryId);
             }
 
@@ -2399,8 +2399,8 @@
             var fullscreenChangeParams = {
                 galleryId: galleryId,
                 mode: mode,
-                fullScreenSlideshow: fullScreenSlideshow,
-                fullScreenSlideshowDelay: fullScreenSlideshowDelay,
+                fullscreenSlideshow: fullscreenSlideshow,
+                fullscreenSlideshowDelay: fullscreenSlideshowDelay,
                 slideshow: slideshow,
                 slideshowDelay: slideshowDelay,
                 slideshowPausedByInteraction: slideshowPausedByInteraction,
@@ -2447,9 +2447,9 @@
 
             var fullscreenParams = {
                 mode: mode,
-                fullScreenSwitch: fullScreenSwitch,
-                fullScreenSlideshow: fullScreenSlideshow,
-                fullScreenSlideshowDelay: fullScreenSlideshowDelay,
+                fullscreenTrigger: fullscreenTrigger,
+                fullscreenSlideshow: fullscreenSlideshow,
+                fullscreenSlideshowDelay: fullscreenSlideshowDelay,
                 slideshowPausedByInteraction: slideshowPausedByInteraction,
                 showHintsOnFullscreen: showHintsOnFullscreen
             };
@@ -2674,10 +2674,10 @@
 
             // console.log('✅ Swiper initialized:', galleryId);
             // console.log('  - Normal mode slideshow:', slideshow ? 'Enabled (delay: ' + slideshowDelay + 's)' : 'Disabled');
-            // console.log('  - Fullscreen mode autoplay:', fullScreenSlideshow ? 'Enabled (delay: ' + fullScreenSlideshowDelay + 's)' : 'Disabled');
+            // console.log('  - Fullscreen mode autoplay:', fullscreenSlideshow ? 'Enabled (delay: ' + fullscreenSlideshowDelay + 's)' : 'Disabled');
             // console.log('  - Loop: Always enabled');
             // console.log('  - Zoom: Pinch-to-zoom on touch devices (double-click disabled)');
-            // console.log('  - Fullscreen: ' + (fullScreenSwitch === 'button-only' ? 'Button only' : fullScreenSwitch === 'double-click' ? 'Double-click or button' : 'Click or button'));
+            // console.log('  - Fullscreen: ' + (fullscreenTrigger === 'button-only' ? 'Button only' : fullscreenTrigger === 'double-click' ? 'Double-click or button' : 'Click or button'));
             // console.log('  - Progressive loading: Preview → Full resolution');
 
             return swiper;
@@ -2764,16 +2764,16 @@
 
         // Forward player-relevant settings from the gallery container
         var forwardAttrs = [
-            'data-full-screen-slideshow',
-            'data-full-screen-slideshow-delay',
+            'data-fullscreen-slideshow',
+            'data-fullscreen-slideshow-delay',
             'data-slideshow-inactivity-timeout',
-            'data-full-screen-toggle',
+            'data-fullscreen-trigger',
             'data-show-title',
             'data-show-counter',
             'data-album-title',
             'data-album-url',
             'data-image-fit',
-            'data-full-screen-image-fit',
+            'data-fullscreen-image-fit',
             'data-background-color',
             'data-controls-color',
             'data-video-controls-color'
@@ -2860,7 +2860,7 @@
     }
 
     /**
-     * Render a uniform CSS gallery of thumbnails into `$container`.
+     * Render a grid CSS gallery of thumbnails into `$container`.
      *
      * @param {jQuery} $container Gallery album element.
      * @param {Array}  pageItems  Array of objects: { photo, index }.
@@ -2914,7 +2914,7 @@
             html +=
                 '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
                     mediaHtml +
-                    (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>' : '') +
+                    (($container.attr('data-fullscreen-trigger') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>' : '') +
                 '</div>';
         });
 
@@ -3005,7 +3005,7 @@
                 html +=
                     '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
                         mediaHtml +
-                        (($container.attr('data-full-screen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>' : '') +
+                        (($container.attr('data-fullscreen-trigger') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>' : '') +
                     '</div>';
             });
             html += '</div>';
@@ -3015,7 +3015,7 @@
     }
 
     /**
-     * Determine the active uniform-gallery column count for the current viewport.
+     * Determine the active grid-gallery column count for the current viewport.
      *
      * @param {jQuery} $container Gallery album element.
      * @return {number}
@@ -3896,7 +3896,7 @@
     function initializeGallery(container) {
         var $container = $(container);
         var $shell = ensureGalleryShell($container);
-        var layout     = readGalleryAttr($container, 'layout') || 'uniform';
+        var layout     = readGalleryAttr($container, 'layout') || 'grid';
 
         var allPhotosJson = $container.attr('data-all-photos');
         var allPhotos     = allPhotosJson ? JSON.parse(allPhotosJson) : [];
@@ -3917,9 +3917,9 @@
 
         var requestedGalleryRows = parseInt(readGalleryAttr($container, 'rows'), 10);
         var galleryRows = (!isNaN(requestedGalleryRows) && requestedGalleryRows > 0) ? requestedGalleryRows : 0;
-        var galleryScroll = readGalleryAttr($container, 'scroll') === 'true';
-        var requestedGallerySizingModel = (readGalleryAttr($container, 'sizing-model') || 'ratio').toLowerCase();
-        var gallerySizingModel = requestedGallerySizingModel === 'fill' ? 'fill' : 'ratio';
+        var galleryScrollable = readGalleryAttr($container, 'scrollable') === 'true';
+        var requestedGallerySizingModel = (readGalleryAttr($container, 'sizing') || 'ratio').toLowerCase();
+        var gallerySizing = requestedGallerySizingModel === 'fill' ? 'fill' : 'ratio';
         var gallerySlideshowEnabled = $container.attr('data-slideshow') === 'true';
         var requestedGallerySlideshowDelay = parseInt($container.attr('data-slideshow-delay'), 10);
         var gallerySlideshowDelay = (!isNaN(requestedGallerySlideshowDelay) && requestedGallerySlideshowDelay > 0)
@@ -3927,7 +3927,7 @@
             : 5;
 
         // Normalize for CSS selectors and downstream logic.
-        writeGalleryAttr($container, 'sizing-model', gallerySizingModel);
+        writeGalleryAttr($container, 'sizing', gallerySizing);
 
         // Update data so the fullscreen slideshow gets the same capped photo list.
         $container.attr('data-all-photos', JSON.stringify(allPhotos));
@@ -4034,7 +4034,7 @@
         }
 
         function shouldShowGallerySlideshowProgress() {
-            var useScroller = galleryScroll && galleryRows > 0;
+            var useScroller = galleryScrollable && galleryRows > 0;
             return gallerySlideshowEnabled && !gallerySlideshowPausedByUser && !useScroller && paginationState.totalPages > 1;
         }
 
@@ -4164,7 +4164,7 @@
             });
 
             var renderOptions = options || {};
-            var useScroller = galleryScroll && galleryRows > 0;
+            var useScroller = galleryScrollable && galleryRows > 0;
             var gap = 4;
 
             if (layout === 'justified') {
@@ -4325,7 +4325,7 @@
                 var explicitUniformHeight = parseInt(readGalleryAttr($container, 'explicit-height'), 10);
                 var fillUniformRowHeight = 0;
 
-                if (gallerySizingModel === 'fill' && galleryRows > 0 && !isNaN(explicitUniformHeight) && explicitUniformHeight > 0) {
+                if (gallerySizing === 'fill' && galleryRows > 0 && !isNaN(explicitUniformHeight) && explicitUniformHeight > 0) {
                     fillUniformRowHeight = (explicitUniformHeight - ((galleryRows - 1) * gap)) / galleryRows;
                     if (!(fillUniformRowHeight > 0)) {
                         fillUniformRowHeight = 0;
@@ -4350,7 +4350,7 @@
                         if (!rowHeight || rowHeight <= 0) {
                             var containerWidth = getGalleryContainerWidth($container);
                             var cellWidth = (containerWidth - (gap * (activeColumns - 1))) / activeColumns;
-                            rowHeight = cellWidth * 0.75; // 4:3 aspect ratio in uniform layout
+                            rowHeight = cellWidth * 0.75; // 4:3 aspect ratio in grid layout
                         }
 
                         var visibleUniformHeight = (galleryRows * rowHeight) + ((galleryRows - 1) * gap);
@@ -4420,7 +4420,7 @@
                     if (!fixedUniformRowHeight || fixedUniformRowHeight <= 0) {
                         var fixedContainerWidth = getGalleryContainerWidth($container);
                         var fixedCellWidth = (fixedContainerWidth - (gap * (activeColumns - 1))) / activeColumns;
-                        fixedUniformRowHeight = fixedCellWidth * 0.75; // 4:3 aspect ratio in uniform layout
+                        fixedUniformRowHeight = fixedCellWidth * 0.75; // 4:3 aspect ratio in grid layout
                     }
 
                     var fixedUniformHeight =
@@ -4521,7 +4521,7 @@
 
         // Re-render gallery page on resize:
         // - justified layout depends on container width
-        // - uniform layout pagination depends on active breakpoint/column count
+        // - grid layout pagination depends on active breakpoint/column count
         var resizeNamespace = 'resize.jzsa-gallery-' + $container.attr('id');
         $(window).off(resizeNamespace);
         var resizeTimer;
@@ -4569,8 +4569,8 @@
             }
         );
 
-        var fullScreenSwitch =
-            $container.attr('data-full-screen-toggle') || 'button-only';
+        var fullscreenTrigger =
+            $container.attr('data-fullscreen-trigger') || 'button-only';
 
         function openGalleryPlayerAtIndex(index) {
             var safeIndex = typeof index === 'number' && index >= 0 ? index : 0;
@@ -4610,7 +4610,7 @@
             return $(targetEl).closest('.jzsa-gallery-item-video .jzsa-video-wrapper').length > 0;
         }
 
-        if (fullScreenSwitch === 'single-click') {
+        if (fullscreenTrigger === 'click') {
             $container.on('click', '.jzsa-gallery-thumb', function(e) {
                 if ($container.data('jzsaGallerySuppressClick')) {
                     return;
@@ -4621,7 +4621,7 @@
                 e.preventDefault();
                 openGalleryPlayerFromThumb(this);
             });
-        } else if (fullScreenSwitch === 'double-click') {
+        } else if (fullscreenTrigger === 'double-click') {
             $container.on('dblclick', '.jzsa-gallery-thumb', function(e) {
                 if (isGalleryVideoInteractionTarget(e.target)) {
                     return;
@@ -4645,7 +4645,7 @@
         }
 
         // Attach fullscreen button click/keyboard handlers (unless fullscreen is disabled).
-        if (fullScreenSwitch !== 'disabled') {
+        if (fullscreenTrigger !== 'disabled') {
             $container.on('click', '.jzsa-gallery-thumb-fs-btn', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -4671,7 +4671,7 @@
             '| rows:',
             galleryRows > 0 ? galleryRows : 'all',
             '| scroll:',
-            galleryScroll ? 'true' : 'false',
+            galleryScrollable ? 'true' : 'false',
             '| pages:',
             paginationState.totalPages
         );

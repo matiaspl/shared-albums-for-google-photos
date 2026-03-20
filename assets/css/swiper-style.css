@@ -84,59 +84,43 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     height: 100%;
 }
 
-/* image-fit="fit" - scale to fill one axis, no crop (may upscale) */
-.jzsa-album[data-image-fit="fit"] .swiper-slide img {
+/* image-fit="contain" - show whole image, no crop, may letterbox */
+.jzsa-album[data-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: 100%;
     height: 100%;
 }
 
-/* full-screen-image-fit overrides image-fit when in fullscreen.
+/* fullscreen-image-fit overrides image-fit when in fullscreen.
    Each vendor prefix MUST be in its own rule — grouping them causes browsers
    to drop the entire rule when they encounter an unrecognised pseudo-class. */
-.jzsa-album:fullscreen[data-full-screen-image-fit="fit"] .swiper-slide img {
+.jzsa-album:fullscreen[data-fullscreen-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: 100%;
     height: 100%;
 }
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="fit"] .swiper-slide img {
+.jzsa-album:-webkit-full-screen[data-fullscreen-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: 100%;
     height: 100%;
 }
-.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="fit"] .swiper-slide img {
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: 100%;
     height: 100%;
 }
 
-.jzsa-album:fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
-    object-fit: contain;
-    width: auto;
-    height: auto;
-}
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="contain"] .swiper-slide img {
-    object-fit: contain;
-    width: auto;
-    height: auto;
-}
-.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
-    object-fit: contain;
-    width: auto;
-    height: auto;
-}
-
-.jzsa-album:fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
+.jzsa-album:fullscreen[data-fullscreen-image-fit="cover"] .swiper-slide img {
     object-fit: cover;
     width: 100%;
     height: 100%;
 }
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="cover"] .swiper-slide img {
+.jzsa-album:-webkit-full-screen[data-fullscreen-image-fit="cover"] .swiper-slide img {
     object-fit: cover;
     width: 100%;
     height: 100%;
 }
-.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-image-fit="cover"] .swiper-slide img {
     object-fit: cover;
     width: 100%;
     height: 100%;
@@ -981,7 +965,7 @@ body.jzsa-no-scroll {
 }
 
 /* Uniform gallery layout */
-.jzsa-gallery-album[data-gallery-layout="uniform"] {
+.jzsa-gallery-album[data-gallery-layout="grid"] {
     display: grid;
     grid-template-columns: repeat(var(--jzsa-gallery-columns, 3), 1fr);
     gap: 4px;
@@ -989,25 +973,25 @@ body.jzsa-no-scroll {
 }
 
 @media (max-width: 768px) {
-    .jzsa-gallery-album[data-gallery-layout="uniform"] {
+    .jzsa-gallery-album[data-gallery-layout="grid"] {
         grid-template-columns: repeat(var(--jzsa-gallery-columns-tablet, 2), 1fr);
     }
 }
 
 @media (max-width: 480px) {
-    .jzsa-gallery-album[data-gallery-layout="uniform"] {
+    .jzsa-gallery-album[data-gallery-layout="grid"] {
         grid-template-columns: repeat(var(--jzsa-gallery-columns-mobile, 1), 1fr);
     }
 }
 
-.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-thumb {
+.jzsa-gallery-album[data-gallery-layout="grid"] .jzsa-gallery-thumb {
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
     display: block;
 }
 
-.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-placeholder {
+.jzsa-gallery-album[data-gallery-layout="grid"] .jzsa-gallery-placeholder {
     width: 100%;
     aspect-ratio: 4 / 3;
     display: block;
@@ -1019,13 +1003,10 @@ body.jzsa-no-scroll {
     user-select: none;
 }
 
-.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-tile-fill {
+.jzsa-gallery-album[data-gallery-layout="grid"] .jzsa-gallery-tile-fill {
     aspect-ratio: auto;
 }
-.jzsa-gallery-album[data-gallery-layout="uniform"][data-image-fit="contain"] .jzsa-gallery-thumb {
-    object-fit: contain;
-}
-.jzsa-gallery-album[data-gallery-layout="uniform"][data-image-fit="fit"] .jzsa-gallery-thumb {
+.jzsa-gallery-album[data-gallery-layout="grid"][data-image-fit="contain"] .jzsa-gallery-thumb {
     object-fit: contain;
 }
 
@@ -1047,9 +1028,6 @@ body.jzsa-no-scroll {
     display: block;
 }
 .jzsa-gallery-album[data-gallery-layout="justified"][data-image-fit="contain"] .jzsa-gallery-thumb {
-    object-fit: contain;
-}
-.jzsa-gallery-album[data-gallery-layout="justified"][data-image-fit="fit"] .jzsa-gallery-thumb {
     object-fit: contain;
 }
 /* Shared thumbnail hover */
@@ -1087,7 +1065,7 @@ body.jzsa-no-scroll {
 }
 
 @media (hover: none) {
-    .jzsa-gallery-album[data-full-screen-toggle="button-only"] .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
+    .jzsa-gallery-album[data-fullscreen-trigger="button-only"] .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
@@ -1349,7 +1327,7 @@ body.jzsa-no-scroll {
 }
 
 /* Uniform layout: inherit the aspect-ratio cell size */
-.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-item-video .jzsa-video-wrapper {
+.jzsa-gallery-album[data-gallery-layout="grid"] .jzsa-gallery-item-video .jzsa-video-wrapper {
     aspect-ratio: 4 / 3;
 }
 

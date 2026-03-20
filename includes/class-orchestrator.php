@@ -287,7 +287,7 @@ class JZSA_Shared_Albums {
 					$config['image-height'],
 					self::DEFAULT_PREVIEW_WIDTH,
 					self::DEFAULT_PREVIEW_HEIGHT,
-					$config['max-entries-per-album'],
+					$config['limit'],
 					$config['show-videos']
 				);
 			$config['album-title']              = $cached_data['title'] ?? null;
@@ -325,7 +325,7 @@ class JZSA_Shared_Albums {
 				$config['image-height'],
 				self::DEFAULT_PREVIEW_WIDTH,
 				self::DEFAULT_PREVIEW_HEIGHT,
-				$config['max-entries-per-album'],
+				$config['limit'],
 				$config['show-videos']
 			);
 
@@ -362,43 +362,43 @@ class JZSA_Shared_Albums {
 			'start-at'       => $this->parse_start_at( $atts ),
 
 			// Fullscreen slideshow (fullscreen mode only)
-			'full-screen-slideshow'       => $this->parse_bool( $atts, 'full-screen-slideshow', false ),
-			'full-screen-slideshow-delay' => $this->parse_delay_range( isset( $atts['full-screen-slideshow-delay'] ) ? $atts['full-screen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
+			'fullscreen-slideshow'       => $this->parse_bool( $atts, 'fullscreen-slideshow', false ),
+			'fullscreen-slideshow-delay' => $this->parse_delay_range( isset( $atts['fullscreen-slideshow-delay'] ) ? $atts['fullscreen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
 
 			// Slideshow inactivity timeout
 			'slideshow-inactivity-timeout' => intval( isset( $atts['slideshow-inactivity-timeout'] ) ? $atts['slideshow-inactivity-timeout'] : self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT ),
 
 				// Display
-				'mode'                 => $this->parse_mode( $atts ),
-				'background-color'     => $this->parse_color( $atts, 'background-color', 'transparent' ),
-				'controls-color'       => $this->parse_color( $atts, 'controls-color', '#ffffff' ),
-				'video-controls-color' => $this->parse_color( $atts, 'video-controls-color', '#00b2ff' ),
-				'image-fit'            => $this->parse_image_fit( $atts ),
-			'full-screen-image-fit'   => $this->parse_fullscreen_image_fit( $atts ),
-			'full-screen-toggle'      => $this->parse_fullscreen_toggle_mode( $atts ),
+				'mode'                    => $this->parse_mode( $atts ),
+				'background-color'        => $this->parse_color( $atts, 'background-color', 'transparent' ),
+				'controls-color'          => $this->parse_color( $atts, 'controls-color', '#ffffff' ),
+				'video-controls-color'    => $this->parse_color( $atts, 'video-controls-color', '#00b2ff' ),
+				'image-fit'               => $this->parse_image_fit( $atts ),
+			'fullscreen-image-fit'    => $this->parse_fullscreen_image_fit( $atts ),
+			'fullscreen-trigger'      => $this->parse_fullscreen_trigger_mode( $atts ),
 			'show-title'              => $this->parse_bool( $atts, 'show-title', false ),
 			'show-counter'            => $this->parse_show_counter( $atts ),
 			'show-link-button'        => $this->parse_bool( $atts, 'show-link-button', false ),
 			'show-download-button'    => $this->parse_bool( $atts, 'show-download-button', false ),
 
 				// Entry count
-				'max-entries-per-album'    => $this->parse_max_entries( $atts ),
+				'limit'                => $this->parse_limit( $atts ),
 
 			// Video controls
-			'video-autohide-controls' => $this->parse_bool( $atts, 'video-autohide-controls', false ),
+			'video-controls-autohide' => $this->parse_bool( $atts, 'video-controls-autohide', false ),
 
 			// Video support
 			'show-videos'            => $this->parse_bool( $atts, 'show-videos', true ),
 
 			// Gallery mode (thumbnail layout)
 			'gallery-layout'         => $this->parse_gallery_layout( $atts ),
-			'gallery-sizing-model'   => $this->parse_gallery_sizing_model( $atts ),
+			'gallery-sizing'         => $this->parse_gallery_sizing( $atts ),
 			'gallery-columns'        => $this->parse_gallery_int( $atts, 'gallery-columns', 3 ),
 			'gallery-columns-tablet' => $this->parse_gallery_int( $atts, 'gallery-columns-tablet', 2 ),
 			'gallery-columns-mobile' => $this->parse_gallery_int( $atts, 'gallery-columns-mobile', 1 ),
 			'gallery-row-height'     => $this->parse_gallery_row_height( $atts ),
 			'gallery-rows'           => $this->parse_gallery_rows( $atts ),
-			'gallery-scroll'       => $this->parse_bool( $atts, 'gallery-scroll', false ),
+			'gallery-scrollable'     => $this->parse_bool( $atts, 'gallery-scrollable', false ),
 		);
 
 		return $config;
@@ -494,17 +494,17 @@ class JZSA_Shared_Albums {
 	 * Parse image fit mode.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string One of 'cover', 'contain', or 'fit'.
+	 * @return string One of 'cover' or 'contain'.
 	 */
 	private function parse_image_fit( $atts ) {
 		if ( ! isset( $atts['image-fit'] ) ) {
-			// Default: cover (matches previous default cropping behaviour)
+			// Default: cover (fill container, may crop)
 			return 'cover';
 		}
 
 		$value = strtolower( trim( (string) $atts['image-fit'] ) );
 
-		if ( in_array( $value, array( 'cover', 'contain', 'fit' ), true ) ) {
+		if ( in_array( $value, array( 'cover', 'contain' ), true ) ) {
 			return $value;
 		}
 
@@ -513,23 +513,23 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse full-screen-image-fit attribute.
+	 * Parse fullscreen-image-fit attribute.
 	 *
-	 * Defaults to 'fit' when not explicitly provided.
+	 * Defaults to 'contain' when not explicitly provided.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string One of 'fit', 'contain', or 'cover'.
+	 * @return string One of 'contain' or 'cover'.
 	 */
 	private function parse_fullscreen_image_fit( $atts ) {
-		if ( isset( $atts['full-screen-image-fit'] ) ) {
-			$value = strtolower( trim( (string) $atts['full-screen-image-fit'] ) );
-			if ( in_array( $value, array( 'fit', 'contain', 'cover' ), true ) ) {
+		if ( isset( $atts['fullscreen-image-fit'] ) ) {
+			$value = strtolower( trim( (string) $atts['fullscreen-image-fit'] ) );
+			if ( in_array( $value, array( 'contain', 'cover' ), true ) ) {
 				return $value;
 			}
 		}
 
-		// Not set or invalid — default to 'fit'.
-		return 'fit';
+		// Not set or invalid — default to 'contain' (show whole image).
+		return 'contain';
 	}
 
 	/**
@@ -603,34 +603,34 @@ class JZSA_Shared_Albums {
 	 * Parse gallery-layout attribute.
 	 *
 	 * @param array $atts Attributes.
-	 * @return string 'uniform' or 'justified'
+	 * @return string 'grid' or 'justified'
 	 */
 	private function parse_gallery_layout( $atts ) {
 		if ( ! isset( $atts['gallery-layout'] ) ) {
-			return 'uniform';
+			return 'grid';
 		}
 
 		$value = strtolower( trim( $atts['gallery-layout'] ) );
 
-		if ( in_array( $value, array( 'uniform', 'justified' ), true ) ) {
+		if ( in_array( $value, array( 'grid', 'justified' ), true ) ) {
 			return $value;
 		}
 
-		return 'uniform';
+		return 'grid';
 	}
 
 	/**
-	 * Parse gallery-sizing-model attribute.
+	 * Parse gallery-sizing attribute.
 	 *
 	 * @param array $atts Attributes.
 	 * @return string 'ratio' or 'fill'
 	 */
-	private function parse_gallery_sizing_model( $atts ) {
-		if ( ! isset( $atts['gallery-sizing-model'] ) ) {
+	private function parse_gallery_sizing( $atts ) {
+		if ( ! isset( $atts['gallery-sizing'] ) ) {
 			return 'ratio';
 		}
 
-		$value = strtolower( trim( $atts['gallery-sizing-model'] ) );
+		$value = strtolower( trim( $atts['gallery-sizing'] ) );
 
 		if ( in_array( $value, array( 'ratio', 'fill' ), true ) ) {
 			return $value;
@@ -701,21 +701,21 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse full screen toggle mode attribute.
+	 * Parse fullscreen trigger mode attribute.
 	 *
 	 * @param array $atts Attributes
-	 * @return string Full screen toggle mode: 'single-click', 'double-click', 'button-only', or 'disabled'
+	 * @return string Fullscreen trigger mode: 'click', 'double-click', 'button-only', or 'disabled'
 	 */
-	private function parse_fullscreen_toggle_mode( $atts ) {
-		if ( ! isset( $atts['full-screen-toggle'] ) ) {
+	private function parse_fullscreen_trigger_mode( $atts ) {
+		if ( ! isset( $atts['fullscreen-trigger'] ) ) {
 			// Default to 'button-only'
 			return 'button-only';
 		}
 
-		$mode = strtolower( trim( (string) $atts['full-screen-toggle'] ) );
+		$mode = strtolower( trim( (string) $atts['fullscreen-trigger'] ) );
 
-		// Valid modes: 'button-only' (default), 'single-click', 'double-click', 'disabled'
-		$valid_modes = array( 'button-only', 'single-click', 'double-click', 'disabled' );
+		// Valid modes: 'button-only' (default), 'click', 'double-click', 'disabled'
+		$valid_modes = array( 'button-only', 'click', 'double-click', 'disabled' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;
@@ -726,19 +726,19 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse max-entries-per-album attribute.
+	 * Parse limit attribute.
 	 *
 	 * Clamps the value between 1 and self::MAX_PHOTOS.
 	 *
 	 * @param array $atts Attributes.
 	 * @return int
 	 */
-	private function parse_max_entries( $atts ) {
-		if ( ! isset( $atts['max-entries-per-album'] ) ) {
+	private function parse_limit( $atts ) {
+		if ( ! isset( $atts['limit'] ) ) {
 			return self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
 		}
 
-		$value = intval( $atts['max-entries-per-album'] );
+		$value = intval( $atts['limit'] );
 
 		if ( $value <= 0 ) {
 			return self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
