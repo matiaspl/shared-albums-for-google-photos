@@ -42,55 +42,55 @@ class JZSA_Shared_Albums {
 	const DEFAULT_HEIGHT = 300;
 
 	/**
-	 * Default full-resolution image dimensions (fetched from Google Photos)
+	 * Default source dimensions for inline mode (fetched from Google Photos)
 	 *
 	 * @var int
 	 */
-	const DEFAULT_IMAGE_WIDTH = 1920;
-	const DEFAULT_IMAGE_HEIGHT = 1440;
+	const DEFAULT_SOURCE_WIDTH = 800;
+	const DEFAULT_SOURCE_HEIGHT = 600;
 
 	/**
-	 * Default preview/thumbnail image dimensions (for progressive loading)
+	 * Default source dimensions for fullscreen mode (fetched from Google Photos)
 	 *
 	 * @var int
 	 */
-	const DEFAULT_PREVIEW_WIDTH = 800;
-	const DEFAULT_PREVIEW_HEIGHT = 600;
+	const DEFAULT_FULLSCREEN_SOURCE_WIDTH = 1920;
+	const DEFAULT_FULLSCREEN_SOURCE_HEIGHT = 1440;
 
 	/**
-	 * Maximum number of photos to load from album (absolute upper bound).
+	 * Maximum number of media entries to load from album (absolute upper bound).
 	 *
 	 * @var int
 	 */
 	const MAX_PHOTOS = 300;
 
 	/**
-	 * Default maximum number of photos per album when not overridden via shortcode.
+	 * Default maximum number of media entries per album when not overridden via shortcode.
 	 *
 	 * @var int
 	 */
 	const DEFAULT_MAX_PHOTOS_PER_ALBUM = 300;
 
 	/**
-	 * Default autoplay delay range (in seconds) - for normal mode
+	 * Default slideshow delay range (in seconds) - for normal mode
 	 *
 	 * @var string
 	 */
-	const DEFAULT_AUTOPLAY_DELAY_RANGE = '5';
+	const DEFAULT_SLIDESHOW_DELAY_RANGE = '5';
 
 	/**
-	 * Default fullscreen autoplay delay (in seconds) - can be single value or range
+	 * Default fullscreen slideshow delay (in seconds) - can be single value or range
 	 *
 	 * @var string
 	 */
-	const DEFAULT_FULLSCREEN_AUTOPLAY_DELAY = '5';
+	const DEFAULT_FULLSCREEN_SLIDESHOW_DELAY = '5';
 
 	/**
-	 * Default autoplay inactivity timeout (in seconds) - time after which autoplay resumes after user interaction
+	 * Default slideshow inactivity timeout (in seconds) - time after which slideshow resumes after user interaction
 	 *
 	 * @var string
 	 */
-	const DEFAULT_AUTOPLAY_INACTIVITY_TIMEOUT = '30';
+	const DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT = '30';
 
 	/**
 	 * Data provider instance
@@ -128,6 +128,8 @@ class JZSA_Shared_Albums {
 		add_action( 'save_post', array( $this, 'clear_cache' ) );
 		add_action( 'wp_ajax_jzsa_download_image', array( $this, 'handle_download_image' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_download_image', array( $this, 'handle_download_image' ) );
+		add_action( 'wp_ajax_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
+		add_action( 'wp_ajax_nopriv_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_jzsa_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
 
 		// Also load front-end gallery assets on our settings page so the sample
@@ -171,6 +173,22 @@ class JZSA_Shared_Albums {
 			true
 		);
 
+		// Plyr video player (bundled locally)
+		wp_enqueue_style(
+			'plyr-css',
+			plugins_url( 'assets/vendor/plyr/plyr.css', $this->plugin_file ),
+			array(),
+			'3.7.8'
+		);
+
+		wp_enqueue_script(
+			'plyr-js',
+			plugins_url( 'assets/vendor/plyr/plyr.min.js', $this->plugin_file ),
+			array(),
+			'3.7.8',
+			true
+		);
+
 		// Custom assets
 		$style_version = $this->get_asset_version( 'assets/css/swiper-style.css' );
 		$script_version = $this->get_asset_version( 'assets/js/swiper-init.js' );
@@ -178,14 +196,14 @@ class JZSA_Shared_Albums {
 		wp_enqueue_style(
 			'jzsa-style',
 			plugins_url( 'assets/css/swiper-style.css', $this->plugin_file ),
-			array( 'swiper-css' ),
+			array( 'swiper-css', 'plyr-css' ),
 			$style_version
 		);
 
 		wp_enqueue_script(
 			'jzsa-init',
 			plugins_url( 'assets/js/swiper-init.js', $this->plugin_file ),
-			array( 'jquery', 'swiper-js' ),
+			array( 'jquery', 'swiper-js', 'plyr-js' ),
 			$script_version,
 			true
 		);
@@ -193,6 +211,7 @@ class JZSA_Shared_Albums {
 		// Localize script for AJAX
 		$download_nonce = wp_create_nonce( 'jzsa_download_nonce' );
 		$preview_nonce  = wp_create_nonce( 'jzsa_shortcode_preview' );
+		$refresh_nonce  = wp_create_nonce( 'jzsa_refresh_urls' );
 
 		wp_localize_script(
 			'jzsa-init',
@@ -201,6 +220,8 @@ class JZSA_Shared_Albums {
 				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 				'downloadNonce'=> $download_nonce,
 				'previewNonce' => $preview_nonce,
+				'refreshNonce' => $refresh_nonce,
+				'plyrSvgUrl'   => plugins_url( 'assets/vendor/plyr/plyr.svg', $this->plugin_file ),
 			)
 		);
 	}
@@ -260,14 +281,15 @@ class JZSA_Shared_Albums {
 
 		if ( ! $should_refresh && false !== $cached_data ) {
 			// Use cached data - merge with current config
-			$config['photos'] = $this->prepare_photo_urls(
-				$cached_data['photos'],
-				$config['image-width'],
-				$config['image-height'],
-				self::DEFAULT_PREVIEW_WIDTH,
-				self::DEFAULT_PREVIEW_HEIGHT,
-				$config['max-photos-per-album']
-			);
+				$config['photos'] = $this->prepare_photo_urls(
+					$cached_data['photos'],
+					$config['fullscreen-source-width'],
+					$config['fullscreen-source-height'],
+					$config['source-width'],
+					$config['source-height'],
+					$config['limit'],
+					$config['show-videos']
+				);
 			$config['album-title']              = $cached_data['title'] ?? null;
 			$config['show-deprecation-warning'] = $cached_data['is_deprecated'];
 
@@ -297,14 +319,15 @@ class JZSA_Shared_Albums {
 		update_option( $expiry_key, self::CACHE_DURATION, false );
 
 		// Prepare photos with dimensions and max count
-		$config['photos'] = $this->prepare_photo_urls(
-			$result['data']['photos'],
-			$config['image-width'],
-			$config['image-height'],
-			self::DEFAULT_PREVIEW_WIDTH,
-			self::DEFAULT_PREVIEW_HEIGHT,
-			$config['max-photos-per-album']
-		);
+			$config['photos'] = $this->prepare_photo_urls(
+				$result['data']['photos'],
+				$config['fullscreen-source-width'],
+				$config['fullscreen-source-height'],
+				$config['source-width'],
+				$config['source-height'],
+				$config['limit'],
+				$config['show-videos']
+			);
 
 		$config['album-title']              = $result['data']['title'] ?? null;
 		$config['show-deprecation-warning'] = $result['is_deprecated'];
@@ -331,43 +354,55 @@ class JZSA_Shared_Albums {
 			// Track whether width/height were explicitly set in shortcode.
 			'width-explicit'  => isset( $atts['width'] ),
 			'height-explicit' => isset( $atts['height'] ),
-			'image-width'     => isset( $atts['image-width'] ) ? intval( $atts['image-width'] ) : self::DEFAULT_IMAGE_WIDTH,
-			'image-height'    => isset( $atts['image-height'] ) ? intval( $atts['image-height'] ) : self::DEFAULT_IMAGE_HEIGHT,
-			// Autoplay (normal mode)
-			'autoplay'       => $this->parse_bool( $atts, 'autoplay', false ),
-			'autoplay-delay' => $this->parse_delay_range( isset( $atts['autoplay-delay'] ) ? $atts['autoplay-delay'] : self::DEFAULT_AUTOPLAY_DELAY_RANGE ),
+			'source-width'              => isset( $atts['source-width'] ) ? intval( $atts['source-width'] ) : self::DEFAULT_SOURCE_WIDTH,
+			'source-height'             => isset( $atts['source-height'] ) ? intval( $atts['source-height'] ) : self::DEFAULT_SOURCE_HEIGHT,
+			'fullscreen-source-width'   => isset( $atts['fullscreen-source-width'] ) ? intval( $atts['fullscreen-source-width'] ) : self::DEFAULT_FULLSCREEN_SOURCE_WIDTH,
+			'fullscreen-source-height'  => isset( $atts['fullscreen-source-height'] ) ? intval( $atts['fullscreen-source-height'] ) : self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT,
+			// Slideshow (normal mode)
+			'slideshow'       => $this->parse_bool( $atts, 'slideshow', false ),
+			'slideshow-delay' => $this->parse_delay_range( isset( $atts['slideshow-delay'] ) ? $atts['slideshow-delay'] : self::DEFAULT_SLIDESHOW_DELAY_RANGE ),
 			'start-at'       => $this->parse_start_at( $atts ),
 
-			// Fullscreen autoplay (fullscreen mode only)
-			'full-screen-autoplay'       => $this->parse_bool( $atts, 'full-screen-autoplay', false ),
-			'full-screen-autoplay-delay' => $this->parse_delay_range( isset( $atts['full-screen-autoplay-delay'] ) ? $atts['full-screen-autoplay-delay'] : self::DEFAULT_FULLSCREEN_AUTOPLAY_DELAY ),
+			// Fullscreen slideshow (fullscreen mode only)
+			'fullscreen-slideshow'       => $this->parse_bool( $atts, 'fullscreen-slideshow', false ),
+			'fullscreen-slideshow-delay' => $this->parse_delay_range( isset( $atts['fullscreen-slideshow-delay'] ) ? $atts['fullscreen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
 
-			// Autoplay inactivity timeout
-			'autoplay-inactivity-timeout' => isset( $atts['autoplay-inactivity-timeout'] ) ? intval( $atts['autoplay-inactivity-timeout'] ) : intval( self::DEFAULT_AUTOPLAY_INACTIVITY_TIMEOUT ),
+			// Slideshow inactivity timeout
+			'slideshow-inactivity-timeout' => intval( isset( $atts['slideshow-inactivity-timeout'] ) ? $atts['slideshow-inactivity-timeout'] : self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT ),
 
-			// Display
-			'mode'             => $this->parse_mode( $atts ),
-			'background-color' => $this->parse_color( $atts ),
-			'image-fit'               => $this->parse_image_fit( $atts ),
-			'full-screen-image-fit'   => $this->parse_fullscreen_image_fit( $atts ),
-			'full-screen-toggle'      => $this->parse_fullscreen_toggle_mode( $atts ),
-			'show-title'              => $this->parse_bool( $atts, 'show-title', false ),
-			'show-counter'            => $this->parse_show_counter( $atts ),
-			'show-link-button'        => $this->parse_bool( $atts, 'show-link-button', false ),
-			'show-download-button'    => $this->parse_bool( $atts, 'show-download-button', false ),
+				// Display
+				'mode'                 => $this->parse_mode( $atts ),
+				'background-color'     => $this->parse_color( $atts, 'background-color', 'transparent' ),
+				'controls-color'       => $this->parse_color( $atts, 'controls-color', '#ffffff' ),
+				'video-controls-color' => $this->parse_color( $atts, 'video-controls-color', '#00b2ff' ),
+				'image-fit'            => $this->parse_image_fit( $atts ),
+				'fullscreen-image-fit' => $this->parse_fullscreen_image_fit( $atts ),
+				'fullscreen-toggle'    => $this->parse_fullscreen_toggle_mode( $atts ),
+				'interaction-lock'     => $this->parse_bool( $atts, 'interaction-lock', false ),
+				'show-navigation'      => $this->parse_bool( $atts, 'show-navigation', true ),
+				'show-title'           => $this->parse_bool( $atts, 'show-title', false ),
+				'show-counter'         => $this->parse_show_counter( $atts ),
+				'show-link-button'     => $this->parse_bool( $atts, 'show-link-button', false ),
+				'show-download-button' => $this->parse_bool( $atts, 'show-download-button', false ),
 
-			// Photo count
-			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
+				// Entry count
+				'limit'                => $this->parse_limit( $atts ),
+
+			// Video controls
+			'video-controls-autohide' => $this->parse_bool( $atts, 'video-controls-autohide', false ),
+
+			// Video support
+			'show-videos'            => $this->parse_bool( $atts, 'show-videos', true ),
 
 			// Gallery mode (thumbnail layout)
 			'gallery-layout'         => $this->parse_gallery_layout( $atts ),
-			'gallery-sizing-model'   => $this->parse_gallery_sizing_model( $atts ),
+			'gallery-sizing'         => $this->parse_gallery_sizing( $atts ),
 			'gallery-columns'        => $this->parse_gallery_int( $atts, 'gallery-columns', 3 ),
 			'gallery-columns-tablet' => $this->parse_gallery_int( $atts, 'gallery-columns-tablet', 2 ),
 			'gallery-columns-mobile' => $this->parse_gallery_int( $atts, 'gallery-columns-mobile', 1 ),
 			'gallery-row-height'     => $this->parse_gallery_row_height( $atts ),
 			'gallery-rows'           => $this->parse_gallery_rows( $atts ),
-			'gallery-scroll'       => $this->parse_bool( $atts, 'gallery-scroll', false ),
+			'gallery-scrollable'     => $this->parse_bool( $atts, 'gallery-scrollable', false ),
 		);
 
 		return $config;
@@ -410,6 +445,7 @@ class JZSA_Shared_Albums {
 		return 'true' === strtolower( $atts[ $key ] );
 	}
 
+
 	/**
 	 * Parse counter visibility.
 	 *
@@ -439,7 +475,7 @@ class JZSA_Shared_Albums {
 		if ( isset( $atts['start-at'] ) ) {
 			$value = strtolower( trim( (string) $atts['start-at'] ) );
 
-			if ( '' === $value || 'random' === $value ) {
+			if ( 'random' === $value ) {
 				return 'random';
 			}
 
@@ -450,8 +486,8 @@ class JZSA_Shared_Albums {
 				}
 			}
 
-			// Fallback to random on invalid input.
-			return 'random';
+			// Fallback to first slide on invalid input.
+			return '1';
 		}
 
 		// Default.
@@ -462,17 +498,17 @@ class JZSA_Shared_Albums {
 	 * Parse image fit mode.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string One of 'cover', 'contain', or 'fit'.
+	 * @return string One of 'cover' or 'contain'.
 	 */
 	private function parse_image_fit( $atts ) {
 		if ( ! isset( $atts['image-fit'] ) ) {
-			// Default: cover (matches previous default cropping behaviour)
+			// Default: cover (fill container, may crop)
 			return 'cover';
 		}
 
 		$value = strtolower( trim( (string) $atts['image-fit'] ) );
 
-		if ( in_array( $value, array( 'cover', 'contain', 'fit' ), true ) ) {
+		if ( in_array( $value, array( 'cover', 'contain' ), true ) ) {
 			return $value;
 		}
 
@@ -481,23 +517,23 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse full-screen-image-fit attribute.
+	 * Parse fullscreen-image-fit attribute.
 	 *
-	 * Defaults to 'fit' when not explicitly provided.
+	 * Defaults to 'contain' when not explicitly provided.
 	 *
 	 * @param array $atts Shortcode attributes.
-	 * @return string One of 'fit', 'contain', or 'cover'.
+	 * @return string One of 'contain' or 'cover'.
 	 */
 	private function parse_fullscreen_image_fit( $atts ) {
-		if ( isset( $atts['full-screen-image-fit'] ) ) {
-			$value = strtolower( trim( (string) $atts['full-screen-image-fit'] ) );
-			if ( in_array( $value, array( 'fit', 'contain', 'cover' ), true ) ) {
+		if ( isset( $atts['fullscreen-image-fit'] ) ) {
+			$value = strtolower( trim( (string) $atts['fullscreen-image-fit'] ) );
+			if ( in_array( $value, array( 'contain', 'cover' ), true ) ) {
 				return $value;
 			}
 		}
 
-		// Not set or invalid — default to 'fit'.
-		return 'fit';
+		// Not set or invalid — default to 'contain' (show whole image).
+		return 'contain';
 	}
 
 	/**
@@ -523,12 +559,12 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Attributes
 	 * @return string|null Color value or null
 	 */
-	private function parse_color( $atts ) {
-		if ( ! isset( $atts['background-color'] ) ) {
-			return 'transparent';
+	private function parse_color( $atts, $key = 'background-color', $default = 'transparent' ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return $default;
 		}
 
-		$color = $atts['background-color'];
+		$color = $atts[ $key ];
 
 		if ( 'transparent' === strtolower( $color ) ) {
 			return 'transparent';
@@ -538,8 +574,9 @@ class JZSA_Shared_Albums {
 			return $color;
 		}
 
-		return 'transparent';
+		return $default;
 	}
+
 
 	/**
 	 * Parse mode attribute
@@ -570,34 +607,34 @@ class JZSA_Shared_Albums {
 	 * Parse gallery-layout attribute.
 	 *
 	 * @param array $atts Attributes.
-	 * @return string 'uniform' or 'justified'
+	 * @return string 'grid' or 'justified'
 	 */
 	private function parse_gallery_layout( $atts ) {
 		if ( ! isset( $atts['gallery-layout'] ) ) {
-			return 'uniform';
+			return 'grid';
 		}
 
 		$value = strtolower( trim( $atts['gallery-layout'] ) );
 
-		if ( in_array( $value, array( 'uniform', 'justified' ), true ) ) {
+		if ( in_array( $value, array( 'grid', 'justified' ), true ) ) {
 			return $value;
 		}
 
-		return 'uniform';
+		return 'grid';
 	}
 
 	/**
-	 * Parse gallery-sizing-model attribute.
+	 * Parse gallery-sizing attribute.
 	 *
 	 * @param array $atts Attributes.
 	 * @return string 'ratio' or 'fill'
 	 */
-	private function parse_gallery_sizing_model( $atts ) {
-		if ( ! isset( $atts['gallery-sizing-model'] ) ) {
+	private function parse_gallery_sizing( $atts ) {
+		if ( ! isset( $atts['gallery-sizing'] ) ) {
 			return 'ratio';
 		}
 
-		$value = strtolower( trim( $atts['gallery-sizing-model'] ) );
+		$value = strtolower( trim( $atts['gallery-sizing'] ) );
 
 		if ( in_array( $value, array( 'ratio', 'fill' ), true ) ) {
 			return $value;
@@ -668,21 +705,21 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse full screen toggle mode attribute.
+	 * Parse fullscreen trigger mode attribute.
 	 *
 	 * @param array $atts Attributes
-	 * @return string Full screen toggle mode: 'single-click', 'double-click', 'button-only', or 'disabled'
+	 * @return string Fullscreen trigger mode: 'click', 'double-click', 'button-only', or 'disabled'
 	 */
 	private function parse_fullscreen_toggle_mode( $atts ) {
-		if ( ! isset( $atts['full-screen-toggle'] ) ) {
+		if ( ! isset( $atts['fullscreen-toggle'] ) ) {
 			// Default to 'button-only'
 			return 'button-only';
 		}
 
-		$mode = strtolower( trim( (string) $atts['full-screen-toggle'] ) );
+		$mode = strtolower( trim( (string) $atts['fullscreen-toggle'] ) );
 
-		// Valid modes: 'button-only' (default), 'single-click', 'double-click', 'disabled'
-		$valid_modes = array( 'button-only', 'single-click', 'double-click', 'disabled' );
+		// Valid modes: 'button-only' (default), 'click', 'double-click', 'disabled'
+		$valid_modes = array( 'button-only', 'click', 'double-click', 'disabled' );
 
 		if ( in_array( $mode, $valid_modes, true ) ) {
 			return $mode;
@@ -693,19 +730,19 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse max-photos-per-album attribute.
+	 * Parse limit attribute.
 	 *
 	 * Clamps the value between 1 and self::MAX_PHOTOS.
 	 *
 	 * @param array $atts Attributes.
 	 * @return int
 	 */
-	private function parse_max_photos( $atts ) {
-		if ( ! isset( $atts['max-photos-per-album'] ) ) {
+	private function parse_limit( $atts ) {
+		if ( ! isset( $atts['limit'] ) ) {
 			return self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
 		}
 
-		$value = intval( $atts['max-photos-per-album'] );
+		$value = intval( $atts['limit'] );
 
 		if ( $value <= 0 ) {
 			return self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
@@ -721,17 +758,21 @@ class JZSA_Shared_Albums {
 	/**
 	 * Prepare photo URLs with dimensions (including preview and full sizes).
 	 *
-	 * @param array $base_urls      Base photo URLs.
+	 * Accepts media items as either plain URL strings (images) or associative
+	 * arrays with 'url' and 'type' keys (for videos). This provides backward
+	 * compatibility with cached data that stores plain strings.
+	 *
+	 * @param array $base_items     Base media items (strings or arrays).
 	 * @param int   $full_width     Full image width.
 	 * @param int   $full_height    Full image height.
 	 * @param int   $preview_width  Preview image width (optional).
 	 * @param int   $preview_height Preview image height (optional).
-	 * @param int   $max_photos     Maximum number of photos to include from the album.
+	 * @param int   $max_entries    Maximum number of media entries to include from the album.
 	 * @return array Photo objects with preview and full URLs.
 	 */
-	private function prepare_photo_urls( $base_urls, $full_width, $full_height, $preview_width = null, $preview_height = null, $max_photos = self::DEFAULT_MAX_PHOTOS_PER_ALBUM ) {
+	private function prepare_photo_urls( $base_items, $full_width, $full_height, $preview_width = null, $preview_height = null, $max_entries = self::DEFAULT_MAX_PHOTOS_PER_ALBUM, $show_videos = true ) {
 		// Determine effective limit: requested per-album limit clamped to global MAX_PHOTOS.
-		$limit = intval( $max_photos );
+		$limit = intval( $max_entries );
 
 		if ( $limit <= 0 ) {
 			$limit = self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
@@ -741,10 +782,22 @@ class JZSA_Shared_Albums {
 			$limit = self::MAX_PHOTOS;
 		}
 
-		$base_urls = array_slice( $base_urls, 0, $limit );
-
 		$photos = array();
-		foreach ( $base_urls as $base ) {
+		foreach ( $base_items as $item ) {
+			// Support both plain URL strings (backward compat) and object format.
+			if ( is_array( $item ) ) {
+				$base = $item['url'];
+				$type = isset( $item['type'] ) ? $item['type'] : 'image';
+			} else {
+				$base = $item;
+				$type = 'image';
+			}
+
+			// Filter out videos when show-videos is disabled.
+			if ( ! $show_videos && 'video' === $type ) {
+				continue;
+			}
+
 			$photo = array(
 				'full' => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
 			);
@@ -754,7 +807,18 @@ class JZSA_Shared_Albums {
 				$photo['preview'] = sprintf( '%s=w%d-h%d', $base, $preview_width, $preview_height );
 			}
 
+			// Add video-specific fields.
+			if ( 'video' === $type ) {
+				$photo['type']  = 'video';
+				$photo['video'] = $base . '=dv';
+			}
+
 			$photos[] = $photo;
+
+			// Stop once we have enough visible entries.
+			if ( count( $photos ) >= $limit ) {
+				break;
+			}
 		}
 
 		return $photos;
@@ -881,6 +945,57 @@ class JZSA_Shared_Albums {
 				'html' => $html,
 			)
 		);
+	}
+
+	/**
+	 * Handle AJAX request to refresh expired media URLs.
+	 *
+	 * Re-fetches the album page from Google Photos and returns fresh URLs
+	 * so the frontend can update stale video/image sources.
+	 */
+	public function handle_refresh_urls() {
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'jzsa_refresh_urls' ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+			return;
+		}
+
+		$album_url = isset( $_POST['album_url'] ) ? esc_url_raw( wp_unslash( $_POST['album_url'] ) ) : '';
+		if ( empty( $album_url ) ) {
+			wp_send_json_error( 'Missing album URL' );
+			return;
+		}
+
+		// Force fresh fetch (bypass cache).
+		$result = $this->provider->fetch_album( $album_url );
+
+		if ( ! $result['success'] ) {
+			wp_send_json_error( $result['error'] );
+			return;
+		}
+
+		// Update the transient cache with fresh URLs.
+		$cache_key = $this->get_cache_key( $album_url );
+		set_transient(
+			$cache_key,
+			array(
+				'title'         => $result['data']['title'] ?? null,
+				'photos'        => $result['data']['photos'],
+				'is_deprecated' => $result['is_deprecated'],
+			),
+			self::CACHE_DURATION
+		);
+
+		// Prepare URLs with standard dimensions.
+		$photos = $this->prepare_photo_urls(
+			$result['data']['photos'],
+			self::DEFAULT_FULLSCREEN_SOURCE_WIDTH,
+			self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT,
+			self::DEFAULT_SOURCE_WIDTH,
+			self::DEFAULT_SOURCE_HEIGHT
+		);
+
+		wp_send_json_success( array( 'photos' => $photos ) );
 	}
 
 	/**

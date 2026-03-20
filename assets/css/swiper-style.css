@@ -12,14 +12,32 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-controls-fade-easing: linear;
     --jzsa-controls-bg-duration: 0.3s;
     --jzsa-controls-bg-easing: ease;
-    --jzsa-controls-bg: rgba(0, 0, 0, 0.5);
+    --jzsa-controls-bg: rgba(0, 0, 0, 0.35);
     --jzsa-controls-bg-hover: rgba(0, 0, 0, 0.7);
     --jzsa-controls-circle-size: 44px;
     --jzsa-controls-square-size: 40px;
     --jzsa-controls-icon-size: 20px;
     --jzsa-controls-pill-radius: 20px;
     --jzsa-controls-square-radius: 4px;
+    --jzsa-nav-opacity: 0.8;
+    --jzsa-nav-opacity-hover: 0.9;
+    --jzsa-nav-opacity-active: 1;
+    --jzsa-controls-fs-scale: 1.25;
+    --jzsa-controls-color: #ffffff;
+    /* Flat icon-contrast helpers (no visible button backgrounds). */
     position: relative; /* For loader overlay positioning */
+}
+
+/* Kill Android tap-highlight rectangle on all interactive elements */
+.jzsa-album button,
+.jzsa-album [role="button"],
+.jzsa-album a,
+.jzsa-album .swiper-slide,
+.jzsa-album .plyr__control,
+.jzsa-gallery-album button,
+.jzsa-gallery-album a,
+.jzsa-gallery-album .plyr__control {
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* Initial gallery fade-in on load (content appears gradually). */
@@ -63,59 +81,43 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     height: 100%;
 }
 
-/* image-fit="fit" - scale to fill one axis, no crop (may upscale) */
-.jzsa-album[data-image-fit="fit"] .swiper-slide img {
+/* image-fit="contain" - show whole image, no crop, may letterbox */
+.jzsa-album[data-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: 100%;
     height: 100%;
 }
 
-/* full-screen-image-fit overrides image-fit when in fullscreen.
+/* fullscreen-image-fit overrides image-fit when in fullscreen.
    Each vendor prefix MUST be in its own rule — grouping them causes browsers
    to drop the entire rule when they encounter an unrecognised pseudo-class. */
-.jzsa-album:fullscreen[data-full-screen-image-fit="fit"] .swiper-slide img {
+.jzsa-album:fullscreen[data-fullscreen-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: 100%;
     height: 100%;
 }
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="fit"] .swiper-slide img {
+.jzsa-album:-webkit-full-screen[data-fullscreen-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: 100%;
     height: 100%;
 }
-.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="fit"] .swiper-slide img {
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-image-fit="contain"] .swiper-slide img {
     object-fit: contain;
     width: 100%;
     height: 100%;
 }
 
-.jzsa-album:fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
-    object-fit: contain;
-    width: auto;
-    height: auto;
-}
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="contain"] .swiper-slide img {
-    object-fit: contain;
-    width: auto;
-    height: auto;
-}
-.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="contain"] .swiper-slide img {
-    object-fit: contain;
-    width: auto;
-    height: auto;
-}
-
-.jzsa-album:fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
+.jzsa-album:fullscreen[data-fullscreen-image-fit="cover"] .swiper-slide img {
     object-fit: cover;
     width: 100%;
     height: 100%;
 }
-.jzsa-album:-webkit-full-screen[data-full-screen-image-fit="cover"] .swiper-slide img {
+.jzsa-album:-webkit-full-screen[data-fullscreen-image-fit="cover"] .swiper-slide img {
     object-fit: cover;
     width: 100%;
     height: 100%;
 }
-.jzsa-album.jzsa-pseudo-fullscreen[data-full-screen-image-fit="cover"] .swiper-slide img {
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-image-fit="cover"] .swiper-slide img {
     object-fit: cover;
     width: 100%;
     height: 100%;
@@ -124,23 +126,73 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Navigation buttons */
 .jzsa-album .swiper-button-next,
 .jzsa-album .swiper-button-prev {
-    color: #fff;
-    background: var(--jzsa-controls-bg);
+    color: var(--jzsa-controls-color, #fff);
+    background: transparent !important;
     width: var(--jzsa-controls-circle-size);
     height: var(--jzsa-controls-circle-size);
-    border-radius: 50%;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    border-radius: 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
+}
+
+.jzsa-album .swiper-button-prev { left: 0; }
+.jzsa-album .swiper-button-next { right: 0; }
+
+/* show-navigation="false" — hide prev/next arrows */
+.jzsa-album[data-show-navigation="false"] .swiper-button-prev,
+.jzsa-album[data-show-navigation="false"] .swiper-button-next {
+    display: none !important;
+}
+
+/* interaction-lock="true" — hide interactive plugin controls and prevent interaction */
+.jzsa-album[data-interaction-lock="true"] .swiper-button-prev,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-next,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-play-pause,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-fullscreen,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-external-link,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-download,
+.jzsa-album[data-interaction-lock="true"] .swiper-album-title,
+.jzsa-album[data-interaction-lock="true"] .jzsa-carousel-slide-fs-btn,
+.jzsa-album[data-interaction-lock="true"] .jzsa-gallery-thumb-fs-btn {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+.jzsa-gallery-shell .jzsa-gallery-album[data-interaction-lock="true"] ~ .jzsa-gallery-controls {
+    display: none !important;
+    pointer-events: none !important;
 }
 
 .jzsa-album .swiper-button-next:after,
 .jzsa-album .swiper-button-prev:after {
-    font-size: var(--jzsa-controls-icon-size);
+    content: '' !important;
+    display: block;
+    width: 22px;
+    height: 22px;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
+.jzsa-album .swiper-button-next:after {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 24'><path d='M2 2l8 10-8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' paint-order='stroke fill'/><path d='M2 2l8 10-8 10' fill='none' stroke='%23000000' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M2 2l8 10-8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+
+.jzsa-album .swiper-button-prev:after {
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 24'><path d='M10 2L2 12l8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' paint-order='stroke fill'/><path d='M10 2L2 12l8 10' fill='none' stroke='%23000000' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M10 2L2 12l8 10' fill='none' stroke='%23ffffff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
 }
 
 .jzsa-album .swiper-button-next:hover,
 .jzsa-album .swiper-button-prev:hover {
-    background: var(--jzsa-controls-bg-hover);
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
+}
+
+.jzsa-album .swiper-button-next:active,
+.jzsa-album .swiper-button-prev:active {
+    filter: opacity(var(--jzsa-nav-opacity-active)) !important;
 }
 
 .jzsa-album .swiper-button-next.swiper-button-disabled,
@@ -151,32 +203,35 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* External link button */
 .jzsa-album .swiper-button-external-link {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    width: var(--jzsa-controls-square-size);
-    height: var(--jzsa-controls-square-size);
-    background: var(--jzsa-controls-bg);
-    border-radius: var(--jzsa-controls-square-radius);
+    top: 0;
+    left: 0;
+    width: var(--jzsa-controls-circle-size);
+    height: var(--jzsa-controls-circle-size);
+    background: transparent !important;
+    border-radius: 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
     cursor: pointer;
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
     text-decoration: none;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
 }
 
 .jzsa-album .swiper-button-external-link:hover {
-    background: var(--jzsa-controls-bg-hover);
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
 }
 
 .jzsa-album .swiper-button-external-link:after {
     content: '';
     display: block;
-    width: var(--jzsa-controls-icon-size);
-    height: var(--jzsa-controls-icon-size);
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/></svg>');
+    width: 21px;
+    height: 21px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
@@ -185,20 +240,22 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Download button */
 .jzsa-album .swiper-button-download {
     position: absolute;
-    top: 10px;
-    left: 10px;
-    width: var(--jzsa-controls-square-size);
-    height: var(--jzsa-controls-square-size);
-    background: var(--jzsa-controls-bg);
-    border: none;
-    border-radius: var(--jzsa-controls-square-radius);
+    top: 0;
+    left: 0;
+    width: var(--jzsa-controls-circle-size);
+    height: var(--jzsa-controls-circle-size);
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0;
+    outline: none !important;
+    box-shadow: none !important;
     cursor: pointer;
     z-index: 10;
     display: none;
     align-items: center;
     justify-content: center;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
 }
 
 .jzsa-album[data-show-download-button="true"] .swiper-button-download {
@@ -207,26 +264,26 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 
 /* When both link and download buttons are visible, move download button to the right */
 .jzsa-album[data-show-link-button="true"][data-show-download-button="true"] .swiper-button-download {
-    left: 60px;
+    left: calc(var(--jzsa-controls-circle-size) + 10px);
 }
 
 .jzsa-album .swiper-button-download:hover {
-    background: var(--jzsa-controls-bg-hover);
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
 }
 
 .jzsa-album .swiper-button-download:after {
     content: '';
     display: block;
-    width: var(--jzsa-controls-icon-size);
-    height: var(--jzsa-controls-icon-size);
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg>');
+    width: 21px;
+    height: 21px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }
 
-/* Autoplay progress bar (only visible when autoplay is running) */
-.jzsa-album .swiper-autoplay-progress {
+/* Slideshow progress bar (only visible when slideshow is running) */
+.jzsa-album .swiper-slideshow-progress {
     position: absolute;
     bottom: 4px;
     left: 50%;
@@ -234,6 +291,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     width: 39px;
     height: 2px;
     background: rgba(255, 255, 255, 0.2);
+    background: color-mix(in srgb, var(--jzsa-controls-color, #fff) 25%, transparent);
     border-radius: 1px;
     z-index: 10;
     display: block;
@@ -242,14 +300,14 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* In fullscreen mode, position it below the raised pagination */
-.jzsa-album.jzsa-is-fullscreen .swiper-autoplay-progress {
+.jzsa-album.jzsa-is-fullscreen .swiper-slideshow-progress {
     bottom: 12px;
 }
 
-.jzsa-album .swiper-autoplay-progress-bar {
+.jzsa-album .swiper-slideshow-progress-bar {
     height: 100%;
     width: 100%;
-    background: rgba(255, 255, 255, 0.8);
+    background: var(--jzsa-controls-color, #fff);
     transform-origin: left;
     transition: transform linear;
 }
@@ -257,146 +315,204 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Play/Pause button */
 .jzsa-album .swiper-button-play-pause {
     position: absolute;
-    bottom: 41px;
+    bottom: 28px;
     left: 50%;
     transform: translateX(-50%);
     width: var(--jzsa-controls-circle-size);
     height: var(--jzsa-controls-circle-size);
-    background: var(--jzsa-controls-bg);
-    border: none;
-    border-radius: 50%;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0;
     cursor: pointer;
     z-index: 10;
     display: none;
     align-items: center;
     justify-content: center;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
     appearance: none;
     -webkit-appearance: none;
     padding: 0;
     margin: 0;
-    -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .jzsa-album .swiper-button-play-pause:focus,
 .jzsa-album .swiper-button-play-pause:focus-visible,
 .jzsa-album .swiper-button-play-pause:active {
-    outline: none;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95);
-    border: none;
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
 }
 
-/* Show play/pause button in fullscreen, and inline when autoplay is enabled */
+/* When counter is hidden, move play/pause down near the progress bar */
+.jzsa-album[data-show-counter="false"] .swiper-button-play-pause {
+    bottom: 0px;
+}
+
+/* Show play/pause button in fullscreen, and inline when slideshow is enabled */
 .jzsa-album.jzsa-is-fullscreen .swiper-button-play-pause {
     display: flex;
-    bottom: 64px;
+    bottom: 46px;
+}
+.jzsa-album.jzsa-is-fullscreen[data-show-counter="false"] .swiper-button-play-pause {
+    bottom: 7px;
 }
 
-.jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
     display: flex;
 }
 
 @media (hover: hover) and (pointer: fine) {
-    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+    .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
         opacity: 0;
         pointer-events: none;
     }
 
-    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):hover .swiper-button-play-pause,
-    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen):focus-within .swiper-button-play-pause {
-        opacity: var(--jzsa-controls-visible-opacity);
+    .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):hover .swiper-button-play-pause,
+    .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):focus-within .swiper-button-play-pause {
+        opacity: 0.15;
         pointer-events: auto;
     }
 }
 
 /* Keep inline hover behavior predictable (do not force opacity via control intro animation). */
-.jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen).jzsa-loaded .swiper-button-play-pause {
+.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen).jzsa-loaded .swiper-button-play-pause {
     animation: none;
 }
 
 @media (hover: none), (pointer: coarse) {
-    .jzsa-album.jzsa-inline-autoplay-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
-        display: none;
-        opacity: 0;
-        pointer-events: none;
+    .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
+        display: flex;
+        pointer-events: auto;
     }
 }
 
 .jzsa-album .swiper-button-play-pause:hover {
-    background: var(--jzsa-controls-bg-hover);
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
 }
 
-/* Play icon (default) */
+.jzsa-album .swiper-button-play-pause:active {
+    filter: opacity(var(--jzsa-nav-opacity-active)) !important;
+}
+
+
+/* Play icon (default — slideshow paused) */
 .jzsa-album .swiper-button-play-pause:after {
     content: '';
     display: block;
-    width: 0;
-    height: 0;
-    border-style: solid;
-    border-width: 10px 0 10px 16px;
-    border-color: transparent transparent transparent white;
-    margin-left: 3px;
+    width: 20px;
+    height: 20px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M8 5v14l11-7z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
 }
 
-/* Pause icon (when playing) */
+/* Pause icon (slideshow running) */
 .jzsa-album .swiper-button-play-pause.playing:after {
-    width: 14px;
-    height: 20px;
-    border-width: 0 3px;
-    border-color: white;
-    border-style: solid;
-    border-left-width: 3px;
-    border-right-width: 3px;
-    border-top-width: 0;
-    border-bottom-width: 0;
-    margin-left: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 18h3V6H7v12zm7-12v12h3V6h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1' paint-order='stroke fill'/></svg>");
 }
 
 /* Fullscreen button */
 .jzsa-album .swiper-button-fullscreen {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    width: var(--jzsa-controls-square-size);
-    height: var(--jzsa-controls-square-size);
-    background: var(--jzsa-controls-bg);
-    border-radius: var(--jzsa-controls-square-radius);
+    top: 0;
+    right: 0;
+    width: var(--jzsa-controls-circle-size);
+    height: var(--jzsa-controls-circle-size);
+    background: transparent !important;
+    border-radius: 0;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
     cursor: pointer;
     z-index: 10;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
-                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    filter: opacity(var(--jzsa-nav-opacity));
+    transition: filter 0.15s ease;
 }
 
 .jzsa-album .swiper-button-fullscreen:hover {
-    background: var(--jzsa-controls-bg-hover);
+    filter: opacity(var(--jzsa-nav-opacity-hover)) !important;
 }
 
 .jzsa-album .swiper-button-fullscreen:after {
     content: '';
     display: block;
-    width: var(--jzsa-controls-icon-size);
-    height: var(--jzsa-controls-icon-size);
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/></svg>');
+    width: 26px;
+    height: 26px;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
 }
 
 /* When in fullscreen, show exit fullscreen icon */
-.jzsa-album:fullscreen .swiper-button-fullscreen:after {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>');
-}
+.jzsa-album:fullscreen .swiper-button-fullscreen:after,
 .jzsa-album:-webkit-full-screen .swiper-button-fullscreen:after {
-    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white"><path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/></svg>');
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>");
+}
+
+/* Scale top controls up in fullscreen — each scales from its nearest corner */
+.jzsa-album:fullscreen .swiper-button-fullscreen,
+.jzsa-album:-webkit-full-screen .swiper-button-fullscreen,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-fullscreen {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top right;
+}
+
+.jzsa-album:fullscreen .swiper-button-external-link,
+.jzsa-album:-webkit-full-screen .swiper-button-external-link,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-external-link,
+.jzsa-album:fullscreen .swiper-button-download,
+.jzsa-album:-webkit-full-screen .swiper-button-download,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-download {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top left;
+}
+
+.jzsa-album:fullscreen .swiper-button-prev,
+.jzsa-album:-webkit-full-screen .swiper-button-prev,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-prev {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: center left;
+}
+
+.jzsa-album:fullscreen .swiper-button-next,
+.jzsa-album:-webkit-full-screen .swiper-button-next,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-next {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: center right;
+}
+
+.jzsa-album:fullscreen .swiper-button-play-pause,
+.jzsa-album:-webkit-full-screen .swiper-button-play-pause,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-button-play-pause {
+    transform: translateX(-50%) scale(var(--jzsa-controls-fs-scale));
+    transform-origin: bottom center;
+}
+
+.jzsa-album:fullscreen .swiper-pagination,
+.jzsa-album:-webkit-full-screen .swiper-pagination,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-pagination {
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: bottom center;
+}
+
+.jzsa-album:fullscreen .swiper-album-title,
+.jzsa-album:-webkit-full-screen .swiper-album-title,
+.jzsa-album.jzsa-pseudo-fullscreen .swiper-album-title {
+    transform: translateX(-50%) scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top center;
 }
 
 /* Fullscreen mode styling */
@@ -457,16 +573,17 @@ body.jzsa-no-scroll {
 /* Pagination */
 .jzsa-album .swiper-pagination {
     background: var(--jzsa-controls-bg);
-    color: #fff;
-    padding: 4px 16px;
+    color: var(--jzsa-controls-color, #fff);
+    padding: 4px 12px;
     border-radius: var(--jzsa-controls-pill-radius);
     display: inline-block;
+    bottom: 10px;
     left: 10px;
     right: 10px;
     margin: 0 auto;
     max-width: max-content;
     width: auto;
-    font-size: 14px;
+    font-size: 12px;
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     overflow: hidden;
@@ -477,7 +594,7 @@ body.jzsa-no-scroll {
 
 /* Move pagination up in fullscreen to make room for progress bar below */
 .jzsa-album.jzsa-is-fullscreen .swiper-pagination {
-    bottom: 25px;
+    bottom: 23px;
 }
 
 /* Loading state */
@@ -535,6 +652,7 @@ body.jzsa-no-scroll {
 .jzsa-album[data-mode="carousel"] .swiper-slide {
     width: auto;
     height: auto;
+    position: relative;
 }
 
 .jzsa-album[data-mode="carousel"] .swiper-slide img {
@@ -550,7 +668,7 @@ body.jzsa-no-scroll {
     height: 100%;
 }
 
-/* Carousel mode: slides are clickable and open fullscreen player */
+/* Carousel mode: slides are clickable and open fullscreen slideshow */
 .jzsa-album[data-mode="carousel"] .swiper-slide {
     cursor: pointer;
 }
@@ -561,13 +679,62 @@ body.jzsa-no-scroll {
     transition: opacity 0.2s ease;
 }
 
+/* Carousel per-tile fullscreen button */
+.jzsa-album[data-mode="carousel"] .swiper-slide .jzsa-carousel-slide-fs-btn {
+    top: 0;
+    right: 0;
+    z-index: 12;
+    opacity: 0;
+    pointer-events: none;
+    transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),
+                opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+}
+
+/* In carousel preview mode, hide the single container-level fullscreen button.
+   Per-tile buttons are used instead. */
+.jzsa-album.jzsa-carousel-tile-fs-enabled:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) > .swiper-button-fullscreen {
+    display: none !important;
+}
+
+/* Keep the container-level fullscreen button available while fullscreen is active
+   so exiting fullscreen is always obvious. */
+.jzsa-album.jzsa-carousel-tile-fs-enabled:fullscreen > .swiper-button-fullscreen,
+.jzsa-album.jzsa-carousel-tile-fs-enabled:-webkit-full-screen > .swiper-button-fullscreen,
+.jzsa-album.jzsa-carousel-tile-fs-enabled.jzsa-is-fullscreen > .swiper-button-fullscreen,
+.jzsa-album.jzsa-carousel-tile-fs-enabled.jzsa-pseudo-fullscreen > .swiper-button-fullscreen {
+    display: flex !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:hover .jzsa-carousel-slide-fs-btn,
+    .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:focus-within .jzsa-carousel-slide-fs-btn {
+        opacity: var(--jzsa-controls-visible-opacity);
+        pointer-events: auto;
+    }
+}
+
+@media (hover: none), (pointer: coarse) {
+    .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-slide-fs-btn {
+        opacity: var(--jzsa-controls-visible-opacity);
+        pointer-events: auto;
+    }
+}
+
+/* Per-tile buttons are preview-mode affordances only. Hide in fullscreen. */
+.jzsa-album[data-mode="carousel"].jzsa-is-fullscreen .jzsa-carousel-slide-fs-btn,
+.jzsa-album[data-mode="carousel"].jzsa-pseudo-fullscreen .jzsa-carousel-slide-fs-btn,
+.jzsa-album[data-mode="carousel"]:fullscreen .jzsa-carousel-slide-fs-btn,
+.jzsa-album[data-mode="carousel"]:-webkit-full-screen .jzsa-carousel-slide-fs-btn {
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
 /* Fullscreen slides: Swiper's own grab/grabbing cursor is used.
    No pseudo-element overlays so drag/touch navigation works natively.
    Click-to-navigate (50-50 split) is handled by JS. */
 .jzsa-album:fullscreen .swiper-slide,
 .jzsa-album:-webkit-full-screen .swiper-slide,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
-    -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     user-select: none;
 }
@@ -620,7 +787,7 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-play-pause,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-download,
 .jzsa-album.jzsa-fullscreen-waiting .swiper-button-external-link,
-.jzsa-album.jzsa-fullscreen-waiting .swiper-autoplay-progress {
+.jzsa-album.jzsa-fullscreen-waiting .swiper-slideshow-progress {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -636,7 +803,7 @@ body.jzsa-no-scroll {
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-play-pause,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-download,
 .jzsa-album.swiper:not(.jzsa-loaded) .swiper-button-external-link,
-.jzsa-album.swiper:not(.jzsa-loaded) .swiper-autoplay-progress {
+.jzsa-album.swiper:not(.jzsa-loaded) .swiper-slideshow-progress {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -656,7 +823,7 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-loader-pending .swiper-button-play-pause,
 .jzsa-album.jzsa-loader-pending .swiper-button-download,
 .jzsa-album.jzsa-loader-pending .swiper-button-external-link,
-.jzsa-album.jzsa-loader-pending .swiper-autoplay-progress {
+.jzsa-album.jzsa-loader-pending .swiper-slideshow-progress {
     opacity: 0;
     visibility: hidden;
     pointer-events: none;
@@ -670,9 +837,17 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-loaded .swiper-button-play-pause,
 .jzsa-album.jzsa-loaded .swiper-button-download,
 .jzsa-album.jzsa-loaded .swiper-button-external-link,
-.jzsa-album.jzsa-loaded .swiper-autoplay-progress {
+.jzsa-album.jzsa-loaded .swiper-slideshow-progress {
     visibility: visible;
     animation: jzsa-controls-fade-in-soft 1000ms ease-out both;
+}
+
+/* Nav arrows and play/pause use subtle opacity via filter (immune to Swiper's opacity control) */
+.jzsa-album.jzsa-loaded .swiper-button-prev,
+.jzsa-album.jzsa-loaded .swiper-button-next,
+.jzsa-album.jzsa-loaded .swiper-button-play-pause {
+    animation: none;
+    filter: opacity(var(--jzsa-nav-opacity));
 }
 
 /* Gallery controls live in a sibling overlay shell; hide them while content is pending. */
@@ -710,6 +885,15 @@ body.jzsa-no-scroll {
     }
     to {
         opacity: var(--jzsa-controls-visible-opacity);
+    }
+}
+
+@keyframes jzsa-controls-fade-in-subtle {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 0.15;
     }
 }
 
@@ -790,7 +974,7 @@ body.jzsa-no-scroll {
 }
 
 /* Uniform gallery layout */
-.jzsa-gallery-album[data-gallery-layout="uniform"] {
+.jzsa-gallery-album[data-gallery-layout="grid"] {
     display: grid;
     grid-template-columns: repeat(var(--jzsa-gallery-columns, 3), 1fr);
     gap: 4px;
@@ -798,25 +982,25 @@ body.jzsa-no-scroll {
 }
 
 @media (max-width: 768px) {
-    .jzsa-gallery-album[data-gallery-layout="uniform"] {
+    .jzsa-gallery-album[data-gallery-layout="grid"] {
         grid-template-columns: repeat(var(--jzsa-gallery-columns-tablet, 2), 1fr);
     }
 }
 
 @media (max-width: 480px) {
-    .jzsa-gallery-album[data-gallery-layout="uniform"] {
+    .jzsa-gallery-album[data-gallery-layout="grid"] {
         grid-template-columns: repeat(var(--jzsa-gallery-columns-mobile, 1), 1fr);
     }
 }
 
-.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-thumb {
+.jzsa-gallery-album[data-gallery-layout="grid"] .jzsa-gallery-thumb {
     width: 100%;
     aspect-ratio: 4 / 3;
     object-fit: cover;
     display: block;
 }
 
-.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-placeholder {
+.jzsa-gallery-album[data-gallery-layout="grid"] .jzsa-gallery-placeholder {
     width: 100%;
     aspect-ratio: 4 / 3;
     display: block;
@@ -828,13 +1012,10 @@ body.jzsa-no-scroll {
     user-select: none;
 }
 
-.jzsa-gallery-album[data-gallery-layout="uniform"] .jzsa-gallery-tile-fill {
+.jzsa-gallery-album[data-gallery-layout="grid"] .jzsa-gallery-tile-fill {
     aspect-ratio: auto;
 }
-.jzsa-gallery-album[data-gallery-layout="uniform"][data-image-fit="contain"] .jzsa-gallery-thumb {
-    object-fit: contain;
-}
-.jzsa-gallery-album[data-gallery-layout="uniform"][data-image-fit="fit"] .jzsa-gallery-thumb {
+.jzsa-gallery-album[data-gallery-layout="grid"][data-image-fit="contain"] .jzsa-gallery-thumb {
     object-fit: contain;
 }
 
@@ -858,9 +1039,6 @@ body.jzsa-no-scroll {
 .jzsa-gallery-album[data-gallery-layout="justified"][data-image-fit="contain"] .jzsa-gallery-thumb {
     object-fit: contain;
 }
-.jzsa-gallery-album[data-gallery-layout="justified"][data-image-fit="fit"] .jzsa-gallery-thumb {
-    object-fit: contain;
-}
 /* Shared thumbnail hover */
 .jzsa-gallery-thumb {
     cursor: pointer;
@@ -872,6 +1050,7 @@ body.jzsa-no-scroll {
 .jzsa-gallery-thumb:hover {
     opacity: 0.85;
 }
+
 
 .jzsa-gallery-item {
     position: relative;
@@ -895,7 +1074,7 @@ body.jzsa-no-scroll {
 }
 
 @media (hover: none) {
-    .jzsa-gallery-album[data-full-screen-toggle="button-only"] .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
+    .jzsa-gallery-album[data-fullscreen-toggle="button-only"] .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
@@ -991,7 +1170,7 @@ body.jzsa-no-scroll {
     pointer-events: none;
 }
 
-.jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
+.jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause {
     display: flex;
 }
 
@@ -1013,20 +1192,20 @@ body.jzsa-no-scroll {
         pointer-events: auto;
     }
 
-    .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
+    .jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause {
         opacity: 0;
         pointer-events: none;
     }
 
-    .jzsa-gallery-shell:hover .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause,
-    .jzsa-gallery-shell:focus-within .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
+    .jzsa-gallery-shell:hover .jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause,
+    .jzsa-gallery-shell:focus-within .jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
 }
 
 @media (hover: none), (pointer: coarse) {
-    .jzsa-gallery-controls.jzsa-gallery-autoplay-enabled .swiper-button-play-pause {
+    .jzsa-gallery-controls.jzsa-gallery-slideshow-enabled .swiper-button-play-pause {
         display: none;
         opacity: 0;
         pointer-events: none;
@@ -1105,16 +1284,291 @@ body.jzsa-no-scroll {
 }
 
 /* ============================================================================
-   Gallery fullscreen player (hidden until fullscreen is entered)
+   Gallery fullscreen slideshow (hidden until fullscreen is entered)
    ============================================================================ */
 
-/* Gallery fullscreen player: rendered off-screen at viewport size so Swiper can
+/* Gallery fullscreen slideshow: rendered off-screen at viewport size so Swiper can
    measure dimensions during init. The existing .jzsa-album:fullscreen and
    .jzsa-album.jzsa-pseudo-fullscreen CSS handles the rest — exactly the same
-   mechanism used by player/carousel/gallery modes. */
-.jzsa-gallery-player {
+   mechanism used by slideshow/carousel/gallery modes. */
+.jzsa-gallery-slideshow {
     position: fixed;
     left: -200vw;
     width: 100vw;
     height: 100vh;
+}
+
+/* ============================================================================
+   Video support
+   ============================================================================ */
+
+/* --- Video slide in Swiper (slider/carousel/fullscreen slideshow) --- */
+
+/* Video wrapper: shared across slider and gallery modes */
+.jzsa-video-wrapper {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    z-index: 11;
+}
+
+/* In slider/carousel slides, wrapper fills the slide */
+.jzsa-slide-video .jzsa-video-wrapper {
+    overflow: hidden;
+}
+
+.jzsa-video-player {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    outline: none;
+    position: relative;
+    z-index: 11;
+}
+
+/* Gallery: video wrapper fills the grid cell */
+.jzsa-gallery-item-video .jzsa-video-wrapper {
+    overflow: hidden;
+}
+
+/* Uniform layout: inherit the aspect-ratio cell size */
+.jzsa-gallery-album[data-gallery-layout="grid"] .jzsa-gallery-item-video .jzsa-video-wrapper {
+    aspect-ratio: 4 / 3;
+}
+
+/* Justified layout: fill the explicitly-sized item */
+.jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-gallery-item-video {
+    overflow: hidden;
+}
+
+.jzsa-gallery-album[data-gallery-layout="justified"] .jzsa-gallery-item-video .jzsa-video-wrapper {
+    position: absolute;
+    inset: 0;
+}
+
+/* Gallery: video fills its wrapper, cropped to fit */
+.jzsa-gallery-item-video .jzsa-video-player {
+    max-width: 100%;
+    max-height: 100%;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* --- Plyr integration --- */
+
+/* Plyr container fills the video wrapper (inside the 16px padding) */
+.jzsa-video-wrapper .plyr {
+    width: calc(100% + 2px);
+    height: calc(100% + 2px);
+    margin: -1px;
+    position: relative;
+    /* Plyr defaults to min-width: 200px; allow narrow carousel cells. */
+    min-width: 0;
+}
+
+.jzsa-video-wrapper .plyr__video-wrapper {
+    height: 100%;
+}
+
+/* Plyr controls must sit above the video (z-index 11) */
+.jzsa-video-wrapper .plyr__control--overlaid,
+.jzsa-video-wrapper .plyr__controls {
+    z-index: 15;
+}
+
+/* Play-large button uses accent color + slow fade out on click + 20% larger.
+   Force full opacity so Plyr's default semi-transparent bg doesn't leak the
+   native play triangle through. Instant hide (no transition) so it
+   disappears in sync with the duration label. */
+.jzsa-video-wrapper .plyr__control--overlaid {
+    --jzsa-play-scale: 1.25;
+    background: var(--jzsa-video-controls-color, #00b2ff) !important;
+    opacity: 1;
+    transition: none !important;
+    transform: translate(-50%, -50%) scale(var(--jzsa-play-scale));
+}
+
+/* Play button loading state — override Plyr's own hide so the button stays
+   visible (covering the Google poster triangle) until actual playback. */
+.jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+    animation: jzsa-plyr-pulse 1s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading svg {
+    display: none;
+}
+
+.jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading::after {
+    content: '';
+    display: block;
+    width: 24px;
+    height: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: jzsa-plyr-spin 0.8s linear infinite;
+}
+
+@keyframes jzsa-plyr-pulse {
+    0%, 100% { transform: translate(-50%, -50%) scale(var(--jzsa-play-scale)); }
+    50%      { transform: translate(-50%, -50%) scale(calc(var(--jzsa-play-scale) * 0.95)); }
+}
+
+@keyframes jzsa-plyr-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Play button scales proportionally with container width */
+@container (min-width: 500px) {
+    .jzsa-video-wrapper .plyr__control--overlaid {
+        --jzsa-play-scale: 2.0;
+    }
+}
+
+@container (min-width: 800px) {
+    .jzsa-video-wrapper .plyr__control--overlaid {
+        --jzsa-play-scale: 2.8;
+    }
+}
+
+@container (min-width: 1200px) {
+    .jzsa-video-wrapper .plyr__control--overlaid {
+        --jzsa-play-scale: 4.4;
+    }
+}
+
+/* Plyr control bar accent + compact volume */
+.jzsa-video-wrapper .plyr {
+    --plyr-color-main: var(--jzsa-video-controls-color, #00b2ff);
+    --plyr-range-fill-background: var(--jzsa-video-controls-color, #00b2ff);
+}
+
+/* Responsive Plyr controls          */
+/* PlayMute                          */
+/* PlayRestartMute                   */
+/* PlayRestartProgressMute           */
+/* PlayRestartProgressMuteVolume     */
+/* PlayRestartProgressTimeMuteVolume */
+
+.jzsa-video-wrapper {
+    container-type: inline-size;
+}
+
+.jzsa-video-wrapper .plyr .plyr__controls {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+    gap: 4px;
+}
+
+.jzsa-video-wrapper .plyr__controls .plyr__progress__container {
+    flex: 1 1 0;
+    min-width: 0;
+    pointer-events: none;
+    opacity: 0.4;
+    cursor: default;
+}
+
+/* Mute button never hides — it acts as the right-side boundary
+   preventing the progress bar from overflowing. */
+
+/* PlayMute default: hide restart + progress + volume slider + time */
+.jzsa-video-wrapper .plyr__controls .plyr__progress__container,
+.jzsa-video-wrapper .plyr__volume input[type="range"],
+.jzsa-video-wrapper .plyr__time,
+.jzsa-video-wrapper [data-plyr="restart"] {
+    display: none;
+}
+
+/* PlayRestartMute: show restart */
+@container (min-width: 130px) {
+    .jzsa-video-wrapper [data-plyr="restart"] {
+        display: inline-flex;
+        margin-right: auto;
+    }
+}
+
+/* PlayRestartProgressMute: show progress */
+@container (min-width: 160px) {
+    .jzsa-video-wrapper [data-plyr="restart"] {
+        margin-right: 0;
+    }
+
+    .jzsa-video-wrapper .plyr__controls .plyr__progress__container {
+        display: block;
+    }
+}
+
+/* PlayRestartProgressMuteVolume: show volume slider */
+@container (min-width: 260px) {
+    .jzsa-video-wrapper .plyr__volume input[type="range"] {
+        display: block;
+        width: 70px;
+        min-width: 70px;
+        max-width: 70px;
+    }
+}
+
+/* PlayRestartProgressTimeMuteVolume: show time */
+@container (min-width: 360px) {
+    .jzsa-video-wrapper .plyr__time {
+        display: inline-flex;
+    }
+}
+
+/* Context-aware control layering (Option D):
+   - Video slide, not playing: album controls visible, Plyr bar hidden, play button + duration shown
+   - Video playing: album controls fade out, Plyr bar shown */
+.jzsa-album.jzsa-video-playing .swiper-pagination,
+.jzsa-album.jzsa-video-playing .swiper-button-play-pause {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transition: opacity 0.3s ease;
+}
+
+
+
+/* --- Video badge on gallery thumbnails --- */
+
+.jzsa-gallery-item-video {
+    position: relative;
+}
+
+.jzsa-video-badge {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+    z-index: 2;
+    transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.jzsa-gallery-item-video:hover .jzsa-video-badge {
+    transform: translate(-50%, -50%) scale(1.1);
+    background: rgba(0, 0, 0, 0.75);
+}
+
+.jzsa-video-badge-icon {
+    position: absolute;
+    top: 50%;
+    left: 54%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-style: solid;
+    border-width: 9px 0 9px 16px;
+    border-color: transparent transparent transparent #fff;
 }

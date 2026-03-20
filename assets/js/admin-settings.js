@@ -115,7 +115,7 @@ function jzsaRunPlaygroundPreview() {
 			if ( window.SharedGooglePhotos ) {
 				var album = preview.querySelector( '.jzsa-album' );
 				if ( album ) {
-					var mode = album.getAttribute( 'data-mode' ) || 'player';
+					var mode = album.getAttribute( 'data-mode' ) || 'slideshow';
 					if ( mode === 'gallery' && typeof window.SharedGooglePhotos.initializeGallery === 'function' ) {
 						window.SharedGooglePhotos.initializeGallery( album );
 					} else if ( typeof window.SharedGooglePhotos.initialize === 'function' ) {
