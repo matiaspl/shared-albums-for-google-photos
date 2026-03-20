@@ -336,10 +336,18 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     border: none !important;
 }
 
+/* When counter is hidden, move play/pause down near the progress bar */
+.jzsa-album[data-show-counter="false"] .swiper-button-play-pause {
+    bottom: 0px;
+}
+
 /* Show play/pause button in fullscreen, and inline when slideshow is enabled */
 .jzsa-album.jzsa-is-fullscreen .swiper-button-play-pause {
     display: flex;
     bottom: 46px;
+}
+.jzsa-album.jzsa-is-fullscreen[data-show-counter="false"] .swiper-button-play-pause {
+    bottom: 7px;
 }
 
 .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen) .swiper-button-play-pause {
