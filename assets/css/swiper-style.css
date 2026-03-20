@@ -23,6 +23,10 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-nav-opacity-hover: 0.9;
     --jzsa-nav-opacity-active: 1;
     --jzsa-controls-fs-scale: 1.5;
+    /* Flat icon-contrast helpers (no visible button backgrounds). */
+    --jzsa-icon-halo-filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.98)) drop-shadow(0 1px 2px rgba(0, 0, 0, 0.72));
+    --jzsa-icon-stroke: 0.5px rgba(0, 0, 0, 0.9);
+    --jzsa-icon-text-shadow: 0 0 1px rgba(0, 0, 0, 0.98), 0 1px 2px rgba(0, 0, 0, 0.72);
     position: relative; /* For loader overlay positioning */
 }
 
@@ -158,6 +162,9 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album .swiper-button-next:after,
 .jzsa-album .swiper-button-prev:after {
     font-size: var(--jzsa-controls-icon-size);
+    text-shadow: var(--jzsa-icon-text-shadow);
+    -webkit-text-stroke: var(--jzsa-icon-stroke);
+    paint-order: stroke fill;
 }
 
 .jzsa-album .swiper-button-next:hover,
@@ -210,6 +217,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    filter: var(--jzsa-icon-halo-filter);
 }
 
 /* Download button */
@@ -255,6 +263,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    filter: var(--jzsa-icon-halo-filter);
 }
 
 /* Slideshow progress bar (only visible when slideshow is running) */
@@ -379,6 +388,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     border-width: 7px 0 7px 12px;
     border-color: transparent transparent transparent white;
     margin-left: 2px;
+    filter: var(--jzsa-icon-halo-filter);
 }
 
 /* Pause icon (slideshow running) */
@@ -429,6 +439,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-size: contain;
     background-repeat: no-repeat;
     background-position: center;
+    filter: var(--jzsa-icon-halo-filter);
 }
 
 /* When in fullscreen, show exit fullscreen icon */
