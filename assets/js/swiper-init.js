@@ -2774,7 +2774,9 @@
             'data-album-url',
             'data-image-fit',
             'data-full-screen-image-fit',
-            'data-background-color'
+            'data-background-color',
+            'data-controls-color',
+            'data-video-controls-color'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $galleryContainer.attr(forwardAttrs[i]);
@@ -2787,6 +2789,14 @@
         var bgColor = $galleryContainer.attr('data-background-color');
         if (bgColor && bgColor !== 'transparent') {
             $slideshow[0].style.setProperty('--gallery-bg-color', bgColor);
+        }
+        var controlsColor = $galleryContainer.attr('data-controls-color');
+        if (controlsColor) {
+            $slideshow[0].style.setProperty('--jzsa-controls-color', controlsColor);
+        }
+        var videoControlsColor = $galleryContainer.attr('data-video-controls-color');
+        if (videoControlsColor) {
+            $slideshow[0].style.setProperty('--jzsa-video-controls-color', videoControlsColor);
         }
 
         return slideshowId;
@@ -3142,6 +3152,10 @@
         var $playPause = $controls.find('.swiper-button-play-pause');
         var $progressContainer = $controls.find('.swiper-slideshow-progress');
         var $progressBar = $controls.find('.swiper-slideshow-progress-bar');
+        var controlsColor = $container.attr('data-controls-color');
+        if (controlsColor) {
+            $controls[0].style.setProperty('--jzsa-controls-color', controlsColor);
+        }
 
         function isActivationKey(e) {
             return e.key === 'Enter' || e.key === ' ' || e.keyCode === 13 || e.keyCode === 32;

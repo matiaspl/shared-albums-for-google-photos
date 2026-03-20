@@ -170,6 +170,9 @@ class JZSA_Renderer {
 		if ( ! empty( $config['background-color'] ) ) {
 			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
 		}
+		if ( ! empty( $config['controls-color'] ) ) {
+			$styles[] = '--jzsa-controls-color: ' . esc_attr( $config['controls-color'] );
+		}
 		if ( ! empty( $config['video-controls-color'] ) ) {
 			$styles[] = '--jzsa-video-controls-color: ' . esc_attr( $config['video-controls-color'] );
 		}
@@ -240,6 +243,12 @@ class JZSA_Renderer {
 
 		if ( ! empty( $config['background-color'] ) ) {
 			$attrs[] = sprintf( 'data-background-color="%s"', esc_attr( $config['background-color'] ) );
+		}
+		if ( ! empty( $config['controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-controls-color="%s"', esc_attr( $config['controls-color'] ) );
+		}
+		if ( ! empty( $config['video-controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-video-controls-color="%s"', esc_attr( $config['video-controls-color'] ) );
 		}
 
 		if ( ! empty( $config['album-title'] ) ) {
@@ -359,12 +368,21 @@ class JZSA_Renderer {
 		if ( ! empty( $config['background-color'] ) ) {
 			$attrs[] = sprintf( 'data-background-color="%s"', esc_attr( $config['background-color'] ) );
 		}
+		if ( ! empty( $config['controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-controls-color="%s"', esc_attr( $config['controls-color'] ) );
+		}
+		if ( ! empty( $config['video-controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-video-controls-color="%s"', esc_attr( $config['video-controls-color'] ) );
+		}
 
 		// Gallery mode should keep responsive sizing unless width/height
 		// were explicitly provided in shortcode.
 		$styles = array();
 		if ( ! empty( $config['background-color'] ) ) {
 			$styles[] = '--gallery-bg-color: ' . esc_attr( $config['background-color'] );
+		}
+		if ( ! empty( $config['controls-color'] ) ) {
+			$styles[] = '--jzsa-controls-color: ' . esc_attr( $config['controls-color'] );
 		}
 		if ( ! empty( $config['video-controls-color'] ) ) {
 			$styles[] = '--jzsa-video-controls-color: ' . esc_attr( $config['video-controls-color'] );

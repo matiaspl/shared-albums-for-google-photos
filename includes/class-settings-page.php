@@ -75,6 +75,7 @@ class JZSA_Settings_Page {
 		$video_carousel_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" show-videos="true" max-entries-per-album="8" video-controls-color="#FF6B35" video-autohide-controls="true"]';
 		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" max-entries-per-album="12" gallery-layout="justified" gallery-row-height="180" video-controls-color="#00A878"]';
 		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="false" max-entries-per-album="8" video-controls-color="#7A5CFF"]';
+		$controls_custom_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" slideshow="true" show-link-button="true" show-download-button="true" controls-color="#FFD400"]';
 		?>
 		<div class="wrap jzsa-settings-wrap">
 			<h1>
@@ -618,6 +619,21 @@ class JZSA_Settings_Page {
 					</div>
 					</div>
 
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Custom Controls Color', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Example with a bright classic yellow controls-color for better visibility on mixed photo backgrounds.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code><?php echo esc_html( $controls_custom_shortcode ); ?></code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-controls-color-custom">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( $controls_custom_shortcode );
+						?>
+					</div>
+					</div>
+
 						<div class="jzsa-example">
 							<h3><?php esc_html_e( 'Carousel Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Uses mode="carousel" to show multiple photos side by side. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos. Clicking a photo opens it in a single-photo fullscreen viewer.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
@@ -893,6 +909,11 @@ class JZSA_Settings_Page {
 								<td><code>background-color</code></td>
 								<td>Background color hex code or "transparent"</td>
 								<td>transparent</td>
+							</tr>
+							<tr>
+								<td><code>controls-color</code></td>
+								<td>Color for custom album controls (previous/next, fullscreen, link, download, play/pause). Any valid 6-digit hex color.</td>
+								<td>#ffffff</td>
 							</tr>
 							<tr>
 								<td><code>image-fit</code></td>
