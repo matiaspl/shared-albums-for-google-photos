@@ -375,7 +375,7 @@ class JZSA_Shared_Albums {
 				'video-controls-color'    => $this->parse_color( $atts, 'video-controls-color', '#00b2ff' ),
 				'image-fit'               => $this->parse_image_fit( $atts ),
 			'fullscreen-image-fit'    => $this->parse_fullscreen_image_fit( $atts ),
-			'fullscreen-trigger'      => $this->parse_fullscreen_trigger_mode( $atts ),
+			'fullscreen-toggle'      => $this->parse_fullscreen_toggle_mode( $atts ),
 			'show-navigation'         => $this->parse_bool( $atts, 'show-navigation', true ),
 			'show-title'              => $this->parse_bool( $atts, 'show-title', false ),
 			'show-counter'            => $this->parse_show_counter( $atts ),
@@ -707,13 +707,13 @@ class JZSA_Shared_Albums {
 	 * @param array $atts Attributes
 	 * @return string Fullscreen trigger mode: 'click', 'double-click', 'button-only', or 'disabled'
 	 */
-	private function parse_fullscreen_trigger_mode( $atts ) {
-		if ( ! isset( $atts['fullscreen-trigger'] ) ) {
+	private function parse_fullscreen_toggle_mode( $atts ) {
+		if ( ! isset( $atts['fullscreen-toggle'] ) ) {
 			// Default to 'button-only'
 			return 'button-only';
 		}
 
-		$mode = strtolower( trim( (string) $atts['fullscreen-trigger'] ) );
+		$mode = strtolower( trim( (string) $atts['fullscreen-toggle'] ) );
 
 		// Valid modes: 'button-only' (default), 'click', 'double-click', 'disabled'
 		$valid_modes = array( 'button-only', 'click', 'double-click', 'disabled' );

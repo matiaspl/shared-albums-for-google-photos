@@ -1079,7 +1079,7 @@ body.jzsa-no-scroll {
 }
 
 @media (hover: none) {
-    .jzsa-gallery-album[data-fullscreen-trigger="button-only"] .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
+    .jzsa-gallery-album[data-fullscreen-toggle="button-only"] .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }

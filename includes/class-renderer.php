@@ -142,7 +142,7 @@ class JZSA_Renderer {
 			);
 		}
 
-		if ( empty( $config['fullscreen-trigger'] ) || 'disabled' !== $config['fullscreen-trigger'] ) {
+		if ( empty( $config['fullscreen-toggle'] ) || 'disabled' !== $config['fullscreen-toggle'] ) {
 			$html .= '<div class="swiper-button-fullscreen"></div>';
 		}
 		$html .= '</div>';
@@ -256,8 +256,8 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-album-title="%s"', esc_attr( $config['album-title'] ) );
 		}
 
-		if ( ! empty( $config['fullscreen-trigger'] ) ) {
-			$attrs[] = sprintf( 'data-fullscreen-trigger="%s"', esc_attr( $config['fullscreen-trigger'] ) );
+		if ( ! empty( $config['fullscreen-toggle'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-toggle="%s"', esc_attr( $config['fullscreen-toggle'] ) );
 		}
 
 		if ( ! empty( $config['album-url'] ) ) {
@@ -355,8 +355,8 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-slideshow-inactivity-timeout="%s"', esc_attr( $config['slideshow-inactivity-timeout'] ) );
 		}
 
-		if ( ! empty( $config['fullscreen-trigger'] ) ) {
-			$attrs[] = sprintf( 'data-fullscreen-trigger="%s"', esc_attr( $config['fullscreen-trigger'] ) );
+		if ( ! empty( $config['fullscreen-toggle'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-toggle="%s"', esc_attr( $config['fullscreen-toggle'] ) );
 		}
 
 		if ( ! empty( $config['image-fit'] ) ) {
