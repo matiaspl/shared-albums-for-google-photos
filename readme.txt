@@ -67,10 +67,6 @@ The plugin fetches your public Google Photos album and creates a responsive gall
 
 **RECOMMENDED:** Use the full `photos.google.com/share/` URL format for future compatibility.
 
-`[jzsa-album link="https://photos.google.com/share/YOUR_LONG_ALBUM_ID"]`
-
-Concrete example with a real album link (for testing):
-
 `[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]`
 
 Note: Short links (photos.app.goo.gl) are still supported but will show a deprecation warning.
@@ -78,7 +74,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 = Advanced Usage =
 
 `[jzsa-album
-    link="https://photos.google.com/share/YOUR_LONG_ALBUM_ID"
+    link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"
     background-color="#000000"
     image-fit="contain"
     width="500"

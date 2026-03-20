@@ -1084,9 +1084,13 @@
 
     // Helper: Setup fullscreen button
     function setupFullscreenButton(swiper, $container, params) {
+        if (params && params.interactionLock) {
+            return;
+        }
+
         var $fullscreenBtn = $container.find('.swiper-button-fullscreen');
-		$fullscreenBtn.on('click', function(e) {
-			e.stopPropagation();
+			$fullscreenBtn.on('click', function(e) {
+				e.stopPropagation();
 
 			// Check if we're entering or exiting fullscreen
 			var isCurrentlyFullscreen = isFullscreen();
@@ -1363,6 +1367,10 @@
 
     // Helper: Setup fullscreen switch handlers
     function setupFullscreenSwitchHandlers(swiper, $container, params) {
+        if (params && params.interactionLock) {
+            return;
+        }
+
         // When entering fullscreen from carousel mode, ensure we focus the
         // exact slide the user clicked in the preview (multi-slide) view.
         function focusClickedSlide(e) {
@@ -1926,6 +1934,8 @@
 
     // Helper: Build Swiper configuration object
     function buildSwiperConfig(params) {
+        var interactionLock = !!params.interactionLock;
+
         var config = {
             // Initial slide
             initialSlide: params.initialSlide,
@@ -2015,13 +2025,15 @@
             speed: params.SWIPER_SPEED,
 
             // Touch
-            grabCursor: true,
+            grabCursor: !interactionLock,
+            allowTouchMove: !interactionLock,
+            simulateTouch: !interactionLock,
             noSwiping: true,
             noSwipingSelector: '.plyr__controls, .plyr__control',
 
             // Keyboard control
             keyboard: {
-                enabled: true,
+                enabled: !interactionLock,
             },
 
             // Mouse wheel
@@ -2154,6 +2166,7 @@
 
             // Display settings
             loop: allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
+            interactionLock: $container.attr('data-interaction-lock') === 'true',
             fullscreenToggle:
                 $container.attr('data-fullscreen-toggle') || 'button-only',
             startAt: $container.attr('data-start-at') || '1',
@@ -2190,7 +2203,8 @@
         var fullscreenSlideshowDelay = config.fullscreenSlideshowDelay;
         var slideshowInactivityTimeout = config.slideshowInactivityTimeout;
         var loop = config.loop;
-        var fullscreenToggle = config.fullscreenToggle;
+        var interactionLock = config.interactionLock;
+        var fullscreenToggle = interactionLock ? 'disabled' : config.fullscreenToggle;
         var startAt = config.startAt;
         var showTitle = config.showTitle;
         var showCounter = config.showCounter;
@@ -2214,7 +2228,7 @@
         var useDeferredSingleFirstPaint = false;
         var shouldUseLazyHints = mode === 'slider';
         var showCarouselTileFullscreenButtons =
-            mode === 'carousel' && fullscreenToggle !== 'disabled';
+            mode === 'carousel' && !interactionLock && fullscreenToggle !== 'disabled';
         $container.toggleClass('jzsa-carousel-tile-fs-enabled', showCarouselTileFullscreenButtons);
         var slidesRenderOptions = {
             mode: mode,
@@ -2364,7 +2378,8 @@
                 SLIDES_DESKTOP: SLIDES_DESKTOP,
                 SPACING_DESKTOP: SPACING_DESKTOP,
                 BREAKPOINT_DESKTOP: BREAKPOINT_DESKTOP,
-                fullscreenToggle: fullscreenToggle
+                fullscreenToggle: fullscreenToggle,
+                interactionLock: interactionLock
             });
 
             // Initialize Swiper (pass the DOM element directly to avoid selector resolution issues)
@@ -2448,6 +2463,7 @@
             var fullscreenParams = {
                 mode: mode,
                 fullscreenToggle: fullscreenToggle,
+                interactionLock: interactionLock,
                 fullscreenSlideshow: fullscreenSlideshow,
                 fullscreenSlideshowDelay: fullscreenSlideshowDelay,
                 slideshowPausedByInteraction: slideshowPausedByInteraction,
@@ -2550,7 +2566,7 @@
                 }
             });
 
-            if (slideshow && hoverPauseSupported && swiper.autoplay) {
+            if (slideshow && hoverPauseSupported && swiper.autoplay && !interactionLock) {
                 $container.on('mouseenter' + slideshowHoverNamespace, function() {
                     if (shouldBlockHoverPause()) {
                         return;
@@ -2630,6 +2646,10 @@
             // ------------------------------------------------------------------------
 
             $(document).on('keydown', function(e) {
+                if (interactionLock) {
+                    return;
+                }
+
                 // Spacebar - play/pause toggle (only in fullscreen)
                 if (e.key === ' ' || e.keyCode === 32) {
                     if (isFullscreen()) {
@@ -2768,6 +2788,7 @@
             'data-fullscreen-slideshow-delay',
             'data-slideshow-inactivity-timeout',
             'data-fullscreen-toggle',
+            'data-interaction-lock',
             'data-show-title',
             'data-show-counter',
             'data-album-title',
@@ -2886,6 +2907,9 @@
         $container[0].style.setProperty('--jzsa-gallery-columns',        columns);
         $container[0].style.setProperty('--jzsa-gallery-columns-tablet', columnsTablet);
         $container[0].style.setProperty('--jzsa-gallery-columns-mobile', columnsMobile);
+        var allowThumbFullscreen =
+            $container.attr('data-fullscreen-toggle') !== 'disabled' &&
+            $container.attr('data-interaction-lock') !== 'true';
 
         var html = '';
         pageItems.forEach(function(item) {
@@ -2914,7 +2938,7 @@
             html +=
                 '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
                     mediaHtml +
-                    (($container.attr('data-fullscreen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>' : '') +
+                    (allowThumbFullscreen ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>' : '') +
                 '</div>';
         });
 
@@ -2972,6 +2996,9 @@
      * @param {number} gap             Gap between thumbnails in pixels.
      */
     function renderJustifiedRows($container, rows, containerWidth, targetHeight, gap) {
+        var allowThumbFullscreen =
+            $container.attr('data-fullscreen-toggle') !== 'disabled' &&
+            $container.attr('data-interaction-lock') !== 'true';
         var html = '';
         rows.forEach(function(row) {
             var totalRatio    = row.reduce(function(sum, item) { return sum + item.ratio; }, 0);
@@ -3005,7 +3032,7 @@
                 html +=
                     '<div class="' + itemClass + '" data-index="' + item.index + '" style="width:' + width + 'px;height:' + targetHeight + 'px;">' +
                         mediaHtml +
-                        (($container.attr('data-fullscreen-toggle') !== 'disabled') ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>' : '') +
+                        (allowThumbFullscreen ? '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>' : '') +
                     '</div>';
             });
             html += '</div>';
@@ -3118,6 +3145,11 @@
      */
     function setupGalleryPaginationControls($container, state, onPageChange, options) {
         var config = options || {};
+        if ($container.attr('data-interaction-lock') === 'true') {
+            removeGalleryPaginationControls($container);
+            return;
+        }
+
         var showCounter = config.showCounter !== false;
         var showAutoplayProgress = !!config.showAutoplayProgress;
         var showSlideshowControls = !!config.showSlideshowControls;
@@ -3920,6 +3952,7 @@
         var galleryScrollable = readGalleryAttr($container, 'scrollable') === 'true';
         var requestedGallerySizingModel = (readGalleryAttr($container, 'sizing') || 'ratio').toLowerCase();
         var gallerySizing = requestedGallerySizingModel === 'fill' ? 'fill' : 'ratio';
+        var interactionLock = $container.attr('data-interaction-lock') === 'true';
         var gallerySlideshowEnabled = $container.attr('data-slideshow') === 'true';
         var requestedGallerySlideshowDelay = parseInt($container.attr('data-slideshow-delay'), 10);
         var gallerySlideshowDelay = (!isNaN(requestedGallerySlideshowDelay) && requestedGallerySlideshowDelay > 0)
@@ -4147,15 +4180,17 @@
 
         var gallerySlideshowNamespace = '.jzsaGallerySlideshow-' + ($container.attr('id') || 'gallery');
         $shell.off('mouseenter' + gallerySlideshowNamespace + ' mouseleave' + gallerySlideshowNamespace);
-        $shell.on('mouseenter' + gallerySlideshowNamespace, function() {
-            gallerySlideshowPausedByHover = true;
-            clearGalleryAutoplayTimer();
-            scheduleGalleryAutoplay();
-        });
-        $shell.on('mouseleave' + gallerySlideshowNamespace, function() {
-            gallerySlideshowPausedByHover = false;
-            scheduleGalleryAutoplay();
-        });
+        if (!interactionLock) {
+            $shell.on('mouseenter' + gallerySlideshowNamespace, function() {
+                gallerySlideshowPausedByHover = true;
+                clearGalleryAutoplayTimer();
+                scheduleGalleryAutoplay();
+            });
+            $shell.on('mouseleave' + gallerySlideshowNamespace, function() {
+                gallerySlideshowPausedByHover = false;
+                scheduleGalleryAutoplay();
+            });
+        }
 
         function renderCurrentGalleryPage(options) {
             // Pause any playing videos before re-rendering the page
@@ -4193,7 +4228,7 @@
                     removeGalleryPaginationControls($container);
                     setGalleryPaginationHeightState($container, false);
                     setupGalleryMouseInteractions($container, {
-                        enabled: isJustifiedScrollable,
+                        enabled: !interactionLock && isJustifiedScrollable,
                         mode: 'scroll'
                     });
                 } else {
@@ -4256,7 +4291,7 @@
                         }
                     });
                     setupGalleryMouseInteractions($container, {
-                        enabled: paginationState.totalPages > 1,
+                        enabled: !interactionLock && paginationState.totalPages > 1,
                         mode: 'pagination',
                         onPageSwipe: function(direction) {
                             if ($container.data('jzsaGalleryAnimating')) {
@@ -4378,7 +4413,7 @@
                     removeGalleryPaginationControls($container);
                     setGalleryPaginationHeightState($container, false);
                     setupGalleryMouseInteractions($container, {
-                        enabled: isUniformScrollable,
+                        enabled: !interactionLock && isUniformScrollable,
                         mode: 'scroll'
                     });
                 } else {
@@ -4454,7 +4489,7 @@
                         }
                     });
                     setupGalleryMouseInteractions($container, {
-                        enabled: paginationState.totalPages > 1,
+                        enabled: !interactionLock && paginationState.totalPages > 1,
                         mode: 'pagination',
                         onPageSwipe: function(direction) {
                             if ($container.data('jzsaGalleryAnimating')) {
@@ -4571,8 +4606,15 @@
 
         var fullscreenToggle =
             $container.attr('data-fullscreen-toggle') || 'button-only';
+        if (interactionLock) {
+            fullscreenToggle = 'disabled';
+        }
 
         function openGalleryPlayerAtIndex(index) {
+            if (interactionLock) {
+                return;
+            }
+
             var safeIndex = typeof index === 'number' && index >= 0 ? index : 0;
             var swiper = swipers[slideshowId];
             if (swiper) {
@@ -4610,7 +4652,7 @@
             return $(targetEl).closest('.jzsa-gallery-item-video .jzsa-video-wrapper').length > 0;
         }
 
-        if (fullscreenToggle === 'click') {
+        if (!interactionLock && fullscreenToggle === 'click') {
             $container.on('click', '.jzsa-gallery-thumb', function(e) {
                 if ($container.data('jzsaGallerySuppressClick')) {
                     return;
@@ -4621,7 +4663,7 @@
                 e.preventDefault();
                 openGalleryPlayerFromThumb(this);
             });
-        } else if (fullscreenToggle === 'double-click') {
+        } else if (!interactionLock && fullscreenToggle === 'double-click') {
             $container.on('dblclick', '.jzsa-gallery-thumb', function(e) {
                 if (isGalleryVideoInteractionTarget(e.target)) {
                     return;
@@ -4645,7 +4687,7 @@
         }
 
         // Attach fullscreen button click/keyboard handlers (unless fullscreen is disabled).
-        if (fullscreenToggle !== 'disabled') {
+        if (!interactionLock && fullscreenToggle !== 'disabled') {
             $container.on('click', '.jzsa-gallery-thumb-fs-btn', function(e) {
                 e.preventDefault();
                 e.stopPropagation();

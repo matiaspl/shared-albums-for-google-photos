@@ -147,6 +147,25 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     display: none !important;
 }
 
+/* interaction-lock="true" — hide interactive plugin controls and prevent interaction */
+.jzsa-album[data-interaction-lock="true"] .swiper-button-prev,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-next,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-play-pause,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-fullscreen,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-external-link,
+.jzsa-album[data-interaction-lock="true"] .swiper-button-download,
+.jzsa-album[data-interaction-lock="true"] .swiper-album-title,
+.jzsa-album[data-interaction-lock="true"] .jzsa-carousel-slide-fs-btn,
+.jzsa-album[data-interaction-lock="true"] .jzsa-gallery-thumb-fs-btn {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+.jzsa-gallery-shell .jzsa-gallery-album[data-interaction-lock="true"] ~ .jzsa-gallery-controls {
+    display: none !important;
+    pointer-events: none !important;
+}
+
 .jzsa-album .swiper-button-next:after,
 .jzsa-album .swiper-button-prev:after {
     content: '' !important;
