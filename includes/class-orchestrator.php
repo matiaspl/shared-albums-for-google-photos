@@ -58,14 +58,14 @@ class JZSA_Shared_Albums {
 	const DEFAULT_PREVIEW_HEIGHT = 600;
 
 	/**
-	 * Maximum number of photos to load from album (absolute upper bound).
+	 * Maximum number of media entries to load from album (absolute upper bound).
 	 *
 	 * @var int
 	 */
 	const MAX_PHOTOS = 300;
 
 	/**
-	 * Default maximum number of photos per album when not overridden via shortcode.
+	 * Default maximum number of media entries per album when not overridden via shortcode.
 	 *
 	 * @var int
 	 */
@@ -281,15 +281,15 @@ class JZSA_Shared_Albums {
 
 		if ( ! $should_refresh && false !== $cached_data ) {
 			// Use cached data - merge with current config
-			$config['photos'] = $this->prepare_photo_urls(
-				$cached_data['photos'],
-				$config['image-width'],
-				$config['image-height'],
-				self::DEFAULT_PREVIEW_WIDTH,
-				self::DEFAULT_PREVIEW_HEIGHT,
-				$config['max-photos-per-album'],
-				$config['show-videos']
-			);
+				$config['photos'] = $this->prepare_photo_urls(
+					$cached_data['photos'],
+					$config['image-width'],
+					$config['image-height'],
+					self::DEFAULT_PREVIEW_WIDTH,
+					self::DEFAULT_PREVIEW_HEIGHT,
+					$config['max-entries-per-album'],
+					$config['show-videos']
+				);
 			$config['album-title']              = $cached_data['title'] ?? null;
 			$config['show-deprecation-warning'] = $cached_data['is_deprecated'];
 
@@ -319,15 +319,15 @@ class JZSA_Shared_Albums {
 		update_option( $expiry_key, self::CACHE_DURATION, false );
 
 		// Prepare photos with dimensions and max count
-		$config['photos'] = $this->prepare_photo_urls(
-			$result['data']['photos'],
-			$config['image-width'],
-			$config['image-height'],
-			self::DEFAULT_PREVIEW_WIDTH,
-			self::DEFAULT_PREVIEW_HEIGHT,
-			$config['max-photos-per-album'],
-			$config['show-videos']
-		);
+			$config['photos'] = $this->prepare_photo_urls(
+				$result['data']['photos'],
+				$config['image-width'],
+				$config['image-height'],
+				self::DEFAULT_PREVIEW_WIDTH,
+				self::DEFAULT_PREVIEW_HEIGHT,
+				$config['max-entries-per-album'],
+				$config['show-videos']
+			);
 
 		$config['album-title']              = $result['data']['title'] ?? null;
 		$config['show-deprecation-warning'] = $result['is_deprecated'];
@@ -380,8 +380,8 @@ class JZSA_Shared_Albums {
 			'show-link-button'        => $this->parse_bool( $atts, 'show-link-button', false ),
 			'show-download-button'    => $this->parse_bool( $atts, 'show-download-button', false ),
 
-			// Photo count
-			'max-photos-per-album'    => $this->parse_max_photos( $atts ),
+				// Entry count
+				'max-entries-per-album'    => $this->parse_max_entries( $atts ),
 
 			// Video controls
 			'video-autohide-controls' => $this->parse_bool( $atts, 'video-autohide-controls', false ),
@@ -725,19 +725,19 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse max-photos-per-album attribute.
+	 * Parse max-entries-per-album attribute.
 	 *
 	 * Clamps the value between 1 and self::MAX_PHOTOS.
 	 *
 	 * @param array $atts Attributes.
 	 * @return int
 	 */
-	private function parse_max_photos( $atts ) {
-		if ( ! isset( $atts['max-photos-per-album'] ) ) {
+	private function parse_max_entries( $atts ) {
+		if ( ! isset( $atts['max-entries-per-album'] ) ) {
 			return self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
 		}
 
-		$value = intval( $atts['max-photos-per-album'] );
+		$value = intval( $atts['max-entries-per-album'] );
 
 		if ( $value <= 0 ) {
 			return self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
@@ -762,12 +762,12 @@ class JZSA_Shared_Albums {
 	 * @param int   $full_height    Full image height.
 	 * @param int   $preview_width  Preview image width (optional).
 	 * @param int   $preview_height Preview image height (optional).
-	 * @param int   $max_photos     Maximum number of photos to include from the album.
+	 * @param int   $max_entries    Maximum number of media entries to include from the album.
 	 * @return array Photo objects with preview and full URLs.
 	 */
-	private function prepare_photo_urls( $base_items, $full_width, $full_height, $preview_width = null, $preview_height = null, $max_photos = self::DEFAULT_MAX_PHOTOS_PER_ALBUM, $show_videos = true ) {
+	private function prepare_photo_urls( $base_items, $full_width, $full_height, $preview_width = null, $preview_height = null, $max_entries = self::DEFAULT_MAX_PHOTOS_PER_ALBUM, $show_videos = true ) {
 		// Determine effective limit: requested per-album limit clamped to global MAX_PHOTOS.
-		$limit = intval( $max_photos );
+		$limit = intval( $max_entries );
 
 		if ( $limit <= 0 ) {
 			$limit = self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
@@ -776,8 +776,6 @@ class JZSA_Shared_Albums {
 		if ( $limit > self::MAX_PHOTOS ) {
 			$limit = self::MAX_PHOTOS;
 		}
-
-		$base_items = array_slice( $base_items, 0, $limit );
 
 		$photos = array();
 		foreach ( $base_items as $item ) {
@@ -811,6 +809,11 @@ class JZSA_Shared_Albums {
 			}
 
 			$photos[] = $photo;
+
+			// Stop once we have enough visible entries.
+			if ( count( $photos ) >= $limit ) {
+				break;
+			}
 		}
 
 		return $photos;

@@ -69,6 +69,12 @@ class JZSA_Settings_Page {
 	 * Render settings page
 	 */
 	public function render_settings_page() {
+		$video_sample_link = 'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB';
+
+		$video_slider_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="true" max-entries-per-album="8" accent-color="#00B2FF"]';
+		$video_carousel_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" show-videos="true" max-entries-per-album="8" accent-color="#FF6B35" video-autohide-controls="true"]';
+		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" max-entries-per-album="12" gallery-layout="justified" gallery-row-height="180" accent-color="#00A878"]';
+		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="false" max-entries-per-album="8" accent-color="#7A5CFF"]';
 		?>
 		<div class="wrap jzsa-settings-wrap">
 			<h1>
@@ -267,17 +273,17 @@ class JZSA_Settings_Page {
 				<div class="jzsa-section jzsa-samples-section">
 					<h2><?php esc_html_e( 'Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Gallery Mode with Limited Photo Count (Without Pagination)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses the default "gallery" mode to display photos as a thumbnail gallery. Every cell has the same size. Click any thumbnail to open it in a fullscreen viewer. Pagination is not required — all thumbnails are shown at once, limited only by max-photos-per-album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Gallery Mode with Limited Entry Count (Without Pagination)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Uses the default "gallery" mode to display album entries as a thumbnail gallery. Every cell has the same size. Click any thumbnail to open it in a fullscreen viewer. Pagination is not required — all thumbnails are shown at once, limited only by max-entries-per-album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" max-photos-per-album="12"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" max-entries-per-album="12"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-uniform" style="height:auto;">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" max-photos-per-album="12"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" max-entries-per-album="12"]' );
 						?>
 					</div>
 					</div>
@@ -286,13 +292,13 @@ class JZSA_Settings_Page {
 							<h3><?php esc_html_e( 'Gallery Mode – Paged Thumbnails', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Use gallery-rows to split the gallery into pages. The same previous/next and pagination controls are reused for gallery page navigation. Use gallery-sizing-model="ratio" (default) to keep fixed tile aspect ratio, or gallery-sizing-model="fill" to stretch row heights and fill explicit control height.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" max-photos-per-album="18"]</code>
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" max-entries-per-album="18"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-gallery-paged" style="height:auto;">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" max-photos-per-album="18"]' );
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" max-entries-per-album="18"]' );
 							?>
 						</div>
 						</div>
@@ -301,13 +307,13 @@ class JZSA_Settings_Page {
 						<h3><?php esc_html_e( 'Gallery Mode – Scrolling Instead of Paging', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Use gallery-scroll="true" with gallery-rows to show a fixed-height, vertically scrollable gallery instead of page controls.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" gallery-scroll="true" max-photos-per-album="18"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" gallery-scroll="true" max-entries-per-album="18"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-scroll" style="height:auto;">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" gallery-scroll="true" max-photos-per-album="18"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-rows="2" gallery-scroll="true" max-entries-per-album="18"]' );
 						?>
 					</div>
 					</div>
@@ -316,13 +322,13 @@ class JZSA_Settings_Page {
 						<h3><?php esc_html_e( 'Gallery Mode – Justified Layout', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses gallery-layout="justified" so photos keep their natural aspect ratios and fill each row edge-to-edge, similar to Google Photos. Click any thumbnail to open it in a fullscreen viewer.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-layout="justified" gallery-row-height="180" max-photos-per-album="7"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-layout="justified" gallery-row-height="180" max-entries-per-album="7"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-gallery-justified" style="height:auto;">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-layout="justified" gallery-row-height="180" max-photos-per-album="7"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" gallery-layout="justified" gallery-row-height="180" max-entries-per-album="7"]' );
 						?>
 					</div>
 					</div>
@@ -387,17 +393,17 @@ class JZSA_Settings_Page {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Limit Number of Photos Per Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Load only a limited number of photos from a large album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Limit Number of Entries Per Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Load only a limited number of album entries from a large mixed album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" max-photos-per-album="5"]</code>
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" max-entries-per-album="5"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
 					<div class="jzsa-preview-container jzsa-preview-container-limit-photos">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" max-photos-per-album="5"]' );
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" max-entries-per-album="5"]' );
 						?>
 					</div>
 					</div>
@@ -612,10 +618,10 @@ class JZSA_Settings_Page {
 					</div>
 					</div>
 
-					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Carousel Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses mode="carousel" to show multiple photos side by side. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos. Clicking a photo opens it in a single-photo fullscreen viewer.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Carousel Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Uses mode="carousel" to show multiple photos side by side. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos. Clicking a photo opens it in a single-photo fullscreen viewer.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
@@ -624,10 +630,73 @@ class JZSA_Settings_Page {
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel"]' );
 						?>
-					</div>
-					</div>
+						</div>
+						</div>
 
-				</div>
+						<h3><?php esc_html_e( 'Video Samples (Temporary Album)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'These examples use a temporary mixed album that contains videos. They demonstrate layout modes with different accent colors and key video parameters.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Video in Slider Mode (Blue Accent)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Baseline video sample in slider mode with videos enabled and blue accent color.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $video_slider_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-video-slider">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $video_slider_shortcode );
+							?>
+						</div>
+						</div>
+
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Video in Carousel Mode (Orange Accent + Auto-Hide Controls)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Demonstrates carousel mode with video controls auto-hiding after inactivity.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $video_carousel_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-video-carousel">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $video_carousel_shortcode );
+							?>
+						</div>
+						</div>
+
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Video in Gallery Mode (Green Accent)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Demonstrates gallery mode with justified thumbnails and videos included.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $video_gallery_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-video-gallery">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $video_gallery_shortcode );
+							?>
+						</div>
+						</div>
+
+						<div class="jzsa-example">
+							<h3><?php esc_html_e( 'Photos-Only Control Sample (Videos Disabled)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<p><?php esc_html_e( 'Uses show-videos="false" to filter out videos from the same mixed album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $video_photos_only_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-video-disabled">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $video_photos_only_shortcode );
+							?>
+						</div>
+						</div>
+
+					</div>
 
 				<!-- Start Tutorial -->
 				<div class="jzsa-section jzsa-tutorial-section">
@@ -739,11 +808,11 @@ class JZSA_Settings_Page {
 									• "carousel": Multiple photos visible at once (2 on mobile/tablet, 3 on desktop). Clicking a photo opens it in a single-photo fullscreen viewer</td>
 								<td>gallery</td>
 							</tr>
-							<tr>
-								<td><code>max-photos-per-album</code></td>
-								<td>Maximum number of photos to display from the album (1–300). Google Photos typically returns up to 300 photos per album.</td>
-								<td>300</td>
-							</tr>
+								<tr>
+									<td><code>max-entries-per-album</code></td>
+									<td>Maximum number of album entries to display (photos and videos that remain after filters such as show-videos) from the album (1–300). Google Photos typically returns up to 300 entries per album.</td>
+									<td>300</td>
+								</tr>
 							<tr>
 								<td><code>image-width</code></td>
 								<td>Full-resolution photo width to fetch from Google</td>
@@ -1014,13 +1083,13 @@ class JZSA_Settings_Page {
 							<h3><?php esc_html_e( 'Basic Album with Deprecated Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Same as above, but using the older short link format. Visitors will NOT see this warning, but you as an administrator should update the link to the new format.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 							<div class="jzsa-code-block">
-								<code>[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]</code>
+									<code>[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8" max-entries-per-album="6"]</code>
 								<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 							</div>
 							<div class="jzsa-preview-container jzsa-preview-container-basic-deprecated">
 								<?php
 									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-									echo do_shortcode( '[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]' );
+										echo do_shortcode( '[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8" max-entries-per-album="6"]' );
 								?>
 							</div>
 						</div>
