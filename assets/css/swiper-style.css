@@ -144,6 +144,12 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album .swiper-button-prev { left: 0; }
 .jzsa-album .swiper-button-next { right: 0; }
 
+/* show-navigation="false" — hide prev/next arrows */
+.jzsa-album[data-show-navigation="false"] .swiper-button-prev,
+.jzsa-album[data-show-navigation="false"] .swiper-button-next {
+    display: none !important;
+}
+
 .jzsa-album .swiper-button-next:after,
 .jzsa-album .swiper-button-prev:after {
     font-size: var(--jzsa-controls-icon-size);

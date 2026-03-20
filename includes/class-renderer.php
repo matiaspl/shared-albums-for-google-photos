@@ -199,6 +199,7 @@ class JZSA_Renderer {
 		$boolean_attrs = array(
 			'slideshow'               => 'data-slideshow',
 			'fullscreen-slideshow'    => 'data-fullscreen-slideshow',
+			'show-navigation'         => 'data-show-navigation',
 			'show-title'              => 'data-show-title',
 			'show-counter'            => 'data-show-counter',
 			'show-link-button'        => 'data-show-link-button',
@@ -333,6 +334,7 @@ class JZSA_Renderer {
 		// Fullscreen slideshow settings (gallery click opens fullscreen slideshow)
 		$slideshow_booleans = array(
 			'fullscreen-slideshow'    => 'data-fullscreen-slideshow',
+			'show-navigation'         => 'data-show-navigation',
 			'show-title'              => 'data-show-title',
 			'show-counter'            => 'data-show-counter',
 			'show-link-button'        => 'data-show-link-button',
