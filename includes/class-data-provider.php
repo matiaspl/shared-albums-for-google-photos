@@ -4,7 +4,7 @@
  *
  * Input Phase - Responsible for getting data from Google Photos
  *
- * @package JZSA_Shared_Albums
+ * @package YAGA_Shared_Albums
  */
 
 // Exit if accessed directly
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Google Photos Provider Class
  */
-class JZSA_Data_Provider {
+class YAGA_Data_Provider {
 
 	/**
 	 * Full link format pattern (recommended)

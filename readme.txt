@@ -1,10 +1,10 @@
-=== Shared Albums for Google Photos (by JanZeman) ===
+=== YAPA Google Photo shared albums ===
 Contributors: janzeman
 Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.7.2
 Requires PHP: 7.0
-Stable tag: 1.0.8
+Stable tag: 1.0.13
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -12,7 +12,7 @@ Display publicly shared Google Photos albums with a modern, responsive Swiper-ba
 
 == Description ==
 
-Shared Albums for Google Photos (by JanZeman) allows you to easily display publicly shared Google Photos albums in your WordPress posts and pages using a simple shortcode. The plugin uses the modern Swiper library to provide a beautiful, touch-enabled gallery experience.
+YAPA Google Photo shared albums lets you display publicly shared Google Photos albums in your WordPress posts and pages using a simple shortcode. The plugin uses the modern Swiper library to provide a beautiful, touch-enabled gallery experience.
 
 **Note:** This plugin is not affiliated with or endorsed by Google LLC. Google Photos™ is a trademark of Google LLC.
 
@@ -23,7 +23,7 @@ Shared Albums for Google Photos (by JanZeman) allows you to easily display publi
 * **Modern Gallery Viewer** - Powered by Swiper 11, a modern mobile-friendly slider
 * **Responsive Design** - Works perfectly on desktop, tablet, and mobile devices
 * **Gallery with Mosaic Preview** - Display a mosaic of preview images next to the big preview (top, bottom, left, or right)
-* **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[jzsa-album]` shortcodes and previews
+* **Shortcode Playground** - Admin-only sandbox on the Settings page for experimenting with `[yaga-album]` shortcodes and previews
 * **Touch Gestures** - Swipe navigation on touch devices
 * **Fullscreen Mode** - Click to view photos in fullscreen
 * **Play/Pause Control** - Fullscreen play/pause button with spacebar keyboard shortcut
@@ -65,17 +65,19 @@ The plugin fetches your public Google Photos album and creates a responsive gall
 
 **RECOMMENDED:** Use the full `photos.google.com/share/` URL format for future compatibility.
 
-`[jzsa-album link="https://photos.google.com/share/YOUR_LONG_ALBUM_ID"]`
+`[yaga-album link="https://photos.google.com/share/YOUR_LONG_ALBUM_ID"]`
+
+The legacy shortcode `[jzsa-album]` is still registered as an alias (same attributes).
 
 Concrete example with a real album link (for testing):
 
-`[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]`
+`[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]`
 
 Note: Short links (photos.app.goo.gl) are still supported but will show a deprecation warning.
 
 = Advanced Usage =
 
-`[jzsa-album
+`[yaga-album
     link="https://photos.google.com/share/YOUR_LONG_ALBUM_ID"
     background-color="#000000"
     image-fit="contain"
@@ -133,6 +135,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
 * **show-link-button** - Show external link button to open album in Google Photos: "true" or "false" (default: false)
 * **show-download-button** - Show download button to save current photo: "true" or "false" (default: false)
 * **show-filename** - Show the photo filename as a label: "true" or "false" (default: false)
+* **filename-display** - With show-filename enabled: "full" (default) shows the basename without extension; "photographer" shows only a parsed photographer name from YAPA-style filenames (underscore segments with PascalCase, e.g. WiktorNowak → Wiktor Nowak, KrzysztofKuncewiczJurek → Krzysztof Kuncewicz Jurek)
 * **show-info** - Show the photo information panel (filename, date, camera): "true" or "false" (default: false)
 
 **Gallery Preview (Mosaic):**
@@ -170,10 +173,10 @@ Full link (recommended): `https://photos.google.com/share/AF1QipNxLo...` ✅
 Short link (works with warning): `https://photos.app.goo.gl/abc123` ⚠️
 
 Use the shortcode with full link:
-`[jzsa-album link="https://photos.google.com/share/AF1QipNxLo..."]`
+`[yaga-album link="https://photos.google.com/share/AF1QipNxLo..."]`
 
 Or with short link (not recommended):
-`[jzsa-album link="https://photos.app.goo.gl/abc123"]`
+`[yaga-album link="https://photos.app.goo.gl/abc123"]`
 
 **Important:** The album must be public (shared via link) for the plugin to access it.
 
@@ -203,7 +206,7 @@ No. The plugin uses lazy loading (only loads visible images) and caches the gall
 
 = Can I customize the appearance? =
 
-Yes! You can override the CSS by adding custom styles to your theme. The main container class is `.jzsa-album`.
+Yes! You can override the CSS by adding custom styles to your theme. The main container class is `.yaga-album`.
 
 = Does it work on mobile? =
 
@@ -242,6 +245,21 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 1.0.13 =
+* Core plugin code moved to **`yapa-google-photo-shared-albums.php`**. The file **`janzeman-shared-albums-for-google-photos.php`** remains the WordPress entry point (same path as before) so existing activations keep working; it only defines `YAGA_PLUGIN_FILE` and loads the YAPA core file.
+
+= 1.0.12 =
+* Full **YAGA** rebrand of internal identifiers: PHP classes (`YAGA_*`), constants (`YAGA_VERSION`, `YAGA_PLUGIN_*`), script handles, CSS classes (`.yaga-album`, etc.), AJAX actions, localized `yagaAjax`, and TinyMCE `yaga_editor_button`. The **`[jzsa-album]`** shortcode tag and **`jzsa_album_*` / `jzsa_expiry_*`** cache keys remain supported for backward compatibility. Developers: prefer the filter `yaga_max_download_size`; `jzsa_max_download_size` is still applied as a fallback.
+
+= 1.0.11 =
+* Shortcode tag **`[yaga-album]`** (recommended); legacy **`[jzsa-album]`**. New album cache keys `yaga_album_*`; older `jzsa_album_*` entries are still read until they expire.
+
+= 1.0.10 =
+* Plugin renamed to **YAPA Google Photo shared albums** (admin menu, WordPress Plugins list, and docs). Settings slug and text domain are unchanged for compatibility.
+
+= 1.0.9 =
+* Optional filename label mode: `filename-display="photographer"` parses photographer names from CamelCase segments in YAPA-style filenames (use with `show-filename="true"`).
+
 = 1.0.8 =
 * New feature: Gallery with Mosaic Preview (mosaic="true").
 * Added mosaic-position parameter (left/right) to control placement of preview images.
@@ -258,7 +276,7 @@ The plugin provides clear feedback:
 
 = 1.0.3 =
 * Improved Settings page with more intuitive onboarding and richer, example-driven documentation
-* Added Shortcode Playground on the Settings page to test and preview `[jzsa-album]` shortcodes without leaving admin
+* Added Shortcode Playground on the Settings page to test and preview album shortcodes without leaving admin
 
 = 1.0.2 =
 * Initial Settings page and onboarding content
@@ -288,7 +306,7 @@ The plugin provides clear feedback:
 == Credits ==
 
 * Uses [Swiper](https://swiperjs.com/) - MIT License
-* Developed by Jan Zeman
+* YAPA Google Photo shared albums
 
 == Privacy Policy ==
 

@@ -1,6 +1,6 @@
-# Shared Albums for Google Photos (by JanZeman)
+# YAPA Google Photo shared albums
 
-[![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.7-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
+[![WordPress Plugin Version](https://img.shields.io/badge/version-1.0.13-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![WordPress Compatibility](https://img.shields.io/badge/wordpress-5.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![PHP Version](https://img.shields.io/badge/php-7.0%2B-blue.svg)](https://wordpress.org/plugins/janzeman-shared-albums-for-google-photos/)
 [![License](https://img.shields.io/badge/license-GPL--2.0%2B-blue.svg)](LICENSE)
@@ -30,7 +30,7 @@ The `readme.txt` file contains the official WordPress.org plugin documentation w
 **From WordPress.org (Recommended):**
 
 1. Go to **Plugins** > **Add New** in WordPress admin
-2. Search for "Shared Albums for Google Photos (by JanZeman)"
+2. Search for "YAPA Google Photo shared albums" (or the previous listing name if not yet updated on WordPress.org)
 3. Click **Install Now** and then **Activate**
 
 **Manual Installation:**
@@ -49,8 +49,10 @@ git clone https://github.com/JanZeman/shared-albums-for-google-photos.git
 ### Basic Usage
 
 ``` shortcode
-[jzsa-album link="https://photos.google.com/share/YOUR_ALBUM_ID"]
+[yaga-album link="https://photos.google.com/share/YOUR_ALBUM_ID"]
 ```
+
+The legacy tag `[jzsa-album]` is still supported as an alias.
 
 **For all shortcode parameters and advanced usage**, see [readme.txt](readme.txt).
 
@@ -63,7 +65,7 @@ git clone https://github.com/JanZeman/shared-albums-for-google-photos.git
 - Progressive image loading with lazy loading
 - Responsive design (mobile, tablet, desktop)
 - Customizable via shortcode parameters
-- **Shortcode Playground** on the Settings page for experimenting with `[jzsa-album]` shortcodes and live previews
+- **Shortcode Playground** on the Settings page for experimenting with `[yaga-album]` shortcodes and live previews
 - Swiper 11 bundled locally (no CDN dependencies)
 - WordPress coding standards compliant
 
@@ -86,7 +88,8 @@ janzeman-shared-albums-for-google-photos/
 ├── LICENSE
 ├── README.md             # This file (GitHub overview)
 ├── readme.txt           # WordPress.org official documentation ⭐
-└── janzeman-shared-albums-for-google-photos.php       # Main plugin file
+├── janzeman-shared-albums-for-google-photos.php  # WP bootstrap (plugin header; loads core)
+└── yapa-google-photo-shared-albums.php           # Core plugin code
 ```
 
 ### Requirements
@@ -126,4 +129,4 @@ This plugin is not affiliated with, endorsed by, or in any way officially connec
 ## Credits
 
 - Uses [Swiper](https://swiperjs.com/) - MIT License
-- Developed by [Jan Zeman](https://github.com/JanZeman)
+- **YAPA Google Photo shared albums** — repository: [JanZeman/shared-albums-for-google-photos](https://github.com/JanZeman/shared-albums-for-google-photos)

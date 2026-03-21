@@ -1,21 +1,21 @@
 /**
- * Swiper Gallery Initialization for Shared Albums for Google Photos (by JanZeman)
+ * Swiper gallery initialization for YAPA Google Photo shared albums
  */
 (function($) {
 'use strict';
 
 	// Debug flag for optional console logging. Disabled by default.
-	// To enable in the browser console, run: window.JZSA_DEBUG = true;
-	window.JZSA_DEBUG = window.JZSA_DEBUG || false;
-	function jzsaDebug() {
-		if (!window.JZSA_DEBUG) {
+	// To enable in the browser console, run: window.YAGA_DEBUG = true;
+	window.YAGA_DEBUG = window.YAGA_DEBUG || false;
+	function yagaDebug() {
+		if (!window.YAGA_DEBUG) {
 			return;
 		}
 		// eslint-disable-next-line no-console
 		console.log.apply(console, arguments);
 	}
 
-	jzsaDebug('✅ Shared Albums for Google Photos (by JanZeman) loaded');
+	yagaDebug('✅ YAPA Google Photo shared albums loaded');
 
 	var swipers = {};
 
@@ -27,7 +27,7 @@
     function toggleFullscreen(element, showHints) {
         var showHintsFn = showHints;
         var currentlyFullscreen = isFullscreen(element);
-        var pseudoActive = $(element).hasClass('jzsa-pseudo-fullscreen');
+        var pseudoActive = $(element).hasClass('yaga-pseudo-fullscreen');
 
         if (!currentlyFullscreen) {
             // On iPhone/iPod, use CSS-based pseudo fullscreen instead of the
@@ -78,9 +78,9 @@
     // ============================================================================
 
     // Show gesture hints (only first few times entering fullscreen, global counter across all albums)
-    // To reset for testing: localStorage.removeItem('jzsa-hints-counter')
+    // To reset for testing: localStorage.removeItem('yaga-hints-counter')
     function createHintSystem(galleryId, fullScreenSwitch, fullScreenNavigation) {
-        var HINTS_STORAGE_KEY = 'jzsa-hints-counter'; // Global counter for all albums
+        var HINTS_STORAGE_KEY = 'yaga-hints-counter'; // Global counter for all albums
         var MAX_HINT_DISPLAYS = 2; // Maximum number of times to show hints
         var HINT_FADE_IN_DELAY = 100; // ms
         var HINT_FADE_OUT_DELAY = 500; // ms
@@ -126,17 +126,17 @@
 
                 // Create hint overlay - use line breaks instead of bullets
                 var hintText = hints.join('<br>');
-                var $hint = $('<div class="jzsa-hint">' + hintText + '</div>');
+                var $hint = $('<div class="yaga-hint">' + hintText + '</div>');
                 $('#' + galleryId).append($hint);
 
                 // Fade in
                 setTimeout(function() {
-                    $hint.addClass('jzsa-hint-visible');
+                    $hint.addClass('yaga-hint-visible');
                 }, HINT_FADE_IN_DELAY);
 
                 // Fade out after some seconds
                 setTimeout(function() {
-                    $hint.removeClass('jzsa-hint-visible');
+                    $hint.removeClass('yaga-hint-visible');
                     setTimeout(function() {
                         $hint.remove();
                     }, HINT_FADE_OUT_DELAY);
@@ -144,7 +144,7 @@
 
 			} catch (e) {
 				// localStorage might not be available (private browsing, etc.)
-				jzsaDebug('Hints not available:', e);
+				yagaDebug('Hints not available:', e);
 			}
 		};
     }
@@ -216,10 +216,10 @@
         }
 
         if (targetElement) {
-            return $(targetElement).hasClass('jzsa-pseudo-fullscreen');
+            return $(targetElement).hasClass('yaga-pseudo-fullscreen');
         }
 
-        return $('.jzsa-pseudo-fullscreen').length > 0;
+        return $('.yaga-pseudo-fullscreen').length > 0;
     }
 
     // Helper: Enter/exit pseudo fullscreen (CSS-driven fallback for iPhone)
@@ -228,11 +228,11 @@
             return false;
         }
         var $el = $(element);
-        if ($el.hasClass('jzsa-pseudo-fullscreen')) {
+        if ($el.hasClass('yaga-pseudo-fullscreen')) {
             return true;
         }
-        $el.addClass('jzsa-pseudo-fullscreen jzsa-is-fullscreen');
-        $('html, body').addClass('jzsa-no-scroll');
+        $el.addClass('yaga-pseudo-fullscreen yaga-is-fullscreen');
+        $('html, body').addClass('yaga-no-scroll');
         return true;
     }
 
@@ -240,8 +240,8 @@
         if (!element) {
             return;
         }
-        $(element).removeClass('jzsa-pseudo-fullscreen jzsa-is-fullscreen');
-        $('html, body').removeClass('jzsa-no-scroll');
+        $(element).removeClass('yaga-pseudo-fullscreen yaga-is-fullscreen');
+        $('html, body').removeClass('yaga-no-scroll');
     }
 
     // Helper: Check if click should be ignored (clicked on UI element)
@@ -263,6 +263,155 @@
         } else {
             lastTap = currentTime;
         }
+    }
+
+    /**
+     * Whether Unicode property escapes work in RegExp (for CamelCase / letter checks).
+     */
+    var YAGA_UNICODE_REGEX_OK = (function() {
+        try {
+            return /^[\p{L}]$/u.test('A');
+        } catch (e) {
+            return false;
+        }
+    })();
+
+    /**
+     * Split a PascalCase / camelCase run into space-separated words (e.g. WiktorNowak → Wiktor Nowak).
+     * Uses Unicode letter classes when supported so Polish and other scripts work.
+     */
+    function splitPascalCaseRun(segment) {
+        if (!segment) {
+            return '';
+        }
+        var s = segment;
+        if (YAGA_UNICODE_REGEX_OK) {
+            s = s.replace(/([\p{Ll}\p{Lo}])([\p{Lu}])/gu, '$1 $2');
+        } else {
+            s = s.replace(/([a-z])([A-Z])/g, '$1 $2');
+        }
+        return s.trim();
+    }
+
+    /**
+     * True if segment is letters only and looks like one or more Capital+lowercase words (PascalCase).
+     */
+    function isPhotographerPascalSegment(seg) {
+        if (!seg || seg.length < 2) {
+            return false;
+        }
+        if (YAGA_UNICODE_REGEX_OK) {
+            if (!/^[\p{L}]+$/u.test(seg)) {
+                return false;
+            }
+            var singleWord = /^[\p{Lu}][\p{Ll}]+$/u;
+            var multiWord = /^[\p{Lu}][\p{Ll}]+(?:[\p{Lu}][\p{Ll}]+)+$/u;
+            return singleWord.test(seg) || multiWord.test(seg);
+        }
+        if (!/^[A-Za-z]+$/.test(seg)) {
+            return false;
+        }
+        var singleAscii = /^[A-Z][a-z]+$/;
+        var multiAscii = /^[A-Z][a-z]+(?:[A-Z][a-z]+)+$/;
+        return singleAscii.test(seg) || multiAscii.test(seg);
+    }
+
+    function hasInternalPascalBoundary(seg) {
+        if (YAGA_UNICODE_REGEX_OK) {
+            return /[\p{Ll}][\p{Lu}]/u.test(seg);
+        }
+        return /[a-z][A-Z]/.test(seg);
+    }
+
+    /**
+     * Pick the photographer name token from underscore-separated basename parts (YAPA-style:
+     * PREFIX_DATE_TIME_NameParts_CameraId). Falls back to the last multi-word Pascal segment, then others.
+     */
+    function pickPhotographerSegment(parts) {
+        if (!parts || !parts.length) {
+            return null;
+        }
+        var dateRe = /\d{4}-\d{2}-\d{2}/;
+        var timeRe = /^\d{1,2}-\d{1,2}-\d{1,2}$/;
+        var dateIdx = -1;
+        var timeIdx = -1;
+        var i;
+        for (i = 0; i < parts.length; i++) {
+            if (dateIdx < 0 && dateRe.test(parts[i])) {
+                dateIdx = i;
+            }
+        }
+        for (i = 0; i < parts.length; i++) {
+            if (timeRe.test(parts[i])) {
+                timeIdx = i;
+                break;
+            }
+        }
+
+        var candidates = [];
+        for (i = 0; i < parts.length; i++) {
+            if (isPhotographerPascalSegment(parts[i])) {
+                candidates.push({
+                    i: i,
+                    seg: parts[i],
+                    multi: hasInternalPascalBoundary(parts[i])
+                });
+            }
+        }
+        if (!candidates.length) {
+            return null;
+        }
+
+        function afterTime(c) {
+            return timeIdx >= 0 && c.i > timeIdx;
+        }
+        function afterDate(c) {
+            return dateIdx >= 0 && c.i > dateIdx;
+        }
+
+        var multis = candidates.filter(function(c) { return c.multi; });
+        var zone;
+        if (multis.length) {
+            zone = multis.filter(afterTime);
+            if (zone.length) {
+                return zone[zone.length - 1].seg;
+            }
+            zone = multis.filter(afterDate);
+            if (zone.length) {
+                return zone[zone.length - 1].seg;
+            }
+            return multis[multis.length - 1].seg;
+        }
+
+        zone = candidates.filter(afterTime);
+        if (zone.length) {
+            return zone[zone.length - 1].seg;
+        }
+        zone = candidates.filter(afterDate);
+        if (zone.length) {
+            return zone[zone.length - 1].seg;
+        }
+        return candidates[candidates.length - 1].seg;
+    }
+
+    /**
+     * Strip extension, take path leaf, parse YAPA-style name → "First Last [Third]".
+     */
+    function formatFilenameForPhotographer(filename) {
+        if (!filename) {
+            return '';
+        }
+        var base = filename.replace(/\.[^/.]+$/, '');
+        var leaf = base.split(/[/\\]/).pop() || base;
+        var parts = leaf.split('_').filter(Boolean);
+        if (!parts.length) {
+            return base;
+        }
+        var seg = pickPhotographerSegment(parts);
+        if (!seg) {
+            return base;
+        }
+        return splitPascalCaseRun(seg);
     }
 
     // Helper: Build slides HTML structure (for photo array)
@@ -297,7 +446,7 @@
                 '<div class="swiper-zoom-container">' +
                 '<img src="' + previewUrl + '" ' +
                 (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
-                'alt="Photo" class="jzsa-progressive-image" />' +
+                'alt="Photo" class="yaga-progressive-image" />' +
                 '</div>' +
                 '</div>';
         });
@@ -324,7 +473,7 @@
 			return;
 		}
 
-		jzsaDebug('🔍 Applying fullscreen autoplay settings immediately (Android workaround)');
+		yagaDebug('🔍 Applying fullscreen autoplay settings immediately (Android workaround)');
 
         // Stop current autoplay if running
         if (swiper.autoplay && swiper.autoplay.running) {
@@ -333,7 +482,7 @@
 
         // Update autoplay delay for fullscreen mode
 			var newDelay = params.fullScreenAutoplayDelay * MILLISECONDS_PER_SECOND;
-			jzsaDebug('🔍 Setting fullscreen autoplay delay to:', newDelay, 'ms (', params.fullScreenAutoplayDelay, 's)');
+			yagaDebug('🔍 Setting fullscreen autoplay delay to:', newDelay, 'ms (', params.fullScreenAutoplayDelay, 's)');
 
         // Update both params and the active autoplay object
         swiper.params.autoplay.delay = newDelay;
@@ -345,7 +494,7 @@
         setTimeout(function() {
 				if (!params.autoplayPausedByInteraction && swiper.autoplay) {
 					swiper.autoplay.start();
-					jzsaDebug('▶️  Fullscreen autoplay started immediately (delay: ' + params.fullScreenAutoplayDelay + 's)');
+					yagaDebug('▶️  Fullscreen autoplay started immediately (delay: ' + params.fullScreenAutoplayDelay + 's)');
 				}
         }, 100);
 
@@ -355,7 +504,7 @@
 				var nowFullscreen = isFullscreen();
 
 				if (nowFullscreen && params.fullScreenAutoplay) {
-					jzsaDebug('⚠️  Fullscreen change event did not fire - applying settings via fallback (Android workaround)');
+					yagaDebug('⚠️  Fullscreen change event did not fire - applying settings via fallback (Android workaround)');
 
                 // Ensure settings are applied
                 if (swiper.autoplay && swiper.autoplay.running) {
@@ -370,7 +519,7 @@
 
 					if (!params.autoplayPausedByInteraction) {
 						swiper.autoplay.start();
-						jzsaDebug('▶️  Fullscreen autoplay started via fallback (delay: ' + params.fullScreenAutoplayDelay + 's)');
+						yagaDebug('▶️  Fullscreen autoplay started via fallback (delay: ' + params.fullScreenAutoplayDelay + 's)');
 					}
             }
         }, 300);
@@ -398,7 +547,7 @@
         if (fullscreenElement === containerElement) {
 			// Entering fullscreen - switch to fullscreen autoplay settings
 			var logPrefix = params.browserPrefix ? ' (' + params.browserPrefix + ')' : '';
-			jzsaDebug('🔍 Fullscreen entered for gallery' + logPrefix + ':', params.galleryId);
+			yagaDebug('🔍 Fullscreen entered for gallery' + logPrefix + ':', params.galleryId);
 
             // For carousel-to-single, switch layout to a single slide in
             // fullscreen while keeping the preview in carousel mode.
@@ -415,7 +564,7 @@
             }
 
             // Add fullscreen class for CSS styling
-            $(containerElement).addClass('jzsa-is-fullscreen');
+            $(containerElement).addClass('yaga-is-fullscreen');
 
             if (!params.browserPrefix) {
                 // Only log detailed debug info for standard API (avoid log spam)
@@ -432,7 +581,7 @@
                 var newDelay = params.fullScreenAutoplayDelay * MILLISECONDS_PER_SECOND;
 
 			if (!params.browserPrefix) {
-				jzsaDebug('🔍 Setting fullscreen autoplay delay to:', newDelay, 'ms (', params.fullScreenAutoplayDelay, 's)');
+				yagaDebug('🔍 Setting fullscreen autoplay delay to:', newDelay, 'ms (', params.fullScreenAutoplayDelay, 's)');
 			}
 
                 // Update both params and the active autoplay object
@@ -442,20 +591,20 @@
 				}
 
 				if (!params.browserPrefix) {
-					jzsaDebug('🔍 swiper.params.autoplay.delay is now:', swiper.params.autoplay.delay);
-					jzsaDebug('🔍 swiper.autoplay.delay is now:', swiper.autoplay ? swiper.autoplay.delay : 'N/A');
+					yagaDebug('🔍 swiper.params.autoplay.delay is now:', swiper.params.autoplay.delay);
+					yagaDebug('🔍 swiper.autoplay.delay is now:', swiper.autoplay ? swiper.autoplay.delay : 'N/A');
 				}
 
                 // Start fullscreen autoplay if enabled and not paused by interaction
 				if (!params.autoplayPausedByInteraction) {
 					swiper.autoplay.start();
-					jzsaDebug('▶️  Fullscreen autoplay started (delay: ' + params.fullScreenAutoplayDelay + 's' + logPrefix + ')');
+					yagaDebug('▶️  Fullscreen autoplay started (delay: ' + params.fullScreenAutoplayDelay + 's' + logPrefix + ')');
 				}
             }
         } else if (!fullscreenElement && swiper) {
 			// Exiting fullscreen (this gallery was in fullscreen before) - switch back to normal autoplay settings
 			var logPrefix = params.browserPrefix ? ' (' + params.browserPrefix + ')' : '';
-			jzsaDebug('🔍 Fullscreen exited for gallery' + logPrefix + ':', params.galleryId);
+			yagaDebug('🔍 Fullscreen exited for gallery' + logPrefix + ':', params.galleryId);
 
             // For carousel-to-single, restore the original multi-slide layout
             // but keep the same logical photo index the user was viewing in
@@ -485,7 +634,7 @@
             // browsers like Chrome on iOS all use the same engine).
             if (!isIosDevice()) {
                 // Remove any stale no-scroll class even on non-iOS, just in case.
-                $('html, body').removeClass('jzsa-no-scroll');
+                $('html, body').removeClass('yaga-no-scroll');
             }
 
             // Poll a few times shortly after exiting fullscreen so we can
@@ -522,12 +671,12 @@
                         // Only adjust if we have sane numbers and the LI is much
                         // narrower than the gallery (e.g. 35px vs 267px).
 						if (gw > 0 && lw > 0 && Math.abs(lw - gw) > 20) {
-							jzsaDebug('[JZSA LAYOUT FIX] correcting LI width for', params.galleryId, 'from', lw, 'to', gw, 'on attempt', attempts);
+							yagaDebug('[YAGA LAYOUT FIX] correcting LI width for', params.galleryId, 'from', lw, 'to', gw, 'on attempt', attempts);
 							liEl.style.width = gw + 'px';
                             return; // stop polling once fixed
                         }
 					} catch (e) {
-						jzsaDebug('[JZSA LAYOUT FIX ERROR]', e);
+						yagaDebug('[YAGA LAYOUT FIX ERROR]', e);
 					}
 
                     if (attempts < maxAttempts) {
@@ -539,7 +688,7 @@
             })();
 
             // Remove fullscreen class
-            $(containerElement).removeClass('jzsa-is-fullscreen');
+            $(containerElement).removeClass('yaga-is-fullscreen');
 
             params.autoplayPausedByInteraction = false;
 
@@ -580,7 +729,7 @@
         if (swiper.autoplay && swiper.autoplay.running) {
             swiper.autoplay.stop();
             params.autoplayPausedByInteraction = true;
-			jzsaDebug('⏸️  Autoplay paused by user interaction');
+			yagaDebug('⏸️  Autoplay paused by user interaction');
 
             // Clear any existing inactivity timer
             if (params.inactivityTimer) {
@@ -591,7 +740,7 @@
             var timeoutMs = (params.autoplayInactivityTimeout || 30) * 1000;
             params.inactivityTimer = setTimeout(function() {
 				if (params.autoplayPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
-					jzsaDebug('▶️  Resuming autoplay after ' + (params.autoplayInactivityTimeout || 30) + ' seconds of inactivity');
+					yagaDebug('▶️  Resuming autoplay after ' + (params.autoplayInactivityTimeout || 30) + ' seconds of inactivity');
                     params.autoplayPausedByInteraction = false;
                     swiper.autoplay.start();
                 }
@@ -611,7 +760,7 @@
 
 			if (!isCurrentlyFullscreen) {
 				// About to enter fullscreen - apply fullscreen autoplay settings immediately (Android workaround)
-				jzsaDebug('🔍 Fullscreen button clicked - entering fullscreen');
+				yagaDebug('🔍 Fullscreen button clicked - entering fullscreen');
                 applyFullscreenAutoplaySettings(swiper, {
                     fullScreenAutoplay: params.fullScreenAutoplay,
                     fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
@@ -658,11 +807,11 @@
 
             // Use WordPress AJAX to proxy the download
             $.ajax({
-                url: jzsaAjax.ajaxUrl,
+                url: yagaAjax.ajaxUrl,
                 type: 'POST',
                 data: {
-                    action: 'jzsa_download_image',
-                    nonce: jzsaAjax.nonce,
+                    action: 'yaga_download_image',
+                    nonce: yagaAjax.nonce,
                     image_url: imageUrl,
                     filename: filename
                 },
@@ -818,10 +967,10 @@
 			if (swiper.autoplay) {
 				if (swiper.autoplay.running) {
 					swiper.autoplay.stop();
-					jzsaDebug('⏸️ Autoplay paused');
+					yagaDebug('⏸️ Autoplay paused');
 				} else {
 					swiper.autoplay.start();
-					jzsaDebug('▶️ Autoplay started');
+					yagaDebug('▶️ Autoplay started');
 				}
                 updateButtonState();
             }
@@ -892,7 +1041,7 @@
 						// If entering fullscreen, apply autoplay settings immediately (Android workaround)
 						if (!isFullscreen()) {
 							focusClickedSlide(e);
-							jzsaDebug('🔍 Single-click entering fullscreen');
+							yagaDebug('🔍 Single-click entering fullscreen');
                             applyFullscreenAutoplaySettings(swiper, {
                                 fullScreenAutoplay: params.fullScreenAutoplay,
                                 fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
@@ -915,7 +1064,7 @@
 						// If entering fullscreen, apply autoplay settings immediately (Android workaround)
 						if (!isFullscreen()) {
 							focusClickedSlide(e);
-							jzsaDebug('🔍 Double-click entering fullscreen');
+							yagaDebug('🔍 Double-click entering fullscreen');
                             applyFullscreenAutoplaySettings(swiper, {
                                 fullScreenAutoplay: params.fullScreenAutoplay,
                                 fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
@@ -936,7 +1085,7 @@
 							// If entering fullscreen, apply autoplay settings immediately (Android workaround)
 							if (!isFullscreen()) {
 								focusClickedSlide(evt);
-								jzsaDebug('🔍 Double-tap entering fullscreen');
+								yagaDebug('🔍 Double-tap entering fullscreen');
                                 applyFullscreenAutoplaySettings(swiper, {
                                     fullScreenAutoplay: params.fullScreenAutoplay,
                                     fullScreenAutoplayDelay: params.fullScreenAutoplayDelay,
@@ -1004,12 +1153,12 @@
                 tempImg.onload = function() {
                     $img.attr('src', fullSrc);
                     $img.data('full-loaded', true);
-                    $img.addClass('jzsa-full-loaded');
-                    $img.removeClass('jzsa-image-error');
+                    $img.addClass('yaga-full-loaded');
+                    $img.removeClass('yaga-image-error');
                 };
                 tempImg.onerror = function() {
                     // Mark image as failed to load
-                    $img.addClass('jzsa-image-error');
+                    $img.addClass('yaga-image-error');
                     $img.data('full-loaded', 'error');
                     console.warn('Failed to load image:', fullSrc);
                 };
@@ -1018,7 +1167,7 @@
         }
 
         // Load full image for initial slide
-        var $initialImg = $(swiper.slides[swiper.activeIndex]).find('.jzsa-progressive-image');
+        var $initialImg = $(swiper.slides[swiper.activeIndex]).find('.yaga-progressive-image');
         loadFullImage($initialImg);
 
         // Load full images for adjacent slides (preload next/prev)
@@ -1026,18 +1175,18 @@
             var currentIndex = swiper.activeIndex;
 
             // Load current slide
-            var $currentImg = $(swiper.slides[currentIndex]).find('.jzsa-progressive-image');
+            var $currentImg = $(swiper.slides[currentIndex]).find('.yaga-progressive-image');
             loadFullImage($currentImg);
 
             // Preload next slide
             if (swiper.slides[currentIndex + 1]) {
-                var $nextImg = $(swiper.slides[currentIndex + 1]).find('.jzsa-progressive-image');
+                var $nextImg = $(swiper.slides[currentIndex + 1]).find('.yaga-progressive-image');
                 loadFullImage($nextImg);
             }
 
             // Preload previous slide
             if (swiper.slides[currentIndex - 1]) {
-                var $prevImg = $(swiper.slides[currentIndex - 1]).find('.jzsa-progressive-image');
+                var $prevImg = $(swiper.slides[currentIndex - 1]).find('.yaga-progressive-image');
                 loadFullImage($prevImg);
             }
         });
@@ -1249,7 +1398,7 @@
         // everywhere else.
         if (isOldIosWebkit() && allPhotos.length > OLD_IOS_MAX_PHOTOS) {
             allPhotos = allPhotos.slice(0, OLD_IOS_MAX_PHOTOS);
-            console.log('[JZSA] Old iOS/WebKit detected – capping photos to', OLD_IOS_MAX_PHOTOS, 'out of', totalCount);
+            console.log('[YAGA] Old iOS/WebKit detected – capping photos to', OLD_IOS_MAX_PHOTOS, 'out of', totalCount);
         }
 
         var config = {
@@ -1272,6 +1421,7 @@
             showTitle: $container.attr('data-show-title') === 'true',
             showCounter: $container.attr('data-show-counter') === 'true',
             showFilename: $container.attr('data-show-filename') === 'true',
+            filenameDisplay: ($container.attr('data-filename-display') || 'full').toLowerCase(),
             showInfo: $container.attr('data-show-info') === 'true',
             albumTitle: $container.attr('data-album-title') || '',
             initialSlide: 0,
@@ -1311,6 +1461,7 @@
         var showTitle = config.showTitle;
         var showCounter = config.showCounter;
         var showFilename = config.showFilename;
+        var filenameDisplay = config.filenameDisplay;
         var showInfo = config.showInfo;
         var albumTitle = config.albumTitle;
         var initialSlide = config.initialSlide;
@@ -1324,7 +1475,7 @@
         console.log('  - Initial photos loaded:', allPhotos.length);
         console.log('  - startAt setting:', startAt, '=> initial slide index (0-based):', initialSlide, '/', totalCount);
         console.log('  - Mosaic enabled:', mosaic, 'Position:', mosaicPosition, 'Count:', mosaicCount);
-        console.log('  - Show filename:', showFilename);
+        console.log('  - Show filename:', showFilename, 'display:', filenameDisplay);
         console.log('  - Show info:', showInfo);
         
         // Debug: Log the first few photos to see if they have metadata
@@ -1355,7 +1506,7 @@
                 var thumbSlidesHtml = '';
                 allPhotos.forEach(function(photo) {
                     var thumbUrl = photo.thumb || photo.preview || photo.full;
-                    thumbSlidesHtml += '<div class="swiper-slide"><span class="jzsa-mosaic-thumb-inner"><img src="' + thumbUrl + '" alt="Thumb" /></span></div>';
+                    thumbSlidesHtml += '<div class="swiper-slide"><span class="yaga-mosaic-thumb-inner"><img src="' + thumbUrl + '" alt="Thumb" /></span></div>';
                 });
                 $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
 
@@ -1420,14 +1571,14 @@
                     requestAnimationFrame(resizeMosaic);
                 });
 
-                if (!$mosaicContainer.find('.jzsa-mosaic-arrow-prev').length) {
-                    $mosaicContainer.append('<button type="button" class="jzsa-mosaic-arrow jzsa-mosaic-arrow-prev" aria-label="Previous page"></button>');
-                    $mosaicContainer.append('<button type="button" class="jzsa-mosaic-arrow jzsa-mosaic-arrow-next" aria-label="Next page"></button>');
-                    $mosaicContainer.on('click', '.jzsa-mosaic-arrow-prev', function(e) {
+                if (!$mosaicContainer.find('.yaga-mosaic-arrow-prev').length) {
+                    $mosaicContainer.append('<button type="button" class="yaga-mosaic-arrow yaga-mosaic-arrow-prev" aria-label="Previous page"></button>');
+                    $mosaicContainer.append('<button type="button" class="yaga-mosaic-arrow yaga-mosaic-arrow-next" aria-label="Next page"></button>');
+                    $mosaicContainer.on('click', '.yaga-mosaic-arrow-prev', function(e) {
                         e.preventDefault();
                         if (mosaicSwiper && !mosaicSwiper.destroyed) mosaicSwiper.slidePrev();
                     });
-                    $mosaicContainer.on('click', '.jzsa-mosaic-arrow-next', function(e) {
+                    $mosaicContainer.on('click', '.yaga-mosaic-arrow-next', function(e) {
                         e.preventDefault();
                         if (mosaicSwiper && !mosaicSwiper.destroyed) mosaicSwiper.slideNext();
                     });
@@ -1466,27 +1617,27 @@
         // Loading overlay: show a subtle loader until the first image is ready
         // --------------------------------------------------------------------
 
-        if ($container.find('.jzsa-loader').length === 0) {
+        if ($container.find('.yaga-loader').length === 0) {
             var loaderHtml = '' +
-                '<div class="jzsa-loader">' +
-                    '<div class="jzsa-loader-inner">' +
-                        '<div class="jzsa-loader-spinner"></div>' +
-                        '<div class="jzsa-loader-text">Loading photos...</div>' +
+                '<div class="yaga-loader">' +
+                    '<div class="yaga-loader-inner">' +
+                        '<div class="yaga-loader-spinner"></div>' +
+                        '<div class="yaga-loader-text">Loading photos...</div>' +
                     '</div>' +
                 '</div>';
             $container.append(loaderHtml);
         }
 
-        var jzsaHasMarkedLoaded = false;
+        var yagaHasMarkedLoaded = false;
         function markGalleryLoaded() {
-            if (jzsaHasMarkedLoaded) return;
-            jzsaHasMarkedLoaded = true;
-            $container.addClass('jzsa-loaded');
+            if (yagaHasMarkedLoaded) return;
+            yagaHasMarkedLoaded = true;
+            $container.addClass('yaga-loaded');
         }
 
         // Hide loader when the initial preview image finishes loading, with a
         // small fallback timeout so we never leave the overlay up forever.
-        var $initialPreviewImg = $container.find('.jzsa-progressive-image').first();
+        var $initialPreviewImg = $container.find('.yaga-progressive-image').first();
         if ($initialPreviewImg.length) {
             var imgEl = $initialPreviewImg[0];
             if (imgEl.complete && imgEl.naturalWidth > 0) {
@@ -1556,8 +1707,8 @@
         }
 
         // Persistent Overlay Logic
-        var $filenameOverlay = $container.find('.jzsa-persistent-filename');
-        var $infoOverlay = $container.find('.jzsa-persistent-info');
+        var $filenameOverlay = $container.find('.yaga-persistent-filename');
+        var $infoOverlay = $container.find('.yaga-persistent-info');
 
         function updatePersistentOverlays() {
             var $activeSlide = $(swiper.slides[swiper.activeIndex]);
@@ -1566,6 +1717,9 @@
 
             if (showFilename && filename) {
                 var displayName = filename.replace(/\.[^/.]+$/, '');
+                if (filenameDisplay === 'photographer') {
+                    displayName = formatFilenameForPhotographer(filename);
+                }
                 $filenameOverlay.text(displayName).css('opacity', '1');
             } else {
                 $filenameOverlay.css('opacity', '0');
@@ -1678,11 +1832,11 @@
         // Image error handling - Add error handlers to all images
         // ------------------------------------------------------------------------
 
-        $container.find('.jzsa-progressive-image').each(function() {
+        $container.find('.yaga-progressive-image').each(function() {
             var $img = $(this);
             // Handle errors on the preview image
             this.onerror = function() {
-                $img.addClass('jzsa-image-error');
+                $img.addClass('yaga-image-error');
                 console.warn('Failed to load preview image:', $img.attr('src'));
             };
         });
@@ -1701,7 +1855,7 @@
             // carousel. Fullscreen still works via the standard fullscreen button
             // and behaves like the regular gallery; no extra lightbox logic.
         if (mode === 'carousel-to-single') {
-            jzsaDebug('Carousel-to-single mode: using standard carousel behaviour for gallery', galleryId);
+            yagaDebug('Carousel-to-single mode: using standard carousel behaviour for gallery', galleryId);
         }
 
         // ------------------------------------------------------------------------
@@ -1761,12 +1915,12 @@
     // ============================================================================
 
     function initializeAllGalleries() {
-        $('.jzsa-album').each(function(index) {
+        $('.yaga-album').each(function(index) {
             var $gallery = $(this);
 
             // Generate unique ID if not present
             if (!$gallery.attr('id')) {
-                $gallery.attr('id', 'jzsa-album-' + (index + 1));
+                $gallery.attr('id', 'yaga-album-' + (index + 1));
             }
 
             // Get mode

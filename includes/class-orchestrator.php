@@ -12,7 +12,7 @@
  * - Allows same album to be reused across multiple posts
  * - Invalidates cache if CACHE_DURATION constant changes
  *
- * @package JZSA_Shared_Albums
+ * @package YAGA_Shared_Albums
  */
 
 // Exit if accessed directly
@@ -23,7 +23,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Main Orchestrator Class
  */
-class JZSA_Shared_Albums {
+class YAGA_Shared_Albums {
 
 
 	/**
@@ -103,14 +103,14 @@ class JZSA_Shared_Albums {
 	/**
 	 * Data provider instance
 	 *
-	 * @var JZSA_Data_Provider
+	 * @var YAGA_Data_Provider
 	 */
 	private $provider;
 
 	/**
 	 * Renderer instance
 	 *
-	 * @var JZSA_Renderer
+	 * @var YAGA_Renderer
 	 */
 	private $renderer;
 
@@ -128,15 +128,16 @@ class JZSA_Shared_Albums {
 	 */
 	public function __construct( $plugin_file ) {
 		$this->plugin_file = $plugin_file;
-		$this->provider    = new JZSA_Data_Provider();
-		$this->renderer    = new JZSA_Renderer();
+		$this->provider    = new YAGA_Data_Provider();
+		$this->renderer    = new YAGA_Renderer();
 
-		add_shortcode( 'jzsa-album', array( $this, 'handle_shortcode' ) );
+		add_shortcode( 'yaga-album', array( $this, 'handle_shortcode' ) );
+		add_shortcode( 'jzsa-album', array( $this, 'handle_shortcode' ) ); // Legacy shortcode tag (pre-rebrand).
 		add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_assets' ) );
 		add_action( 'save_post', array( $this, 'clear_cache' ) );
-		add_action( 'wp_ajax_jzsa_download_image', array( $this, 'handle_download_image' ) );
-		add_action( 'wp_ajax_nopriv_jzsa_download_image', array( $this, 'handle_download_image' ) );
-		add_action( 'wp_ajax_jzsa_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
+		add_action( 'wp_ajax_yaga_download_image', array( $this, 'handle_download_image' ) );
+		add_action( 'wp_ajax_nopriv_yaga_download_image', array( $this, 'handle_download_image' ) );
+		add_action( 'wp_ajax_yaga_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
 
 		// Also load front-end gallery assets on our settings page so the sample
 		// shortcode preview works inside the admin.
@@ -165,14 +166,14 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Add "Add Google Photos Album" button next to Add Media in the classic editor.
+	 * Add "Add YAPA Google Photos album" button next to Add Media in the classic editor.
 	 *
 	 * @param string $editor_id ID of the editor (e.g. 'content').
 	 */
 	public function add_media_button( $editor_id = 'content' ) {
-		$label = __( 'Add Google Photos Album', 'janzeman-shared-albums-for-google-photos' );
+		$label = __( 'Add YAPA Google Photos album', 'janzeman-shared-albums-for-google-photos' );
 		printf(
-			'<button type="button" class="button jzsa-insert-album" data-editor="%s" title="%s">' .
+			'<button type="button" class="button yaga-insert-album" data-editor="%s" title="%s">' .
 			'<span class="dashicons dashicons-format-gallery" style="margin-right: 4px; margin-top: 3px;"></span>%s</button>',
 			esc_attr( $editor_id ),
 			esc_attr( $label ),
@@ -193,10 +194,10 @@ class JZSA_Shared_Albums {
 			return;
 		}
 		wp_enqueue_script(
-			'jzsa-media-button',
+			'yaga-media-button',
 			plugins_url( 'assets/js/media-button.js', $this->plugin_file ),
 			array(),
-			defined( 'JZSA_VERSION' ) ? JZSA_VERSION : '1.0',
+			defined( 'YAGA_VERSION' ) ? YAGA_VERSION : '1.0',
 			true
 		);
 	}
@@ -222,7 +223,7 @@ class JZSA_Shared_Albums {
 	 * @return array
 	 */
 	public function add_tinymce_plugin( $plugin_array ) {
-		$plugin_array['jzsa_editor_button'] = plugins_url( 'assets/js/editor-helper.js', $this->plugin_file );
+		$plugin_array['yaga_editor_button'] = plugins_url( 'assets/js/editor-helper.js', $this->plugin_file );
 		return $plugin_array;
 	}
 
@@ -233,7 +234,7 @@ class JZSA_Shared_Albums {
 	 * @return array
 	 */
 	public function register_tinymce_button( $buttons ) {
-		array_push( $buttons, 'jzsa_editor_button' );
+		array_push( $buttons, 'yaga_editor_button' );
 		return $buttons;
 	}
 
@@ -273,27 +274,27 @@ class JZSA_Shared_Albums {
 
 		// Custom assets
 		wp_enqueue_style(
-			'jzsa-style',
+			'yaga-style',
 			plugins_url( 'assets/css/swiper-style.css', $this->plugin_file ),
 			array( 'swiper-css' ),
-			JZSA_VERSION
+			YAGA_VERSION
 		);
 
 		wp_enqueue_script(
-			'jzsa-init',
+			'yaga-init',
 			plugins_url( 'assets/js/swiper-init.js', $this->plugin_file ),
 			array( 'jquery', 'swiper-js' ),
-			JZSA_VERSION,
+			YAGA_VERSION,
 			true
 		);
 
 		// Localize script for AJAX
-		$download_nonce = wp_create_nonce( 'jzsa_download_nonce' );
-		$preview_nonce  = wp_create_nonce( 'jzsa_shortcode_preview' );
+		$download_nonce = wp_create_nonce( 'yaga_download_nonce' );
+		$preview_nonce  = wp_create_nonce( 'yaga_shortcode_preview' );
 
 		wp_localize_script(
-			'jzsa-init',
-			'jzsaAjax',
+			'yaga-init',
+			'yagaAjax',
 			array(
 				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
 				'nonce'        => $download_nonce, // kept for backward compatibility
@@ -324,11 +325,19 @@ class JZSA_Shared_Albums {
 		// Parse configuration from shortcode attributes
 		$config = $this->parse_shortcode_config( $atts, $album_url );
 
-		// Smart caching: Check cache and expiration tracking
-		$cache_key      = $this->get_cache_key( $album_url );
-		$expiry_key     = $this->get_expiration_key( $album_url );
-		$cached_data    = get_transient( $cache_key );
-		$stored_expiry  = get_option( $expiry_key, 0 );
+		// Smart caching: Check cache and expiration tracking (yaga_* keys; read legacy jzsa_* if present).
+		$cache_key     = $this->get_cache_key( $album_url );
+		$legacy_cache  = 'jzsa_album_' . md5( $album_url );
+		$cached_data   = get_transient( $cache_key );
+		if ( false === $cached_data ) {
+			$cached_data = get_transient( $legacy_cache );
+		}
+		$expiry_key    = $this->get_expiration_key( $album_url );
+		$legacy_expiry = 'jzsa_expiry_' . md5( $album_url );
+		$stored_expiry = (int) get_option( $expiry_key, 0 );
+		if ( ! $stored_expiry ) {
+			$stored_expiry = (int) get_option( $legacy_expiry, 0 );
+		}
 		$should_refresh = false;
 
 		// Refresh if no cache OR if cache duration setting changed OR if debug mode is on
@@ -361,7 +370,7 @@ class JZSA_Shared_Albums {
 
 		// Debug: Log extraction results for administrators
 		if ( ! empty( $config['debug'] ) && current_user_can( 'manage_options' ) ) {
-			error_log( 'JZSA Debug - Photo Extraction Sample (First 3): ' . print_r( array_slice( $result['data']['photos'], 0, 3 ), true ) );
+			error_log( 'YAGA Debug - Photo Extraction Sample (First 3): ' . print_r( array_slice( $result['data']['photos'], 0, 3 ), true ) );
 		}
 
 		// Cache the fetched BASE photo URLs (without dimensions) and title
@@ -436,6 +445,7 @@ class JZSA_Shared_Albums {
 			'show-link-button'       => $this->parse_bool( $atts, 'show-link-button', false ),
 			'show-download-button'   => $this->parse_bool( $atts, 'show-download-button', false ),
 			'show-filename'          => $this->parse_bool( $atts, 'show-filename', false ),
+			'filename-display'       => $this->parse_filename_display( $atts ),
 			'show-info'              => $this->parse_bool( $atts, 'show-info', false ),
 			'debug'                  => $this->parse_bool( $atts, 'debug', false ),
 
@@ -469,6 +479,26 @@ class JZSA_Shared_Albums {
 		}
 
 		return 'right';
+	}
+
+	/**
+	 * Parse filename label mode: full basename vs photographer name (YAPA-style filenames).
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string 'full' or 'photographer'.
+	 */
+	private function parse_filename_display( $atts ) {
+		if ( ! isset( $atts['filename-display'] ) ) {
+			return 'full';
+		}
+
+		$value = strtolower( trim( (string) $atts['filename-display'] ) );
+
+		if ( in_array( $value, array( 'photographer', 'photo', 'name' ), true ) ) {
+			return 'photographer';
+		}
+
+		return 'full';
 	}
 
 	/**
@@ -822,7 +852,7 @@ class JZSA_Shared_Albums {
 	 * @return string Cache key
 	 */
 	private function get_cache_key( $url ) {
-		return 'jzsa_album_' . md5( $url );
+		return 'yaga_album_' . md5( $url );
 	}
 
 	/**
@@ -832,7 +862,20 @@ class JZSA_Shared_Albums {
 	 * @return string Option key
 	 */
 	private function get_expiration_key( $url ) {
-		return 'jzsa_expiry_' . md5( $url );
+		return 'yaga_expiry_' . md5( $url );
+	}
+
+	/**
+	 * Remove album HTML cache transients and expiry options (current and legacy keys).
+	 *
+	 * @param string $url Album share URL.
+	 */
+	private function delete_album_caches_for_url( $url ) {
+		$h = md5( $url );
+		delete_transient( 'yaga_album_' . $h );
+		delete_transient( 'jzsa_album_' . $h );
+		delete_option( 'yaga_expiry_' . $h );
+		delete_option( 'jzsa_expiry_' . $h );
 	}
 
 	/**
@@ -848,15 +891,10 @@ class JZSA_Shared_Albums {
 			return;
 		}
 
-		// Find all jzsa-album shortcodes in post content
-		if ( preg_match_all( '/\[jzsa-album[^\]]*link=["\']([^"\']+)["\'][^\]]*\]/i', $post->post_content, $matches ) ) {
+		// Find all yaga-album / legacy jzsa-album shortcodes in post content
+		if ( preg_match_all( '/\[(?:yaga|jzsa)-album[^\]]*link=["\']([^"\']+)["\'][^\]]*\]/i', $post->post_content, $matches ) ) {
 			foreach ( $matches[1] as $url ) {
-				$cache_key = $this->get_cache_key( $url );
-				delete_transient( $cache_key );
-
-				// Also delete expiration tracking
-				$expiry_key = $this->get_expiration_key( $url );
-				delete_option( $expiry_key );
+				$this->delete_album_caches_for_url( $url );
 			}
 		}
 	}
@@ -875,7 +913,7 @@ class JZSA_Shared_Albums {
 		}
 
 		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
-		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'jzsa_shortcode_preview' ) ) {
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'yaga_shortcode_preview' ) ) {
 			wp_send_json_error( __( 'Invalid nonce', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
@@ -886,8 +924,8 @@ class JZSA_Shared_Albums {
 		}
 
 		// Only allow our own shortcode in this preview endpoint.
-		if ( false === strpos( $shortcode, '[jzsa-album' ) ) {
-			wp_send_json_error( __( 'Only the [jzsa-album] shortcode is supported in this preview.', 'janzeman-shared-albums-for-google-photos' ) );
+		if ( false === strpos( $shortcode, '[yaga-album' ) && false === strpos( $shortcode, '[jzsa-album' ) ) {
+			wp_send_json_error( __( 'Only the [yaga-album] shortcode (or legacy [jzsa-album]) is supported in this preview.', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
 		$html = do_shortcode( $shortcode );
@@ -911,7 +949,7 @@ class JZSA_Shared_Albums {
 	public function handle_download_image() {
 		// Verify nonce.
 		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
-		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'jzsa_download_nonce' ) ) {
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'yaga_download_nonce' ) ) {
 			wp_send_json_error( __( 'Invalid nonce', 'janzeman-shared-albums-for-google-photos' ) );
 			return;
 		}
@@ -961,7 +999,8 @@ class JZSA_Shared_Albums {
 		}
 
 		// Optional: guard against excessively large files.
-		$max_size_bytes = (int) apply_filters( 'jzsa_max_download_size', 50 * 1024 * 1024 ); // 50 MB default.
+		// phpcs:ignore WordPress.NamingConventions.PrefixAllGlobals.NonPrefixedHooknameFound -- legacy hook name pre-rebrand.
+		$max_size_bytes = (int) apply_filters( 'yaga_max_download_size', apply_filters( 'jzsa_max_download_size', 50 * 1024 * 1024 ) ); // 50 MB default.
 		$content_length = wp_remote_retrieve_header( $response, 'content-length' );
 
 		if ( $max_size_bytes > 0 && $content_length && (int) $content_length > $max_size_bytes ) {

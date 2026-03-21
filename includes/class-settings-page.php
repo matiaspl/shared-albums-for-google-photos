@@ -4,7 +4,7 @@
  *
  * Provides admin settings page with tutorial and examples
  *
- * @package JZSA_Shared_Albums
+ * @package YAGA_Shared_Albums
  */
 
 // Exit if accessed directly
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Settings Page Class
  */
-class JZSA_Settings_Page {
+class YAGA_Settings_Page {
 
 	/**
 	 * Constructor
@@ -30,8 +30,8 @@ class JZSA_Settings_Page {
 	 */
 	public function add_settings_page() {
 		add_options_page(
-			'Shared Albums for Google Photos (by JanZeman)',           // Page title
-			'Shared Albums for Google Photos (by JanZeman)',           // Menu title
+			'YAPA Google Photo shared albums',           // Page title
+			'YAPA Google Photo shared albums',           // Menu title
 			'manage_options',                 // Capability
 			'janzeman-shared-albums-for-google-photos',           // Menu slug
 			array( $this, 'render_settings_page' ) // Callback
@@ -50,17 +50,17 @@ class JZSA_Settings_Page {
 		}
 
 		wp_enqueue_style(
-			'jzsa-admin-styles',
+			'yaga-admin-styles',
 			plugins_url( 'assets/css/admin-settings.css', dirname( __FILE__ ) ),
 			array(),
-			JZSA_VERSION
+			YAGA_VERSION
 		);
 
 		wp_enqueue_script(
-			'jzsa-admin-settings',
+			'yaga-admin-settings',
 			plugins_url( 'assets/js/admin-settings.js', dirname( __FILE__ ) ),
 			array(),
-			JZSA_VERSION,
+			YAGA_VERSION,
 			true
 		);
 	}
@@ -70,73 +70,73 @@ class JZSA_Settings_Page {
 	 */
 	public function render_settings_page() {
 		?>
-		<div class="wrap jzsa-settings-wrap">
+		<div class="wrap yaga-settings-wrap">
 			<h1>
 				<?php echo esc_html( get_admin_page_title() ); ?>
-				<span class="jzsa-version">v<?php echo esc_html( JZSA_VERSION ); ?></span>
+				<span class="yaga-version">v<?php echo esc_html( YAGA_VERSION ); ?></span>
 			</h1>
 
-			<div class="jzsa-settings-container">
+			<div class="yaga-settings-container">
 				<!-- Purpose / Scope Section -->
-						<div class="jzsa-section jzsa-section-purpose">
-							<div class="jzsa-attention-box jzsa-attention-purpose">
-								<strong class="jzsa-purpose-heading" style="display:flex; align-items:center; font-size:18px; margin-bottom:6px; gap:10px;">
-									<img src="<?php echo esc_url( JZSA_PLUGIN_URL . 'assets/icon-256x256.gif' ); ?>" alt="<?php esc_attr_e( 'Shared Albums for Google Photos logo', 'janzeman-shared-albums-for-google-photos' ); ?>" class="jzsa-purpose-heading-icon" style="width:48px; height:48px; border-radius:8px;" />
+						<div class="yaga-section yaga-section-purpose">
+							<div class="yaga-attention-box yaga-attention-purpose">
+								<strong class="yaga-purpose-heading" style="display:flex; align-items:center; font-size:18px; margin-bottom:6px; gap:10px;">
+									<img src="<?php echo esc_url( YAGA_PLUGIN_URL . 'assets/icon-256x256.gif' ); ?>" alt="<?php esc_attr_e( 'YAPA Google Photo shared albums logo', 'janzeman-shared-albums-for-google-photos' ); ?>" class="yaga-purpose-heading-icon" style="width:48px; height:48px; border-radius:8px;" />
 									<span>
 										<?php esc_html_e( 'What This Plugin Does – and What You Must Do Yourself', 'janzeman-shared-albums-for-google-photos' ); ?>
 									</span>
 								</strong>
 						<p style="margin: 16px 0 0 0;">
-							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [jzsa-album] shortcode will always render only one given album. To display many albums together you have to build your own layout and place one shortcode per album where you want it to appear.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							<?php esc_html_e( 'This plugin renders one album per shortcode. It does not provide any layout mechanism for multiple albums. One [yaga-album] shortcode will always render only one given album. To display many albums together you have to build your own layout and place one shortcode per album where you want it to appear.', 'janzeman-shared-albums-for-google-photos' ); ?>
 						</p>
 						<p style="margin: 8px 0 0 0;">
 							<?php
 							printf(
 								wp_kses(
 									/* translators: %s: "Query Loop block" (block name) wrapped in <strong>. */
-									__( 'For grid layouts or pagination across many albums (for example year-based archives), use your theme or block editor layout tools such as the %s block, and insert one [jzsa-album] shortcode in each grid item.', 'janzeman-shared-albums-for-google-photos' ),
+									__( 'For grid layouts or pagination across many albums (for example year-based archives), use your theme or block editor layout tools such as the %s block, and insert one [yaga-album] shortcode in each grid item.', 'janzeman-shared-albums-for-google-photos' ),
 									array( 'strong' => array() )
 								),
 								'<strong>Query Loop</strong>'
 							);
 							?>
 						</p>
-						<div class="jzsa-purpose-diagram-wrapper">
-							<svg class="jzsa-purpose-diagram" viewBox="0 0 360 95" role="img" aria-labelledby="jzsa-purpose-diagram-title jzsa-purpose-diagram-desc">
-								<title id="jzsa-purpose-diagram-title"><?php esc_html_e( 'One album versus multi-album page layout', 'janzeman-shared-albums-for-google-photos' ); ?></title>
-								<desc id="jzsa-purpose-diagram-desc"><?php esc_html_e( 'Left: we render your individual albums, one per shortcode. Right: you create the overall layout of multiple albums on your page.', 'janzeman-shared-albums-for-google-photos' ); ?></desc>
+						<div class="yaga-purpose-diagram-wrapper">
+							<svg class="yaga-purpose-diagram" viewBox="0 0 360 95" role="img" aria-labelledby="yaga-purpose-diagram-title yaga-purpose-diagram-desc">
+								<title id="yaga-purpose-diagram-title"><?php esc_html_e( 'One album versus multi-album page layout', 'janzeman-shared-albums-for-google-photos' ); ?></title>
+								<desc id="yaga-purpose-diagram-desc"><?php esc_html_e( 'Left: we render your individual albums, one per shortcode. Right: you create the overall layout of multiple albums on your page.', 'janzeman-shared-albums-for-google-photos' ); ?></desc>
 								
 								<!-- Left: one album gallery rendered by this plugin -->
-								<rect x="1" y="10" width="140" height="73" rx="6" class="jzsa-purpose-panel jzsa-purpose-panel-single" />
-								<text x="72" y="50" text-anchor="middle" class="jzsa-purpose-label">
+								<rect x="1" y="10" width="140" height="73" rx="6" class="yaga-purpose-panel yaga-purpose-panel-single" />
+								<text x="72" y="50" text-anchor="middle" class="yaga-purpose-label">
 									<tspan x="72" dy="-7"><?php esc_html_e( 'We render your', 'janzeman-shared-albums-for-google-photos' ); ?></tspan>
 									<tspan x="72" dy="14"><?php esc_html_e( 'individual albums.', 'janzeman-shared-albums-for-google-photos' ); ?></tspan>
 								</text>
 
 								<!-- Right: multi-album page layout built outside this plugin -->
-								<rect x="169" y="10" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-1" />
-								<rect x="250" y="10" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-2" />
-								<rect x="169" y="36" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-3" />
-								<rect x="250" y="36" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-4" />
-								<rect x="169" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-5" />
-								<rect x="250" y="62" width="75" height="21" rx="4" class="jzsa-purpose-panel jzsa-purpose-panel-negative jzsa-purpose-panel-neg-6" />
+								<rect x="169" y="10" width="75" height="21" rx="4" class="yaga-purpose-panel yaga-purpose-panel-negative yaga-purpose-panel-neg-1" />
+								<rect x="250" y="10" width="75" height="21" rx="4" class="yaga-purpose-panel yaga-purpose-panel-negative yaga-purpose-panel-neg-2" />
+								<rect x="169" y="36" width="75" height="21" rx="4" class="yaga-purpose-panel yaga-purpose-panel-negative yaga-purpose-panel-neg-3" />
+								<rect x="250" y="36" width="75" height="21" rx="4" class="yaga-purpose-panel yaga-purpose-panel-negative yaga-purpose-panel-neg-4" />
+								<rect x="169" y="62" width="75" height="21" rx="4" class="yaga-purpose-panel yaga-purpose-panel-negative yaga-purpose-panel-neg-5" />
+								<rect x="250" y="62" width="75" height="21" rx="4" class="yaga-purpose-panel yaga-purpose-panel-negative yaga-purpose-panel-neg-6" />
 
-								<text x="207" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-1">
+								<text x="207" y="21" text-anchor="middle" dominant-baseline="middle" class="yaga-purpose-label-negative yaga-purpose-label-neg-1">
 									<?php esc_html_e( 'You', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="287" y="21" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-2">
+								<text x="287" y="21" text-anchor="middle" dominant-baseline="middle" class="yaga-purpose-label-negative yaga-purpose-label-neg-2">
 									<?php esc_html_e( 'take', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="207" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-3">
+								<text x="207" y="47" text-anchor="middle" dominant-baseline="middle" class="yaga-purpose-label-negative yaga-purpose-label-neg-3">
 									<?php esc_html_e( 'care', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="287" y="47" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-4">
+								<text x="287" y="47" text-anchor="middle" dominant-baseline="middle" class="yaga-purpose-label-negative yaga-purpose-label-neg-4">
 									<?php esc_html_e( 'about', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="207" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-5">
+								<text x="207" y="73" text-anchor="middle" dominant-baseline="middle" class="yaga-purpose-label-negative yaga-purpose-label-neg-5">
 									<?php esc_html_e( 'the', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
-								<text x="287" y="73" text-anchor="middle" dominant-baseline="middle" class="jzsa-purpose-label-negative jzsa-purpose-label-neg-6">
+								<text x="287" y="73" text-anchor="middle" dominant-baseline="middle" class="yaga-purpose-label-negative yaga-purpose-label-neg-6">
 									<?php esc_html_e( 'layout.', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</text>
 							</svg>
@@ -145,47 +145,47 @@ class JZSA_Settings_Page {
 				</div>
 
 				<!-- Quick Onboarding Section -->
-				<div class="jzsa-section">
+				<div class="yaga-section">
 					<h2><?php esc_html_e( 'Quick Onboarding', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p class="jzsa-intro">
+					<p class="yaga-intro">
 						<?php esc_html_e( 'What you see here on the Settings page is what you and your visitors will get later on. Follow these five quick steps:', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</p>
 
-					<div class="jzsa-step">
-						<div class="jzsa-step-number">1</div>
-						<div class="jzsa-step-content">
+					<div class="yaga-step">
+						<div class="yaga-step-number">1</div>
+						<div class="yaga-step-content">
 							<h3><?php esc_html_e( 'Understand What Your Visitors Will See', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Use the Shortcode Playground below to explore the sample album: try the main controls, enter and exit fullscreen, understand what your visitors will experience.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
-					<div class="jzsa-step">
-						<div class="jzsa-step-number">2</div>
-						<div class="jzsa-step-content">
+					<div class="yaga-step">
+						<div class="yaga-step-number">2</div>
+						<div class="yaga-step-content">
 							<h3><?php esc_html_e( 'Browse the Shortcode Samples Further Below', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Scroll down to the Shortcode Samples section to see different shortcode configurations with descriptions, ready to copy and adapt.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
-					<div class="jzsa-step">
-						<div class="jzsa-step-number">3</div>
-						<div class="jzsa-step-content">
+					<div class="yaga-step">
+						<div class="yaga-step-number">3</div>
+						<div class="yaga-step-content">
 							<h3><?php esc_html_e( 'Try the Samples in the Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Copy some of the sample shortcodes, paste them into the Shortcode Playground textarea on this page end experiment with shortcode modifications.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
-					<div class="jzsa-step">
-						<div class="jzsa-step-number">4</div>
-						<div class="jzsa-step-content">
+					<div class="yaga-step">
+						<div class="yaga-step-number">4</div>
+						<div class="yaga-step-content">
 							<h3><?php esc_html_e( 'Try a Shortcode on Your Own Page', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'When you are happy with a configuration, copy that shortcode into one of your own pages or posts and preview it there.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
-					<div class="jzsa-step">
-						<div class="jzsa-step-number">5</div>
-						<div class="jzsa-step-content">
+					<div class="yaga-step">
+						<div class="yaga-step-number">5</div>
+						<div class="yaga-step-content">
 							<h3><?php esc_html_e( 'Switch to Your Own Albums', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Finally, replace the sample link in the shortcode with share links from your own Google Photos albums so your visitors see your real content.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
@@ -193,344 +193,344 @@ class JZSA_Settings_Page {
 				</div>
 
 				<!-- Shortcode Playground Section -->
-				<div class="jzsa-section jzsa-playground-section">
+				<div class="yaga-section yaga-playground-section">
 					<h2><?php esc_html_e( 'Shortcode Playground', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p class="jzsa-intro">
-						<?php esc_html_e( 'Use this area to experiment with the [jzsa-album] shortcode. You can paste your own shortcode here and adjust it before using it on a page or post.', 'janzeman-shared-albums-for-google-photos' ); ?>
+					<p class="yaga-intro">
+						<?php esc_html_e( 'Use this area to experiment with the [yaga-album] shortcode. You can paste your own shortcode here and adjust it before using it on a page or post.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</p>
 
-					<label for="jzsa-playground-shortcode" class="screen-reader-text">
+					<label for="yaga-playground-shortcode" class="screen-reader-text">
 						<?php esc_html_e( 'Shortcode to test', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</label>
 					<textarea
-						id="jzsa-playground-shortcode"
+						id="yaga-playground-shortcode"
 						class="large-text code"
 						rows="3"
-					><?php echo esc_textarea( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' ); ?></textarea>
+					><?php echo esc_textarea( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' ); ?></textarea>
 
-					<div class="jzsa-preview-container jzsa-playground-preview">
+					<div class="yaga-preview-container yaga-playground-preview">
 						<?php
 							// Step 1: static preview using the same sample album as above.
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' );
 						?>
 					</div>
 				</div>
 
 				<!-- Shortcode Samples Section -->
-				<div class="jzsa-section jzsa-samples-section">
+				<div class="yaga-section yaga-samples-section">
 					<h2><?php esc_html_e( 'Shortcode Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Basic Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The default viewer experience when no parameters are set.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]</code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<div class="yaga-code-block">
+							<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]</code>
+							<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
-						<div class="jzsa-preview-container jzsa-preview-container-basic">
+						<div class="yaga-preview-container yaga-preview-container-basic">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' );
+								echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R"]' );
 							?>
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Custom Size Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Set the preview width and height so they fit your page layout.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" height="600"]</code>
-							<button class="jzsa-copy-btn" onclick="jzsaCopyToClipboard(this, '[jzsa-album link=&quot;https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R&quot; width=&quot;800&quot; height=&quot;600&quot;]')"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<div class="yaga-code-block">
+							<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" height="600"]</code>
+							<button class="yaga-copy-btn" onclick="yagaCopyToClipboard(this, '[yaga-album link=&quot;https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R&quot; width=&quot;800&quot; height=&quot;600&quot;]')"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
-						<div class="jzsa-preview-container jzsa-preview-container-custom-size">
+						<div class="yaga-preview-container yaga-preview-container-custom-size">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" height="600"]' );
+								echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" width="800" height="600"]' );
 							?>
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Album with Title and Photo Counter', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Display the album title followed by the photo counter.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-title">
+					<div class="yaga-preview-container yaga-preview-container-title">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Album with Title Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Display the album title without a photo counter.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true" show-counter="false"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true" show-counter="false"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-title">
+					<div class="yaga-preview-container yaga-preview-container-title">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true" show-counter="false"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-title="true" show-counter="false"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Limit Number of Photos Per Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Load only a limited number of photos from a large album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" max-photos-per-album="5"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" max-photos-per-album="5"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-limit-photos">
+					<div class="yaga-preview-container yaga-preview-container-limit-photos">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" max-photos-per-album="5"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" max-photos-per-album="5"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Custom Autoplay Speed', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Autoplay here is set to one second. You can easily see the difference in speed compared to the sample above :)', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay-delay="1"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay-delay="1"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-slower-autoplay">
+					<div class="yaga-preview-container yaga-preview-container-slower-autoplay">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay-delay="1"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay-delay="1"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Start at First Photo with Disabled Autoplay', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Start the gallery at the first photo (start-at="1") and disable autoplay (manual navigation only).', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" start-at="1" autoplay="false"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" start-at="1" autoplay="false"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-no-autoplay">
+					<div class="yaga-preview-container yaga-preview-container-no-autoplay">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" start-at="1" autoplay="false"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" start-at="1" autoplay="false"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Disable Cropping and Set Custom Background', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows photos fully without cropping by using image-fit="contain". This exposes the background color. Here we set it to green to make it very visible.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" start-at="1" autoplay="false" image-fit="contain" background-color="#008000"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" start-at="1" autoplay="false" image-fit="contain" background-color="#008000"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-no-crop">
+					<div class="yaga-preview-container yaga-preview-container-no-crop">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" start-at="1" autoplay="false" image-fit="contain" background-color="#008000"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" start-at="1" autoplay="false" image-fit="contain" background-color="#008000"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Stretched Images', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses image-fit="stretch" to stretch photos and fill the entire frame, which may distort photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-fit="stretch"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-fit="stretch"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-stretch">
+					<div class="yaga-preview-container yaga-preview-container-stretch">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-fit="stretch"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-fit="stretch"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'High-Resolution Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'This example shows how to request higher-resolution photos from Google Photos. Please switch to fullscreen mode to see the difference in image quality.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-width="2560" image-height="1700"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-width="2560" image-height="1700"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-hires">
+					<div class="yaga-preview-container yaga-preview-container-hires">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-width="2560" image-height="1700"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" image-width="2560" image-height="1700"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Delayed Autoplay Resume', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Switch to fullscreen mode, stop autoplay, and wait for the timeout to expire. You will see autoplay resume automatically.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay-inactivity-timeout="20"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay-inactivity-timeout="20"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-autoplay-timeout">
+					<div class="yaga-preview-container yaga-preview-container-autoplay-timeout">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay-inactivity-timeout="20"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay-inactivity-timeout="20"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Fullscreen Autoplay Only', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Disables autoplay in the page preview while keeping it enabled in fullscreen mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay="false" full-screen-autoplay="true"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay="false" full-screen-autoplay="true"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-fullscreen-only">
+					<div class="yaga-preview-container yaga-preview-container-fullscreen-only">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay="false" full-screen-autoplay="true"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" autoplay="false" full-screen-autoplay="true"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Faster Fullscreen Autoplay', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses full-screen-autoplay-delay to advance photos more quickly in fullscreen mode.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-autoplay-delay="2"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-autoplay-delay="2"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-fast-fullscreen">
+					<div class="yaga-preview-container yaga-preview-container-fast-fullscreen">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-autoplay-delay="2"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-autoplay-delay="2"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Click Anywhere to Enter Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Shows full-screen-switch="single-click" so a single click on the album enters or exits fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-switch="single-click"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-switch="single-click"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-fs-switch-single">
+					<div class="yaga-preview-container yaga-preview-container-fs-switch-single">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-switch="single-click"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-switch="single-click"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Double-Click Navigation in Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'This parameter changes how double-clicking works. It no longer toggles between preview and fullscreen. Instead, in fullscreen mode, double-clicking on the left or right area navigates between photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-navigation="double-click"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-navigation="double-click"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-fs-nav-double">
+					<div class="yaga-preview-container yaga-preview-container-fs-nav-double">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-navigation="double-click"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" full-screen-navigation="double-click"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Show "Open in Google Photos" Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-link-button parameter to display an external link button to the original album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-link-button="true"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-link-button="true"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-link-button">
+					<div class="yaga-preview-container yaga-preview-container-link-button">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-link-button="true"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-link-button="true"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Show Download Button', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Enables the show-download-button parameter to add a download button for the current photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-download-button="true"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-download-button="true"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-download-button">
+					<div class="yaga-preview-container yaga-preview-container-download-button">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-download-button="true"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" show-download-button="true"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Album with Mosaic Preview', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Display a mosaic of preview images next to the big preview. You can choose to show it on the top, bottom, left, or right.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mosaic="true" mosaic-position="right"]</code>
-							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						<div class="yaga-code-block">
+							<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mosaic="true" mosaic-position="right"]</code>
+							<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
-						<div class="jzsa-preview-container jzsa-preview-container-mosaic">
+						<div class="yaga-preview-container yaga-preview-container-mosaic">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mosaic="true" mosaic-position="right"]' );
+								echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mosaic="true" mosaic-position="right"]' );
 							?>
 						</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Carousel Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses mode="carousel" to show multiple photos side by side. On mobile and tablets it shows 2 photos at a time, and on desktop it shows 3 photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-carousel">
+					<div class="yaga-preview-container yaga-preview-container-carousel">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel"]' );
 						?>
 					</div>
 					</div>
 
-					<div class="jzsa-example">
+					<div class="yaga-example">
 						<h3><?php esc_html_e( 'Carousel to Single Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Uses mode="carousel-to-single" to combine the best of both modes: displays photos as a carousel, but clicking any photo opens it as a single photo viewer in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-single"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-single"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-					<div class="jzsa-preview-container jzsa-preview-container-carousel">
+					<div class="yaga-preview-container yaga-preview-container-carousel">
 						<?php
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-single"]' );
+							echo do_shortcode( '[yaga-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="carousel-to-single"]' );
 						?>
 					</div>
 					</div>
 				</div>
 
 				<!-- Start Tutorial -->
-				<div class="jzsa-section jzsa-tutorial-section">
+				<div class="yaga-section yaga-tutorial-section">
 					<h2><?php esc_html_e( 'Now Use Your Own Albums', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p class="jzsa-intro"><?php esc_html_e( 'After experimenting with the sample album above, follow these simple steps to embed your own Google Photos albums in your posts or pages:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<p class="yaga-intro"><?php esc_html_e( 'After experimenting with the sample album above, follow these simple steps to embed your own Google Photos albums in your posts or pages:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 
 					<!-- Step 1 -->
-					<div class="jzsa-step">
-						<div class="jzsa-step-number">1</div>
-						<div class="jzsa-step-content">
+					<div class="yaga-step">
+						<div class="yaga-step-number">1</div>
+						<div class="yaga-step-content">
 						<h3><?php esc_html_e( 'Open Your Google Photos Album', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p>
 								<?php
@@ -545,11 +545,11 @@ class JZSA_Settings_Page {
 					</div>
 
 					<!-- Step 2 -->
-					<div class="jzsa-step">
-						<div class="jzsa-step-number">2</div>
-						<div class="jzsa-step-content">
+					<div class="yaga-step">
+						<div class="yaga-step-number">2</div>
+						<div class="yaga-step-content">
 							<h3><?php esc_html_e( 'Get the Share Link', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<ol class="jzsa-substeps">
+							<ol class="yaga-substeps">
 								<li><?php esc_html_e( 'Select the album you want to share', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 								<li><?php esc_html_e( 'Click the Share button (or three-dot menu → Share)', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 								<li><?php esc_html_e( 'Click "Create link" and confirm in the dialog', 'janzeman-shared-albums-for-google-photos' ); ?></li>
@@ -557,10 +557,10 @@ class JZSA_Settings_Page {
 								<li><?php esc_html_e( 'Verify link sharing is on: the chain icon is visible below the album title', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 								<li><strong><?php esc_html_e( 'Important:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'Click in the browser address bar and copy the FULL ALBUM LINK', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							</ol>
-							<div class="jzsa-warning-box">
+							<div class="yaga-warning-box">
 								<strong><?php esc_html_e( 'Use Full Links Only', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
 								<p><?php esc_html_e( 'Make sure your link looks like this:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-								<code class="jzsa-code-good">https://photos.google.com/share/AF1QipN...</code>
+								<code class="yaga-code-good">https://photos.google.com/share/AF1QipN...</code>
 								<p style="margin-top: 8px;">
 									<?php esc_html_e( 'Short photos.app.goo.gl links are deprecated; for best reliability always use the full https://photos.google.com/share/... link from your browser\'s address bar.', 'janzeman-shared-albums-for-google-photos' ); ?>
 								</p>
@@ -569,23 +569,23 @@ class JZSA_Settings_Page {
 					</div>
 
 					<!-- Step 3 -->
-					<div class="jzsa-step">
-						<div class="jzsa-step-number">3</div>
-						<div class="jzsa-step-content">
+					<div class="yaga-step">
+						<div class="yaga-step-number">3</div>
+						<div class="yaga-step-content">
 							<h3><?php esc_html_e( 'Add the Shortcode to Your Post', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'In your WordPress post or page editor, add the shortcode:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<div class="jzsa-code-block">
-						<code>[jzsa-album link="YOUR_LINK_HERE"]</code>
-						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					<div class="yaga-code-block">
+						<code>[yaga-album link="YOUR_LINK_HERE"]</code>
+						<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 					</div>
-							<p class="jzsa-help-text"><?php esc_html_e( 'Replace YOUR_LINK_HERE with the full link you copied from Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p class="yaga-help-text"><?php esc_html_e( 'Replace YOUR_LINK_HERE with the full link you copied from Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
 					</div>
 
 					<!-- Step 4 -->
-					<div class="jzsa-step">
-						<div class="jzsa-step-number">4</div>
-						<div class="jzsa-step-content">
+					<div class="yaga-step">
+						<div class="yaga-step-number">4</div>
+						<div class="yaga-step-content">
 							<h3><?php esc_html_e( 'Preview and Publish', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( "Preview your post to see the plugin in action, then publish when you're ready.", 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						</div>
@@ -593,11 +593,11 @@ class JZSA_Settings_Page {
 				</div>
 
 				<!-- Shortcode Parameters -->
-				<div class="jzsa-section">
+				<div class="yaga-section">
 					<h2><?php esc_html_e( 'List of All Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<h3><?php esc_html_e( 'Required', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="yaga-settings-table">
 						<thead>
 							<tr>
 								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
@@ -615,7 +615,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Appearance', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="yaga-settings-table">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -648,7 +648,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Image Quality', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="yaga-settings-table">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -671,7 +671,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Autoplay Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="yaga-settings-table">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -704,7 +704,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Fullscreen Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="yaga-settings-table">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -737,7 +737,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Display Options', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="yaga-settings-table">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -772,6 +772,11 @@ class JZSA_Settings_Page {
 								<td>false</td>
 							</tr>
 							<tr>
+								<td><code>filename-display</code></td>
+								<td>When <code>show-filename="true"</code>: <code>full</code> (default) shows the basename without extension; <code>photographer</code> parses YAPA-style names (e.g. <code>…_WiktorNowak_…</code> → <code>Wiktor Nowak</code>, <code>…_KrzysztofKuncewiczJurek_…</code> → three words)</td>
+								<td>full</td>
+							</tr>
+							<tr>
 								<td><code>show-info</code></td>
 								<td>Show the photo information panel (filename, date, camera): "true" or "false"</td>
 								<td>false</td>
@@ -780,7 +785,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Gallery Mode', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="yaga-settings-table">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -817,35 +822,35 @@ class JZSA_Settings_Page {
 				</div>
 
 				<!-- Troubleshooting -->
-				<div class="jzsa-section">
+				<div class="yaga-section">
 					<h2><?php esc_html_e( 'Troubleshooting', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
-					<div class="jzsa-faq">
+					<div class="yaga-faq">
 						<h3><?php esc_html_e( 'Plugin Shows "Unable to Load Album"', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<ul>
-							<li><?php esc_html_e( 'Use straight quotes in shortcode attributes: [jzsa-album link="..."] – not [jzsa-album link="…"]. The block editor (Gutenberg) may auto-convert quotes, which breaks shortcode parsing.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							<li><?php esc_html_e( 'Use straight quotes in shortcode attributes: [yaga-album link="..."] – not [yaga-album link="…"]. The block editor (Gutenberg) may auto-convert quotes, which breaks shortcode parsing.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Make sure the album is shared publicly via link in Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Verify you are using the full link format (starts with https://photos.google.com/share/).', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Check that the album contains at least one photo.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>
 
-						<div class="jzsa-example">
+						<div class="yaga-example">
 							<h3><?php esc_html_e( 'Sample "Unable to Load Album" Error', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'This example intentionally uses an invalid link to demonstrate the red error message visitors will see when the album cannot be loaded.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-							<div class="jzsa-code-block">
-								<code>[jzsa-album link="https://photos.google.com/share/INVALID-EXAMPLE-LINK"]</code>
-								<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<div class="yaga-code-block">
+								<code>[yaga-album link="https://photos.google.com/share/INVALID-EXAMPLE-LINK"]</code>
+								<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 							</div>
-							<div class="jzsa-preview-container jzsa-preview-container-error-sample">
+							<div class="yaga-preview-container yaga-preview-container-error-sample">
 								<?php
 									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-									echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/INVALID-EXAMPLE-LINK"]' );
+									echo do_shortcode( '[yaga-album link="https://photos.google.com/share/INVALID-EXAMPLE-LINK"]' );
 								?>
 							</div>
 						</div>
 					</div>
 
-					<div class="jzsa-faq">
+					<div class="yaga-faq">
 						<h3><?php esc_html_e( 'I See a Yellow Warning Banner', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<ul>
 							<li><?php esc_html_e( 'You are using a short link format (photos.app.goo.gl), which is deprecated by Google Photos.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
@@ -853,23 +858,23 @@ class JZSA_Settings_Page {
 							<li><?php esc_html_e( 'Only logged-in administrators see this warning. For best reliability, update the shortcode to use the full https://photos.google.com/share/... link from your browser\'s address bar.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>
 
-						<div class="jzsa-example">
+						<div class="yaga-example">
 							<h3><?php esc_html_e( 'Basic Album with Deprecated Link Format (Admin-Only Warning)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Same as above, but using the older short link format. Visitors will NOT see this warning, but you as an administrator should update the link to the new format.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-							<div class="jzsa-code-block">
-								<code>[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]</code>
-								<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+							<div class="yaga-code-block">
+								<code>[yaga-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]</code>
+								<button class="yaga-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 							</div>
-							<div class="jzsa-preview-container jzsa-preview-container-basic-deprecated">
+							<div class="yaga-preview-container yaga-preview-container-basic-deprecated">
 								<?php
 									// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-									echo do_shortcode( '[jzsa-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]' );
+									echo do_shortcode( '[yaga-album link="https://photos.app.goo.gl/6qmxgmqdouBFKH3i8"]' );
 								?>
 							</div>
 						</div>
 					</div>
 
-					<div class="jzsa-faq">
+					<div class="yaga-faq">
 						<h3><?php esc_html_e( 'Changes Not Showing Up?', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<ul>
 							<li><?php esc_html_e( 'Save or update your post – the cache clears automatically.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
@@ -879,7 +884,7 @@ class JZSA_Settings_Page {
 				</div>
 
 				<!-- Help & Support -->
-				<div class="jzsa-section jzsa-help-section">
+				<div class="yaga-section yaga-help-section">
 					<h2><?php esc_html_e( 'Need More Help?', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 					<p>
 						<?php

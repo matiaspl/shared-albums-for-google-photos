@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #
-# Shared Albums for Google Photos (by JanZeman) - Release Script
+# YAPA Google Photo shared albums - Release Script
 # Creates a clean WordPress plugin release package
 #
 
@@ -57,8 +57,8 @@ fi
 VERSION_ERRORS=0
 
 # 1) Main plugin constant
-if ! grep -q "define( 'JZSA_VERSION', '${REQUESTED_VERSION}'" "${SCRIPT_DIR}/janzeman-shared-albums-for-google-photos.php"; then
-    echo -e "${RED}Error:${NC} JZSA_VERSION constant does not match ${REQUESTED_VERSION} in janzeman-shared-albums-for-google-photos.php"
+if ! grep -q "define( 'YAGA_VERSION', '${REQUESTED_VERSION}'" "${SCRIPT_DIR}/yapa-google-photo-shared-albums.php"; then
+    echo -e "${RED}Error:${NC} YAGA_VERSION constant does not match ${REQUESTED_VERSION} in yapa-google-photo-shared-albums.php"
     VERSION_ERRORS=1
 fi
 
@@ -163,7 +163,7 @@ else
 fi
 
 echo -e "${BLUE}================================================================${NC}"
-echo -e "${BLUE}  Shared Albums for Google Photos (by JanZeman) Release Script  ${NC}"
+echo -e "${BLUE}  YAPA Google Photo shared albums - Release Script  ${NC}"
 echo -e "${BLUE}================================================================${NC}"
 echo ""
 echo -e "${GREEN}Plugin:${NC}   ${PLUGIN_SLUG}"
@@ -181,8 +181,9 @@ mkdir -p "$RELEASE_DIR"
 # Copy plugin files
 echo -e "${YELLOW}Copying plugin files...${NC}"
 
-# Main plugin file
+# Main plugin bootstrap (WordPress.org path) + core file
 cp "${SCRIPT_DIR}/janzeman-shared-albums-for-google-photos.php" "$RELEASE_DIR/"
+cp "${SCRIPT_DIR}/yapa-google-photo-shared-albums.php" "$RELEASE_DIR/"
 
 # WordPress readme
 cp "${SCRIPT_DIR}/readme.txt" "$RELEASE_DIR/"
@@ -217,6 +218,7 @@ find "$RELEASE_DIR" -type f -name "._*" -delete
 echo -e "${YELLOW}Validating package...${NC}"
 REQUIRED_FILES=(
     "janzeman-shared-albums-for-google-photos.php"
+    "yapa-google-photo-shared-albums.php"
     "readme.txt"
     "LICENSE"
     "languages/index.php"

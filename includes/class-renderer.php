@@ -4,7 +4,7 @@
  *
  * Output Phase - Responsible for rendering data to display format
  *
- * @package JZSA_Shared_Albums
+ * @package YAGA_Shared_Albums
  */
 
 // Exit if accessed directly
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Swiper Renderer Class
  */
-class JZSA_Renderer {
+class YAGA_Renderer {
 
 	/**
 	 * Render gallery HTML
@@ -54,7 +54,7 @@ class JZSA_Renderer {
 		}
 
 		return sprintf(
-			'<div class="jzsa-error" style="border: 2px solid #dc3545; border-radius: 4px; padding: 12px; margin: 8px; background: #f8d7da; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">' .
+			'<div class="yaga-error" style="border: 2px solid #dc3545; border-radius: 4px; padding: 12px; margin: 8px; background: #f8d7da; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">' .
 			'<p style="margin: 0 0 6px 0; color: #721c24; font-size: 13px; font-weight: 600;">%s %s</p>' .
 			'<p style="margin: 0; color: #721c24; font-size: 12px;">%s</p>' .
 			'</div>',
@@ -81,7 +81,7 @@ class JZSA_Renderer {
 	 */
 	private function render_deprecation_notice() {
 		return sprintf(
-			'<div class="jzsa-warning" style="border: 2px solid #f0ad4e; border-radius: 4px; padding: 12px; margin: 8px; background: #fff9e6; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">' .
+			'<div class="yaga-warning" style="border: 2px solid #f0ad4e; border-radius: 4px; padding: 12px; margin: 8px; background: #fff9e6; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">' .
 			'<p style="margin: 0 0 6px 0; color: #856404; font-size: 13px; font-weight: 600;">%s %s</p>' .
 			'<p style="margin: 0; color: #856404; font-size: 12px;">%s</p>' .
 			'</div>',
@@ -109,14 +109,14 @@ class JZSA_Renderer {
 
 		if ( $mosaic_enabled ) {
 			$html .= sprintf(
-				'<div class="jzsa-gallery-wrapper jzsa-mosaic-%s" style="%s">',
+				'<div class="yaga-gallery-wrapper yaga-mosaic-%s" style="%s">',
 				esc_attr( $mosaic_pos ),
 				esc_attr( $styles )
 			);
 		}
 
 		$html .= sprintf(
-			'<div id="%s" class="jzsa-album swiper" %s style="%s">',
+			'<div id="%s" class="yaga-album swiper" %s style="%s">',
 			esc_attr( $gallery_id ),
 			$attrs,
 			$mosaic_enabled ? '' : esc_attr( $styles )
@@ -133,8 +133,8 @@ class JZSA_Renderer {
 		$html .= '<div class="swiper-autoplay-progress"><div class="swiper-autoplay-progress-bar"></div></div>';
 
 		// Persistent overlays (outside wrapper)
-		$html .= '<div class="jzsa-persistent-filename"></div>';
-		$html .= '<div class="jzsa-persistent-info"></div>';
+		$html .= '<div class="yaga-persistent-filename"></div>';
+		$html .= '<div class="yaga-persistent-info"></div>';
 
 		// External link button (if enabled)
 		if ( ! empty( $config['show-link-button'] ) && ! empty( $config['album-url'] ) ) {
@@ -158,12 +158,12 @@ class JZSA_Renderer {
 
 		if ( $mosaic_enabled ) {
 			$html .= sprintf(
-				'<div class="jzsa-mosaic swiper" id="%s-mosaic">',
+				'<div class="yaga-mosaic swiper" id="%s-mosaic">',
 				esc_attr( $gallery_id )
 			);
 			$html .= '<div class="swiper-wrapper"></div>';
 			$html .= '</div>';
-			$html .= '</div>'; // Close jzsa-gallery-wrapper
+			$html .= '</div>'; // Close yaga-gallery-wrapper
 		}
 
 		return $html;
@@ -276,6 +276,9 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-full-screen-navigation="%s"', esc_attr( $config['full-screen-navigation'] ) );
 		}
 
+		$filename_display = isset( $config['filename-display'] ) ? $config['filename-display'] : 'full';
+		$attrs[]          = sprintf( 'data-filename-display="%s"', esc_attr( $filename_display ) );
+
 		return implode( ' ', $attrs );
 	}
 
@@ -286,6 +289,6 @@ class JZSA_Renderer {
 	 */
 	private function generate_gallery_id() {
 		static $counter = 0;
-		return 'jzsa-gallery-' . ++$counter;
+		return 'yaga-gallery-' . ++$counter;
 	}
 }

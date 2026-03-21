@@ -1,7 +1,7 @@
 /**
  * Admin Settings Page JavaScript
  *
- * @package JZSA_Shared_Albums
+ * @package YAGA_Shared_Albums
  */
 
 /**
@@ -10,7 +10,7 @@
  * @param {HTMLElement} button - The button element clicked
  * @param {string} text - The text to copy to clipboard
  */
-function jzsaCopyToClipboard( button, text ) {
+function yagaCopyToClipboard( button, text ) {
 	// Create temporary textarea
 	var textarea = document.createElement( 'textarea' );
 	textarea.value = text;
@@ -40,9 +40,9 @@ function jzsaCopyToClipboard( button, text ) {
  * on the result; it is purely about checking that the shortcode renders
  * without errors.
  */
-function jzsaRunPlaygroundPreview() {
-	var textarea = document.getElementById( 'jzsa-playground-shortcode' );
-	var preview  = document.querySelector( '.jzsa-playground-preview' );
+function yagaRunPlaygroundPreview() {
+	var textarea = document.getElementById( 'yaga-playground-shortcode' );
+	var preview  = document.querySelector( '.yaga-playground-preview' );
 
 	if ( ! textarea || ! preview ) {
 		return;
@@ -55,19 +55,19 @@ function jzsaRunPlaygroundPreview() {
 	}
 
 	// Show a very small loading state.
-	preview.innerHTML = '<p class="jzsa-help-text">Loading preview…</p>';
+	preview.innerHTML = '<p class="yaga-help-text">Loading preview…</p>';
 
-	if ( typeof jzsaAjax === 'undefined' || ! jzsaAjax.ajaxUrl || ! jzsaAjax.previewNonce ) {
-		preview.innerHTML = '<div class="jzsa-playground-error">Preview is not available – AJAX settings are missing.</div>';
+	if ( typeof yagaAjax === 'undefined' || ! yagaAjax.ajaxUrl || ! yagaAjax.previewNonce ) {
+		preview.innerHTML = '<div class="yaga-playground-error">Preview is not available – AJAX settings are missing.</div>';
 		return;
 	}
 
 	var params = new URLSearchParams();
-	params.append( 'action', 'jzsa_shortcode_preview' );
-	params.append( 'nonce', jzsaAjax.previewNonce );
+	params.append( 'action', 'yaga_shortcode_preview' );
+	params.append( 'nonce', yagaAjax.previewNonce );
 	params.append( 'shortcode', shortcode );
 
-	window.fetch( jzsaAjax.ajaxUrl, {
+	window.fetch( yagaAjax.ajaxUrl, {
 		method: 'POST',
 		credentials: 'same-origin',
 		headers: {
@@ -80,7 +80,7 @@ function jzsaRunPlaygroundPreview() {
 		} )
 		.then( function ( data ) {
 			if ( ! data || typeof data.success === 'undefined' ) {
-				preview.innerHTML = '<div class="jzsa-playground-error">Unexpected response from server.</div>';
+				preview.innerHTML = '<div class="yaga-playground-error">Unexpected response from server.</div>';
 				return;
 			}
 
@@ -93,8 +93,8 @@ function jzsaRunPlaygroundPreview() {
 				} else {
 					message = 'Preview failed.';
 				}
-				preview.innerHTML = '<div class="jzsa-playground-error"></div>';
-				var errorEl = preview.querySelector( '.jzsa-playground-error' );
+				preview.innerHTML = '<div class="yaga-playground-error"></div>';
+				var errorEl = preview.querySelector( '.yaga-playground-error' );
 				if ( errorEl ) {
 					errorEl.textContent = message;
 				}
@@ -102,7 +102,7 @@ function jzsaRunPlaygroundPreview() {
 			}
 
 			if ( ! data.data || typeof data.data.html === 'undefined' ) {
-				preview.innerHTML = '<div class=\"jzsa-playground-error\">Preview did not return any HTML.</div>';
+				preview.innerHTML = '<div class=\"yaga-playground-error\">Preview did not return any HTML.</div>';
 				return;
 			}
 
@@ -113,7 +113,7 @@ function jzsaRunPlaygroundPreview() {
 			// same initializer as the front‑end. This makes the preview fully
 			// interactive, but we only do it once per Update click.
 			if ( window.SharedGooglePhotos && typeof window.SharedGooglePhotos.initialize === 'function' ) {
-				var album = preview.querySelector( '.jzsa-album' );
+				var album = preview.querySelector( '.yaga-album' );
 				if ( album ) {
 					var mode = album.getAttribute( 'data-mode' ) || 'single';
 					window.SharedGooglePhotos.initialize( album, mode );
@@ -121,9 +121,9 @@ function jzsaRunPlaygroundPreview() {
 			}
 		} )
 		.catch( function ( error ) {
-			preview.innerHTML = '<div class="jzsa-playground-error">Unable to contact the server for preview.</div>';
+			preview.innerHTML = '<div class="yaga-playground-error">Unable to contact the server for preview.</div>';
 			if ( window.console && console.error ) {
-				console.error( 'JZSA Shortcode Playground preview error:', error );
+				console.error( 'YAGA Shortcode Playground preview error:', error );
 			}
 		} );
 }
@@ -132,10 +132,10 @@ function jzsaRunPlaygroundPreview() {
  * Bind click handlers to copy buttons and wire up the Playground preview.
  */
 document.addEventListener( 'DOMContentLoaded', function () {
-	var blocks = document.querySelectorAll( '.jzsa-code-block' );
+	var blocks = document.querySelectorAll( '.yaga-code-block' );
 
 	blocks.forEach( function ( block ) {
-		var button = block.querySelector( '.jzsa-copy-btn' );
+		var button = block.querySelector( '.yaga-copy-btn' );
 		var codeEl = block.querySelector( 'code' );
 
 		if ( ! button || ! codeEl ) {
@@ -144,25 +144,25 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 		button.addEventListener( 'click', function () {
 			// Use the visible code content as the text to copy.
-			jzsaCopyToClipboard( button, codeEl.textContent || '' );
+			yagaCopyToClipboard( button, codeEl.textContent || '' );
 		} );
 	} );
 
 	// Step 2: wire the Playground textarea to an explicit "Update preview" button.
-	var textarea = document.getElementById( 'jzsa-playground-shortcode' );
+	var textarea = document.getElementById( 'yaga-playground-shortcode' );
 	var previewButton = null;
 
 	if ( textarea ) {
 		previewButton = document.createElement( 'button' );
 		previewButton.type = 'button';
-		previewButton.className = 'button button-primary jzsa-playground-run';
+		previewButton.className = 'button button-primary yaga-playground-run';
 		previewButton.textContent = 'Update preview';
 
 		// Insert the button just after the textarea.
 		textarea.parentNode.insertBefore( previewButton, textarea.nextSibling );
 
 		previewButton.addEventListener( 'click', function () {
-			jzsaRunPlaygroundPreview();
+			yagaRunPlaygroundPreview();
 		} );
 	}
 } );

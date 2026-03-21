@@ -2,8 +2,8 @@
     'use strict';
 
     // Register TinyMCE plugin
-    tinymce.PluginManager.add('jzsa_editor_button', function(editor, url) {
-        
+    tinymce.PluginManager.add('yaga_editor_button', function(editor, url) {
+
         // Handle placeholders
         editor.on('BeforeSetContent', function(e) {
             e.content = replaceShortcodesWithPlaceholders(e.content);
@@ -14,12 +14,12 @@
         });
 
         function replaceShortcodesWithPlaceholders(content) {
-            return content.replace(/\[jzsa-album([^\]]*)\]/g, function(match, atts) {
-                return '<div class="jzsa-editor-placeholder mceNonEditable" data-jzsa-atts="' + tinymce.utils.Entities.encodeAllRaw(atts) + '">' +
-                       '<div class="jzsa-placeholder-content">' +
+            return content.replace(/\[(?:jzsa-album|yaga-album)([^\]]*)\]/gi, function(match, atts) {
+                return '<div class="yaga-editor-placeholder mceNonEditable" data-yaga-atts="' + tinymce.utils.Entities.encodeAllRaw(atts) + '">' +
+                       '<div class="yaga-placeholder-content">' +
                        '<span class="dashicons dashicons-format-gallery"></span>' +
                        '<strong>Google Photos Album</strong>' +
-                       '<code>[jzsa-album' + atts + ']</code>' +
+                       '<code>[yaga-album' + atts + ']</code>' +
                        '</div>' +
                        '</div>';
             });
@@ -27,14 +27,14 @@
 
         function restoreShortcodesFromPlaceholders(content) {
             var $html = $('<div>' + content + '</div>');
-            $html.find('.jzsa-editor-placeholder').each(function() {
-                var atts = $(this).attr('data-jzsa-atts');
-                $(this).replaceWith('[jzsa-album' + atts + ']');
+            $html.find('.yaga-editor-placeholder').each(function() {
+                var atts = $(this).attr('data-yaga-atts');
+                $(this).replaceWith('[yaga-album' + atts + ']');
             });
             return $html.html();
         }
 
-        function openJzsaAlbumDialog() {
+        function openYagaAlbumDialog() {
             editor.windowManager.open({
                 title: 'Insert Google Photos Album',
                 body: [
@@ -57,6 +57,7 @@
                     },
                     {type: 'textbox', name: 'mosaic_count', label: 'Mosaic Count', value: '4'},
                     {type: 'checkbox', name: 'show_filename', label: 'Show Filename Label'},
+                    {type: 'checkbox', name: 'filename_display_photographer', label: 'Filename: photographer name only (CamelCase / YAPA-style)'},
                     {type: 'checkbox', name: 'show_info', label: 'Show Info Panel (Date/Camera)'},
                     {type: 'checkbox', name: 'autoplay', label: 'Enable Autoplay', checked: true},
                     {type: 'textbox', name: 'image_width', label: 'Image Width', value: '1920'},
@@ -70,21 +71,26 @@
                         if (e.data.mosaic_position !== 'right') atts += ' mosaic-position="' + e.data.mosaic_position + '"';
                         if (e.data.mosaic_count && e.data.mosaic_count !== '4') atts += ' mosaic-count="' + e.data.mosaic_count + '"';
                     }
-                    if (e.data.show_filename) atts += ' show-filename="true"';
+                    if (e.data.show_filename) {
+                        atts += ' show-filename="true"';
+                        if (e.data.filename_display_photographer) {
+                            atts += ' filename-display="photographer"';
+                        }
+                    }
                     if (e.data.show_info) atts += ' show-info="true"';
                     if (!e.data.autoplay) atts += ' autoplay="false"';
                     if (e.data.image_width !== '1920') atts += ' image-width="' + e.data.image_width + '"';
                     if (e.data.image_height !== '1440') atts += ' image-height="' + e.data.image_height + '"';
-                    editor.insertContent('[jzsa-album ' + atts + ']');
+                    editor.insertContent('[yaga-album ' + atts + ']');
                 }
             });
         }
 
-        editor.addCommand('jzsa_editor_button', openJzsaAlbumDialog);
-        editor.addButton('jzsa_editor_button', {
-            title: 'Add Google Photos Album',
+        editor.addCommand('yaga_editor_button', openYagaAlbumDialog);
+        editor.addButton('yaga_editor_button', {
+            title: 'Add YAPA Google Photos album',
             icon: 'image',
-            cmd: 'jzsa_editor_button'
+            cmd: 'yaga_editor_button'
         });
     });
 
