@@ -783,8 +783,18 @@
                     return;
                 }
                 if (playbackState === VIDEO_STATE_HEALING && !isHard) {
-                    trace('heal-skip-inflight', { reason: reason, mode: mode });
-                    return;
+                    var canOverrideInflight =
+                        reason === 'loading-timeout' ||
+                        reason === 'stall-watchdog';
+                    if (!canOverrideInflight) {
+                        trace('heal-skip-inflight', { reason: reason, mode: mode });
+                        return;
+                    }
+                    // A previous heal run appears stuck (e.g. unresolved play promise).
+                    // Invalidate it and start a fresh recovery attempt.
+                    healRunToken++;
+                    setPlaybackState(VIDEO_STATE_STARTING);
+                    trace('heal-override-stuck-inflight', { reason: reason, mode: mode });
                 }
                 if (isHard) {
                     autoHealAttempts = 0;
