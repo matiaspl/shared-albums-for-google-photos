@@ -74,7 +74,7 @@ class JZSA_Settings_Page {
 		$video_slider_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="true" limit="8" video-controls-color="#00B2FF"]';
 		$video_carousel_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="carousel" show-videos="true" limit="8" video-controls-color="#FF6B35" video-controls-autohide="true"]';
 		$video_gallery_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="gallery" show-videos="true" limit="12" gallery-layout="justified" gallery-row-height="180" video-controls-color="#00A878"]';
-		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" mode="slider" show-videos="false" limit="8" video-controls-color="#7A5CFF"]';
+		$video_photos_only_shortcode = '[jzsa-album link="' . $video_sample_link . '" show-videos="false" limit="6" video-controls-color="#7A5CFF"]';
 		$controls_custom_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" slideshow="true" show-link-button="true" show-download-button="true" controls-color="#FFD400"]';
 		?>
 		<div class="wrap jzsa-settings-wrap">
