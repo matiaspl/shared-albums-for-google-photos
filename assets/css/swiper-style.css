@@ -1415,7 +1415,7 @@ body.jzsa-no-scroll {
 
 /* Hide duration badge while video is loading or playing */
 .jzsa-video-playing .jzsa-video-duration,
-.jzsa-video-wrapper:has(.jzsa-plyr-loading) .jzsa-video-duration {
+.jzsa-video-wrapper.jzsa-video-loading .jzsa-video-duration {
     display: none;
 }
 

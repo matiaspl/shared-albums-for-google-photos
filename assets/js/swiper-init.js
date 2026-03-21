@@ -411,8 +411,9 @@
             if (plyrContainer.length) {
                 plyrContainer.hide();
             }
-            var $albumContainer = $(wrapper).closest('.jzsa-album, .jzsa-gallery-album');
-            var $playLarge = $(wrapper).find('.plyr__control--overlaid');
+            var $wrapper = $(wrapper);
+            var $albumContainer = $wrapper.closest('.jzsa-album, .jzsa-gallery-album');
+            var $playLarge = $wrapper.find('.plyr__control--overlaid');
 
             // Loading state: click → spinner, hide after first timeupdate + 500ms.
             // timeupdate is the most reliable signal that frames are rendering.
@@ -427,6 +428,7 @@
                 waitingForPlay = false;
                 if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
                 $playLarge.removeClass('jzsa-plyr-loading');
+                $wrapper.removeClass('jzsa-video-loading');
                 plyrRef.stop();
             };
 
@@ -446,6 +448,7 @@
                 waitingForPlay = false;
                 if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
                 $playLarge.removeClass('jzsa-plyr-loading');
+                $wrapper.removeClass('jzsa-video-loading');
                 plyrContainer.show();
                 $albumContainer.addClass('jzsa-video-playing');
             }
@@ -456,11 +459,13 @@
                 pauseAllPageVideos();
                 waitingForPlay = true;
                 $playLarge.addClass('jzsa-plyr-loading');
+                $wrapper.addClass('jzsa-video-loading');
 
                 // 30s timeout — give up if playback never starts
                 loadingTimeout = setTimeout(function() {
                     waitingForPlay = false;
                     $playLarge.removeClass('jzsa-plyr-loading');
+                    $wrapper.removeClass('jzsa-video-loading');
                     if (!plyrRef.playing) { plyrRef.stop(); }
                 }, 30000);
             });
@@ -476,10 +481,12 @@
             });
             this._jzsaPlyr.on('pause', function() {
                 plyrContainer.hide();
+                $wrapper.removeClass('jzsa-video-loading');
                 $albumContainer.removeClass('jzsa-video-playing');
             });
             this._jzsaPlyr.on('ended', function() {
                 plyrContainer.hide();
+                $wrapper.removeClass('jzsa-video-loading');
                 $albumContainer.removeClass('jzsa-video-playing');
             });
 
@@ -493,6 +500,7 @@
                 var shouldRetryPlayback = !!(waitingForPlay || plyrRef.playing);
                 if (shouldRetryPlayback) {
                     $playLarge.addClass('jzsa-plyr-loading');
+                    $wrapper.addClass('jzsa-video-loading');
                     waitingForPlay = true;
                 }
 
@@ -500,6 +508,7 @@
                     if (!shouldRetryPlayback) {
                         waitingForPlay = false;
                         $playLarge.removeClass('jzsa-plyr-loading');
+                        $wrapper.removeClass('jzsa-video-loading');
                         return;
                     }
 
@@ -511,6 +520,7 @@
                         playPromise.catch(function() {
                             waitingForPlay = false;
                             $playLarge.removeClass('jzsa-plyr-loading');
+                            $wrapper.removeClass('jzsa-video-loading');
                         });
                     }
                 }).fail(function() {
@@ -518,6 +528,7 @@
                     waitingForPlay = false;
                     if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
                     $playLarge.removeClass('jzsa-plyr-loading');
+                    $wrapper.removeClass('jzsa-video-loading');
                 });
             });
         });
