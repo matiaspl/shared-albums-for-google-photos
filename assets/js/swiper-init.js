@@ -144,6 +144,43 @@
     var LOADER_SHOW_DELAY_MS = 1000;
     var LOADER_MIN_VISIBLE_MS = 250;
 
+    // Helper: Run after the next paint cycle (double RAF) to avoid synchronous
+    // layout flushes when restarting CSS transitions.
+    function runOnNextPaint(callback) {
+        var raf = window.requestAnimationFrame || function(cb) { return window.setTimeout(cb, 16); };
+        raf(function() {
+            raf(function() {
+                callback();
+            });
+        });
+    }
+
+    // Helper: Prefer transitionend, with a timeout fallback for safety.
+    function waitForTransitionEnd($element, fallbackMs, callback) {
+        var done = false;
+        function finish() {
+            if (done) {
+                return;
+            }
+            done = true;
+            if ($element && $element.length) {
+                $element.off('.jzsaTransitionWait');
+            }
+            callback();
+        }
+
+        if ($element && $element.length) {
+            $element.on('transitionend.jzsaTransitionWait webkitTransitionEnd.jzsaTransitionWait', function(event) {
+                if (!event || event.target !== $element[0]) {
+                    return;
+                }
+                finish();
+            });
+        }
+
+        window.setTimeout(finish, fallbackMs);
+    }
+
     // Helper: Detect Android (for platform-specific workarounds)
     function isAndroid() {
         var ua = window.navigator.userAgent || '';
@@ -455,16 +492,19 @@
 
             $playLarge.on('click', function() {
                 if (waitingForPlay) { return; }
+                // Clear any previous error state
+                $playLarge.removeClass('jzsa-plyr-error');
                 // Stop all other videos immediately on click
                 pauseAllPageVideos();
                 waitingForPlay = true;
                 $playLarge.addClass('jzsa-plyr-loading');
                 $wrapper.addClass('jzsa-video-loading');
 
-                // 30s timeout — give up if playback never starts
+                // 30s timeout — show error state if playback never starts
                 loadingTimeout = setTimeout(function() {
                     waitingForPlay = false;
                     $playLarge.removeClass('jzsa-plyr-loading');
+                    $playLarge.addClass('jzsa-plyr-error');
                     $wrapper.removeClass('jzsa-video-loading');
                     if (!plyrRef.playing) { plyrRef.stop(); }
                 }, 30000);
@@ -526,10 +566,11 @@
                         });
                     }
                 }).fail(function() {
-                    // Recovery failed — reset to idle so user can retry manually.
+                    // Recovery failed — show error state so user can retry.
                     waitingForPlay = false;
                     if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
                     $playLarge.removeClass('jzsa-plyr-loading');
+                    $playLarge.addClass('jzsa-plyr-error');
                     $wrapper.removeClass('jzsa-video-loading');
                 });
             });
@@ -756,11 +797,6 @@
         $container
             .removeClass('jzsa-content-intro-visible')
             .addClass('jzsa-content-intro');
-
-        // Force reflow so repeated init on same node reliably retriggers transition.
-        if ($container[0]) {
-            $container[0].offsetHeight;
-        }
 
         var introTimer = window.setTimeout(function() {
             $container.addClass('jzsa-content-intro-visible');
@@ -1178,6 +1214,7 @@
         var $progressBar = $container.find('.swiper-slideshow-progress-bar');
         var $progressContainer = $container.find('.swiper-slideshow-progress');
         var progressInterval = null;
+        var progressCycleToken = 0;
 
         // Hide progress bar initially if autoplay is not running
         if (!swiper.autoplay || !swiper.autoplay.running) {
@@ -1190,9 +1227,8 @@
                 clearInterval(progressInterval);
             }
 
-            // Get current autoplay delay and transition speed
+            // Get current autoplay delay
             var delay = swiper.params.autoplay.delay;
-            var speed = swiper.params.speed || 600; // Swiper's transition speed
 
             if (!delay || delay <= 0) {
                 return;
@@ -1207,18 +1243,21 @@
                 'transition': 'none'
             });
 
-            // Force reflow to apply the reset
-            $progressBar[0].offsetHeight;
-
             // Adjust animation duration so slide transition starts just as progress completes
             // Make progress bar last almost the entire delay, ending right when slide transitions
             var progressDuration = delay + 500;
             if (progressDuration < 0) progressDuration = delay;
+            var cycleToken = ++progressCycleToken;
 
-            // Start animation
-            $progressBar.css({
-                'transform': 'scaleX(0)',
-                'transition': 'transform ' + progressDuration + 'ms linear'
+            // Start animation on next paint instead of forcing synchronous reflow.
+            runOnNextPaint(function() {
+                if (cycleToken !== progressCycleToken || !$progressBar.length) {
+                    return;
+                }
+                $progressBar.css({
+                    'transform': 'scaleX(0)',
+                    'transition': 'transform ' + progressDuration + 'ms linear'
+                });
             });
         }
 
@@ -1227,6 +1266,7 @@
                 clearInterval(progressInterval);
                 progressInterval = null;
             }
+            progressCycleToken++;
 
             // Reset to full width and hide
             $progressBar.css({
@@ -1241,6 +1281,7 @@
                 clearInterval(progressInterval);
                 progressInterval = null;
             }
+            progressCycleToken++;
 
             // Reset to full width and keep visible (used for hover-pause parity with gallery mode).
             $progressBar.css({
@@ -3637,10 +3678,6 @@
         $shell.append($stage);
         $track.css('transform', 'translateX(' + startTransform + 'px)');
 
-        if ($track[0]) {
-            $track[0].offsetHeight;
-        }
-
         var finished = false;
         function cleanup(committed) {
             if (finished) {
@@ -3694,14 +3731,16 @@
 
                 var target = committed ? endTransform : startTransform;
                 $track.css('transition-duration', DRAG_SETTLE_MS + 'ms');
-                if ($track[0]) {
-                    $track[0].offsetHeight;
-                }
-                $track.css('transform', 'translateX(' + target + 'px)');
+                runOnNextPaint(function() {
+                    if (finished) {
+                        return;
+                    }
+                    $track.css('transform', 'translateX(' + target + 'px)');
+                });
 
-                window.setTimeout(function() {
+                waitForTransitionEnd($track, DRAG_SETTLE_MS + 60, function() {
                     cleanup(!!committed);
-                }, DRAG_SETTLE_MS + 30);
+                });
             }
         };
     }
@@ -3801,17 +3840,15 @@
         $stage.append($track);
         $shell.append($stage);
 
-        if ($track[0]) {
-            $track[0].offsetHeight;
-        }
+        runOnNextPaint(function() {
+            if (direction > 0) {
+                $track.css('transform', 'translateX(' + (-slideDistance) + 'px)');
+            } else {
+                $track.css('transform', 'translateX(0px)');
+            }
+        });
 
-        if (direction > 0) {
-            $track.css('transform', 'translateX(' + (-slideDistance) + 'px)');
-        } else {
-            $track.css('transform', 'translateX(0px)');
-        }
-
-        window.setTimeout(function() {
+        waitForTransitionEnd($track, GALLERY_PAGE_TRANSITION_MS + 80, function() {
             $stage.remove();
             $container.css('visibility', '');
             $shell.removeClass('jzsa-gallery-transitioning');
@@ -3822,7 +3859,7 @@
             // Restore bounded shell dimensions (when explicit width/height are set).
             ensureGalleryShell($container);
             $container.data('jzsaGalleryAnimating', false);
-        }, GALLERY_PAGE_TRANSITION_MS + 40);
+        });
     }
 
     /**
@@ -3923,6 +3960,7 @@
         var GALLERY_AUTOPLAY_RETRY_MS = 120;
         var GALLERY_AUTOPLAY_PROGRESS_EXTRA_MS = 500;
         var gallerySlideshowTimer = null;
+        var galleryProgressCycleToken = 0;
         var gallerySlideshowPausedByHover = false;
         var gallerySlideshowPausedByUser = false;
         var slideshowId = null;
@@ -4043,6 +4081,7 @@
             if (!$progressContainer.length || !$progressBar.length) {
                 return;
             }
+            galleryProgressCycleToken++;
 
             $progressBar.css({
                 transform: 'scaleX(1)',
@@ -4066,6 +4105,7 @@
             if (progressDuration < 0) {
                 progressDuration = delayMs;
             }
+            var cycleToken = ++galleryProgressCycleToken;
 
             $progressContainer.css('display', 'block');
             $progressBar.css({
@@ -4073,13 +4113,14 @@
                 transition: 'none'
             });
 
-            if ($progressBar[0]) {
-                $progressBar[0].offsetHeight;
-            }
-
-            $progressBar.css({
-                transform: 'scaleX(0)',
-                transition: 'transform ' + progressDuration + 'ms linear'
+            runOnNextPaint(function() {
+                if (cycleToken !== galleryProgressCycleToken || !$progressBar.length) {
+                    return;
+                }
+                $progressBar.css({
+                    transform: 'scaleX(0)',
+                    transition: 'transform ' + progressDuration + 'ms linear'
+                });
             });
         }
 
@@ -4106,20 +4147,22 @@
 
             startGalleryAutoplayProgressCycle();
             gallerySlideshowTimer = window.setTimeout(function() {
-                if (!canRunGalleryAutoplay() || $container.data('jzsaGalleryAnimating')) {
-                    scheduleGalleryAutoplay();
-                    return;
-                }
+                runOnNextPaint(function() {
+                    if (!canRunGalleryAutoplay() || $container.data('jzsaGalleryAnimating')) {
+                        scheduleGalleryAutoplay();
+                        return;
+                    }
 
-                var nextPage = paginationState.currentPage + 1;
-                if (nextPage >= paginationState.totalPages) {
-                    nextPage = 0;
-                }
+                    var nextPage = paginationState.currentPage + 1;
+                    if (nextPage >= paginationState.totalPages) {
+                        nextPage = 0;
+                    }
 
-                paginationState.currentPage = nextPage;
-                renderCurrentGalleryPage({
-                    animate: true,
-                    direction: 1
+                    paginationState.currentPage = nextPage;
+                    renderCurrentGalleryPage({
+                        animate: true,
+                        direction: 1
+                    });
                 });
             }, gallerySlideshowDelay * MILLISECONDS_PER_SECOND);
         }
@@ -4515,11 +4558,13 @@
         $(window).on(resizeNamespace, function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
-                if ($container.hasClass('jzsa-video-playing')) {
-                    resizePending = true;
-                    return;
-                }
-                renderCurrentGalleryPage();
+                runOnNextPaint(function() {
+                    if ($container.hasClass('jzsa-video-playing')) {
+                        resizePending = true;
+                        return;
+                    }
+                    renderCurrentGalleryPage();
+                });
             }, 150);
         });
 

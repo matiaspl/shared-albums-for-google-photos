@@ -1453,6 +1453,18 @@ body.jzsa-no-scroll {
     to { transform: rotate(360deg); }
 }
 
+/* Error state — keep button visible with red-tinted triangle so user can retry */
+.jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-error {
+    visibility: visible !important;
+    opacity: 1 !important;
+    display: flex !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+}
+
+.jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-error svg {
+    color: #e74c3c;
+}
+
 /* Play button + duration badge scale proportionally with container width.
    --jzsa-play-scale must be set on descendants (not the container element
    itself) because @container queries cannot style their own container. */
