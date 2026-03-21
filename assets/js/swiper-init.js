@@ -951,6 +951,35 @@
                 trace('playback-confirmed');
             }
 
+            function requestPlaybackStart(source) {
+                var playPromise;
+                try {
+                    playPromise = plyrRef.play();
+                } catch (err) {
+                    if (!isStartingState()) {
+                        return;
+                    }
+                    trace('play-start-threw', {
+                        source: source,
+                        error: err && err.message ? err.message : String(err || '')
+                    });
+                    runRecovery('play-start-threw', 'soft');
+                    return;
+                }
+                if (playPromise && typeof playPromise.catch === 'function') {
+                    playPromise.catch(function(err) {
+                        if (!isStartingState()) {
+                            return;
+                        }
+                        trace('play-start-rejected', {
+                            source: source,
+                            error: err && err.message ? err.message : String(err || '')
+                        });
+                        runRecovery('play-start-rejected', 'soft');
+                    });
+                }
+            }
+
             $playLarge.on('click', function() {
                 if (isStartingState()) {
                     trace('play-click-hard-retry');
@@ -971,6 +1000,7 @@
                 armLoadingTimeout('initial-click');
 
                 armStallWatchdog('initial-click');
+                requestPlaybackStart('play-click');
             });
 
             // timeupdate fires when frames are actively rendering.
