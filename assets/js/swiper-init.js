@@ -560,65 +560,128 @@
      * video wrapper. No full video data is downloaded. Durations are cached
      * so they persist across DOM rebuilds (e.g. fullscreen toggle).
      */
-    var durationCache = {};   // src → formatted duration text
-    var durationPrefetchStarted = false;
+    var durationCache = {};      // src -> formatted duration text
+    var durationQueue = [];      // pending src values
+    var durationQueued = {};     // src -> true when queued
+    var durationInFlight = {};   // src -> true when probe is running
+    var durationPrefetchActive = 0;
+    var durationPrefetchScheduled = false;
+    var DURATION_PREFETCH_WORKERS = 3;
 
-    /** Apply cached durations to video wrappers that don't have a badge yet. */
+    function getVideoSrc(videoEl) {
+        return videoEl.currentSrc || videoEl.src || videoEl.getAttribute('src') || '';
+    }
+
+    function formatDurationText(seconds) {
+        var mins = Math.floor(seconds / 60);
+        var secs = Math.floor(seconds % 60);
+        return mins + ':' + (secs < 10 ? '0' : '') + secs;
+    }
+
+    function applyDurationLabelToVideo(videoEl, durationText) {
+        if (!durationText) {
+            return;
+        }
+        var $wrapper = $(videoEl).closest('.jzsa-video-wrapper');
+        if (!$wrapper.length) {
+            return;
+        }
+        var $badge = $wrapper.children('.jzsa-video-duration');
+        if ($badge.length) {
+            $badge.text(durationText);
+            return;
+        }
+        $wrapper.append('<span class="jzsa-video-duration">' + durationText + '</span>');
+    }
+
+    /** Apply cached durations to matching video wrappers in scope. */
     function applyDurationLabels($scope) {
         var $videos = $scope ? $scope.find('video.jzsa-video-player') : $('video.jzsa-video-player');
         $videos.each(function() {
-            var src = this.src || this.getAttribute('src');
-            if (!src || !durationCache[src]) return;
-            var $wrapper = $(this).closest('.jzsa-video-wrapper');
-            if ($wrapper.length && !$wrapper.children('.jzsa-video-duration').length) {
-                $wrapper.append('<span class="jzsa-video-duration">' + durationCache[src] + '</span>');
+            var src = getVideoSrc(this);
+            if (!src || !durationCache[src]) {
+                return;
             }
+            applyDurationLabelToVideo(this, durationCache[src]);
         });
     }
 
-    function scheduleDurationPrefetch() {
-        if (durationPrefetchStarted) return;
-        durationPrefetchStarted = true;
-        var schedule = window.requestIdleCallback || function(cb) { setTimeout(cb, 500); };
-        schedule(function() {
-            document.querySelectorAll('video.jzsa-video-player').forEach(function(videoEl) {
-                if (videoEl._jzsaDurationFetched) return;
-                videoEl._jzsaDurationFetched = true;
-                var src = videoEl.src || videoEl.getAttribute('src');
-                if (!src) return;
+    function queueDurationPrefetch(src) {
+        if (!src || durationCache[src] || durationInFlight[src] || durationQueued[src]) {
+            return;
+        }
+        durationQueued[src] = true;
+        durationQueue.push(src);
+    }
 
-                // Already cached — just apply the label
-                if (durationCache[src]) {
-                    applyDurationLabels($(videoEl).closest('.jzsa-video-wrapper'));
-                    return;
-                }
+    function processDurationPrefetchQueue() {
+        while (durationPrefetchActive < DURATION_PREFETCH_WORKERS && durationQueue.length) {
+            var src = durationQueue.shift();
+            delete durationQueued[src];
+            if (!src || durationCache[src] || durationInFlight[src]) {
+                continue;
+            }
 
+            durationPrefetchActive++;
+            durationInFlight[src] = true;
+
+            (function(videoSrc) {
                 var probe = document.createElement('video');
                 probe.preload = 'metadata';
-                var handled = false;
+                var done = false;
 
                 function cleanup() {
-                    if (handled) return;
-                    handled = true;
+                    if (done) {
+                        return;
+                    }
+                    done = true;
                     probe.onloadedmetadata = null;
                     probe.onerror = null;
                     probe.src = '';
                     probe = null;
+                    delete durationInFlight[videoSrc];
+                    durationPrefetchActive = Math.max(0, durationPrefetchActive - 1);
+                    if (durationCache[videoSrc]) {
+                        applyDurationLabels();
+                    }
+                    processDurationPrefetchQueue();
                 }
 
                 probe.onloadedmetadata = function() {
-                    if (probe.duration && isFinite(probe.duration)) {
-                        var mins = Math.floor(probe.duration / 60);
-                        var secs = Math.floor(probe.duration % 60);
-                        var text = mins + ':' + (secs < 10 ? '0' : '') + secs;
-                        durationCache[src] = text;
-                        applyDurationLabels($(videoEl).closest('.jzsa-video-wrapper'));
+                    if (isFinite(probe.duration) && probe.duration > 0) {
+                        durationCache[videoSrc] = formatDurationText(probe.duration);
                     }
                     cleanup();
                 };
-                probe.onerror = function() { cleanup(); };
-                probe.src = src;
-            });
+                probe.onerror = function() {
+                    cleanup();
+                };
+                probe.src = videoSrc;
+            })(src);
+        }
+    }
+
+    function scheduleDurationPrefetch($scope) {
+        applyDurationLabels($scope);
+
+        var $videos = $scope ? $scope.find('video.jzsa-video-player') : $('video.jzsa-video-player');
+        $videos.each(function() {
+            queueDurationPrefetch(getVideoSrc(this));
+        });
+
+        if (!durationQueue.length) {
+            return;
+        }
+
+        if (durationPrefetchScheduled) {
+            return;
+        }
+        durationPrefetchScheduled = true;
+
+        var schedule = window.requestIdleCallback || function(cb) { setTimeout(cb, 500); };
+        schedule(function() {
+            durationPrefetchScheduled = false;
+            processDurationPrefetchQueue();
         });
     }
 
@@ -2578,7 +2641,7 @@
 
             setupVideoHandling(swiper, $container, fullscreenChangeParams);
             initPlyrInContainer($container);
-            scheduleDurationPrefetch();
+            scheduleDurationPrefetch($container);
 
             // console.log('✅ Swiper initialized:', galleryId);
             // console.log('  - Normal mode slideshow:', slideshow ? 'Enabled (delay: ' + slideshowDelay + 's)' : 'Disabled');
@@ -2857,8 +2920,7 @@
             $container.append($loader);
         }
         initPlyrInContainer($container);
-        applyDurationLabels($container);
-        scheduleDurationPrefetch();
+        scheduleDurationPrefetch($container);
     }
 
     /**
