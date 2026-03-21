@@ -19,6 +19,34 @@
 
 	var swipers = {};
 
+    // Stop and reset all managed videos on the page. Used when switching
+    // between inline and fullscreen so no hidden/orphan playback continues.
+    function stopAllManagedVideos() {
+        $('video.jzsa-video-player').each(function() {
+            var videoEl = this;
+            var $video = $(videoEl);
+            var $album = $video.closest('.jzsa-album, .jzsa-gallery-album');
+
+            // Abort any in-flight loading attempt first.
+            if (typeof videoEl._jzsaCancelLoading === 'function') {
+                try { videoEl._jzsaCancelLoading(); } catch (e) { /* ignore */ }
+            }
+
+            if (videoEl._jzsaPlyr) {
+                videoEl._jzsaSuppressNextError = true;
+                try { videoEl._jzsaPlyr.stop(); } catch (e) { /* ignore */ }
+            } else {
+                try { videoEl.pause(); } catch (e) { /* ignore */ }
+                try { videoEl.currentTime = 0; } catch (e) { /* ignore */ }
+            }
+
+            if ($album.length) {
+                $album.removeClass('jzsa-video-playing');
+                $album.trigger('jzsa:video-stopped');
+            }
+        });
+    }
+
     // ============================================================================
     // FULLSCREEN FUNCTIONALITY
     // ============================================================================
@@ -26,6 +54,7 @@
     // Fullscreen toggle function (with iPhone pseudo-fullscreen fallback)
     function toggleFullscreen(element, showHints) {
         var showHintsFn = showHints;
+        stopAllManagedVideos();
         var currentlyFullscreen = isFullscreen(element);
         var pseudoActive = $(element).hasClass('jzsa-pseudo-fullscreen');
 
@@ -1398,6 +1427,10 @@
 			// Exiting fullscreen (this gallery was in fullscreen before) - switch back to normal autoplay settings
 			var logPrefix = params.browserPrefix ? ' (' + params.browserPrefix + ')' : '';
 			jzsaDebug('🔍 Fullscreen exited for gallery' + logPrefix + ':', params.galleryId);
+
+            // Exit via Esc/browser chrome does not go through toggleFullscreen().
+            // Ensure video playback is stopped consistently on fullscreen exit.
+            stopAllManagedVideos();
 
             // In carousel mode, restore the original multi-slide layout
             // but keep the same logical photo index the user was viewing in
