@@ -483,11 +483,13 @@
                 plyrContainer.hide();
                 $wrapper.removeClass('jzsa-video-loading');
                 $albumContainer.removeClass('jzsa-video-playing');
+                $albumContainer.trigger('jzsa:video-stopped');
             });
             this._jzsaPlyr.on('ended', function() {
                 plyrContainer.hide();
                 $wrapper.removeClass('jzsa-video-loading');
                 $albumContainer.removeClass('jzsa-video-playing');
+                $albumContainer.trigger('jzsa:video-stopped');
             });
 
             // If the video URL has expired (HTTP 400), re-fetch fresh URLs
@@ -4447,11 +4449,24 @@
         var resizeNamespace = 'resize.jzsa-gallery-' + $container.attr('id');
         $(window).off(resizeNamespace);
         var resizeTimer;
+        var resizePending = false;
         $(window).on(resizeNamespace, function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
+                if ($container.hasClass('jzsa-video-playing')) {
+                    resizePending = true;
+                    return;
+                }
                 renderCurrentGalleryPage();
             }, 150);
+        });
+
+        // When video playback ends, flush any deferred resize re-render
+        $container.on('jzsa:video-stopped', function() {
+            if (resizePending) {
+                resizePending = false;
+                renderCurrentGalleryPage();
+            }
         });
 
         // Build the fullscreen slideshow and initialize it eagerly (same as
