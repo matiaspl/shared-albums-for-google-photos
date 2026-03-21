@@ -5033,15 +5033,24 @@
         renderCurrentGalleryPage();
 
         // Re-render gallery page on resize:
-        // - justified layout depends on container width
-        // - grid layout pagination depends on active breakpoint/column count
+        // - justified layout depends on container width (always re-render)
+        // - grid layout only needs re-render when the column breakpoint changes
         var resizeNamespace = 'resize.jzsa-gallery-' + $container.attr('id');
         $(window).off(resizeNamespace);
         var resizeTimer;
         var resizePending = false;
+        var lastResizeColumns = layout !== 'justified' ? getUniformColumnsForViewport($container) : 0;
         $(window).on(resizeNamespace, function() {
             clearTimeout(resizeTimer);
             resizeTimer = setTimeout(function() {
+                // For grid layout, skip re-render if column count hasn't changed.
+                if (layout !== 'justified') {
+                    var currentColumns = getUniformColumnsForViewport($container);
+                    if (currentColumns === lastResizeColumns) {
+                        return;
+                    }
+                    lastResizeColumns = currentColumns;
+                }
                 runOnNextPaint(function() {
                     if ($container.hasClass('jzsa-video-playing')) {
                         resizePending = true;
