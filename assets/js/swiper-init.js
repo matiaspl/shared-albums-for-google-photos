@@ -393,6 +393,7 @@
         var freshVideos = freshPhotos.filter(function(p) { return p.type === 'video'; });
         var fallbackVideoCursor = 0;
         var triggerUpdated = false;
+        var triggerSeenInMapping = false;
 
         // Update data attribute so future renders use fresh URLs.
         $albumContainer.attr('data-all-photos', JSON.stringify(freshPhotos));
@@ -425,25 +426,31 @@
             if (freshEntry.preview) {
                 $(videoEl).attr('poster', freshEntry.preview);
             }
+            var srcChanged = oldSrc !== freshEntry.video;
 
             var isTrigger = !!(triggerVideoEl && videoEl === triggerVideoEl);
+            if (isTrigger) {
+                triggerSeenInMapping = true;
+            }
             traceVideoHeal('refresh-map', {
                 reason: reason,
                 containerId: $albumContainer.attr('id') || '',
                 mediaIndex: isNaN(mediaIndex) ? null : mediaIndex,
                 trigger: isTrigger,
+                srcChanged: srcChanged,
                 oldSrc: shortMediaUrl(oldSrc),
                 newSrc: shortMediaUrl(freshEntry.video)
             });
 
-            // Only force reload for the video that is currently recovering.
-            if (isTrigger) {
+            // Only force reload for the video that is currently recovering,
+            // and only when the URL actually changed.
+            if (isTrigger && srcChanged) {
                 triggerUpdated = true;
                 videoEl.load();
             }
         });
 
-        if (triggerVideoEl && !triggerUpdated && document.documentElement.contains(triggerVideoEl)) {
+        if (triggerVideoEl && !triggerUpdated && !triggerSeenInMapping && document.documentElement.contains(triggerVideoEl)) {
             traceVideoHeal('refresh-trigger-fallback-load', {
                 reason: reason,
                 containerId: $albumContainer.attr('id') || '',
@@ -692,11 +699,33 @@
                     triggerVideoEl: videoEl
                 }).then(function() {
                     trace('heal-refresh-applied', { reason: reason, attempt: autoHealAttempts });
-                    var playPromise = plyrRef.play();
-                    healingInProgress = false;
+                    var playPromise;
+                    try {
+                        playPromise = plyrRef.play();
+                    } catch (err) {
+                        healingInProgress = false;
+                        trace('heal-play-rejected', {
+                            reason: reason,
+                            attempt: autoHealAttempts,
+                            error: err && err.message ? err.message : String(err || '')
+                        });
+                        if (autoHealAttempts >= MAX_AUTO_HEAL_ATTEMPTS) {
+                            failPlayback('play-rejected-after-heal', { trigger: reason });
+                            return;
+                        }
+                        setTimeout(function() {
+                            attemptAutoHeal('play-rejected');
+                        }, 50);
+                        return;
+                    }
                     armStallWatchdog('post-heal-play');
-                    if (playPromise && typeof playPromise.catch === 'function') {
-                        playPromise.catch(function(err) {
+                    if (playPromise && typeof playPromise.then === 'function') {
+                        playPromise.then(function() {
+                            if (healingInProgress) {
+                                healingInProgress = false;
+                            }
+                        }).catch(function(err) {
+                            healingInProgress = false;
                             trace('heal-play-rejected', {
                                 reason: reason,
                                 attempt: autoHealAttempts,
@@ -706,9 +735,19 @@
                                 failPlayback('play-rejected-after-heal', { trigger: reason });
                                 return;
                             }
-                            attemptAutoHeal('play-rejected');
+                            setTimeout(function() {
+                                attemptAutoHeal('play-rejected');
+                            }, 50);
                         });
+                        return;
                     }
+                    // Some browsers do not return a play() promise; keep lock a
+                    // short while to avoid overlapping heal/load cycles.
+                    setTimeout(function() {
+                        if (healingInProgress) {
+                            healingInProgress = false;
+                        }
+                    }, 800);
                 }).fail(function() {
                     healingInProgress = false;
                     trace('heal-refresh-failed', { reason: reason, attempt: autoHealAttempts });
@@ -829,7 +868,7 @@
                     readyState: videoEl.readyState,
                     networkState: videoEl.networkState
                 });
-                attemptAutoHeal('native-stalled');
+                armStallWatchdog('native-stalled');
             });
 
             this._jzsaPlyr.on('pause', function() {
