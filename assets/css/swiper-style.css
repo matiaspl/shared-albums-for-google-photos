@@ -1386,11 +1386,15 @@ body.jzsa-no-scroll {
    native play triangle through. Instant hide (no transition) so it
    disappears in sync with the duration label. */
 .jzsa-video-wrapper .plyr__control--overlaid {
-    --jzsa-play-scale: 1.5;
+    --jzsa-play-scale: 1.25;
     background: var(--jzsa-video-controls-color, #00b2ff) !important;
     opacity: 1;
     transition: none !important;
     transform: translate(-50%, -50%) scale(var(--jzsa-play-scale));
+}
+
+.jzsa-video-wrapper .plyr__control--overlaid svg {
+    transform: scale(0.8);
 }
 
 /* Duration badge on the video wrapper — independent of the player so it
@@ -1398,15 +1402,15 @@ body.jzsa-no-scroll {
    Hidden by default; shown only via jzsa-show-duration on the wrapper,
    which JS sets when the big play button is in its default triangle state. */
 .jzsa-video-duration {
-    --jzsa-play-scale: 1.5;
+    --jzsa-play-scale: 1.25;
     --jzsa-play-btn-radius: 24px;
-    --jzsa-duration-offset: 0.55;  /* fraction of radius from center to bottom edge */
+    --jzsa-duration-offset: 0.45;  /* fraction of radius from center to bottom edge */
     display: none;
     position: absolute;
     left: 50%;
     top: 50%;
     transform: translate(-50%, calc(var(--jzsa-play-scale) * var(--jzsa-play-btn-radius) * var(--jzsa-duration-offset)));
-    font-size: 9px;
+    font-size: 10px;
     line-height: 1;
     color: #fff;
     font-variant-numeric: tabular-nums;
@@ -1432,14 +1436,30 @@ body.jzsa-no-scroll {
 }
 
 .jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading svg {
-    display: none;
+    visibility: hidden;
+    /* Keep left:0 so the pause icon below is centered (overrides Plyr's left:2px for the triangle) */
+    left: 0;
+}
+
+/* Pause icon (two vertical bars) shown during loading, matching 0.8× of Plyr's icon size */
+.jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(calc(-50% + 1px), -50%);
+    width: 3.2px;
+    height: 12.8px;
+    border-left: 3.2px solid #fff;
+    border-right: 3.2px solid #fff;
+    box-sizing: content-box;
+    z-index: 1;
 }
 
 .jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-loading::after {
     content: '';
-    display: block;
-    width: 24px;
-    height: 24px;
+    position: absolute;
+    inset: 0;
     border: 3px solid rgba(255, 255, 255, 0.3);
     border-top-color: #fff;
     border-radius: 50%;
@@ -1472,30 +1492,30 @@ body.jzsa-no-scroll {
 @container (min-width: 500px) {
     .jzsa-video-wrapper .plyr__control--overlaid,
     .jzsa-video-duration {
-        --jzsa-play-scale: 2.4;
-    }
-    .jzsa-video-duration {
-        font-size: 10px;
-    }
-}
-
-@container (min-width: 800px) {
-    .jzsa-video-wrapper .plyr__control--overlaid,
-    .jzsa-video-duration {
-        --jzsa-play-scale: 3.36;
+        --jzsa-play-scale: 1.5;
     }
     .jzsa-video-duration {
         font-size: 11px;
     }
 }
 
-@container (min-width: 1200px) {
+@container (min-width: 800px) {
     .jzsa-video-wrapper .plyr__control--overlaid,
     .jzsa-video-duration {
-        --jzsa-play-scale: 5.28;
+        --jzsa-play-scale: 1.75;
     }
     .jzsa-video-duration {
         font-size: 12px;
+    }
+}
+
+@container (min-width: 1200px) {
+    .jzsa-video-wrapper .plyr__control--overlaid,
+    .jzsa-video-duration {
+        --jzsa-play-scale: 2.0;
+    }
+    .jzsa-video-duration {
+        font-size: 13px;
     }
 }
 
