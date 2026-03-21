@@ -474,9 +474,9 @@
                     if (v === videoEl) { return; }
                     // Cancel buffering if still loading
                     if (v._jzsaCancelLoading) { v._jzsaCancelLoading(); }
-                    // Pause if already playing
+                    // Stop (reset to start) if already playing
                     if (v._jzsaPlyr && v._jzsaPlyr.playing) {
-                        v._jzsaPlyr.pause();
+                        v._jzsaPlyr.stop();
                     }
                 });
             }
