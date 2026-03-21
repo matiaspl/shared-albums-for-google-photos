@@ -538,202 +538,74 @@
     }
 
     // ========================================================================
-    // Tiered video preloading
+    // Video duration prefetch
     // ========================================================================
 
     /**
-     * Unified video preloading pipeline.
-     * Each worker picks a video, fetches metadata (duration), then buffers
-     * the full video — both steps for one video before moving to the next.
-     * PARALLEL_WORKERS run concurrently. Videos are ordered top-to-bottom
-     * on the page (DOM order), with slider/carousel adjacent slides prioritized.
+     * Lightweight metadata-only prefetch: probes each video to discover its
+     * duration (a few KB per video) and displays a duration badge on the
+     * video wrapper. No full video data is downloaded. Durations are cached
+     * so they persist across DOM rebuilds (e.g. fullscreen toggle).
      */
-    var PARALLEL_WORKERS = 6;
-    var preloadStarted = false;
+    var durationCache = {};   // src → formatted duration text
+    var durationPrefetchStarted = false;
 
-    function scheduleVideoPreload() {
-        if (preloadStarted) return;
-        preloadStarted = true;
+    /** Apply cached durations to video wrappers that don't have a badge yet. */
+    function applyDurationLabels($scope) {
+        var $videos = $scope ? $scope.find('video.jzsa-video-player') : $('video.jzsa-video-player');
+        $videos.each(function() {
+            var src = this.src || this.getAttribute('src');
+            if (!src || !durationCache[src]) return;
+            var $wrapper = $(this).closest('.jzsa-video-wrapper');
+            if ($wrapper.length && !$wrapper.children('.jzsa-video-duration').length) {
+                $wrapper.append('<span class="jzsa-video-duration">' + durationCache[src] + '</span>');
+            }
+        });
+    }
+
+    function scheduleDurationPrefetch() {
+        if (durationPrefetchStarted) return;
+        durationPrefetchStarted = true;
         var schedule = window.requestIdleCallback || function(cb) { setTimeout(cb, 500); };
         schedule(function() {
-            var queue = buildPreloadQueue();
-            if (!queue.length) return;
-            for (var i = 0; i < PARALLEL_WORKERS; i++) {
-                processNextVideo(queue);
-            }
-        });
-    }
+            document.querySelectorAll('video.jzsa-video-player').forEach(function(videoEl) {
+                if (videoEl._jzsaDurationFetched) return;
+                videoEl._jzsaDurationFetched = true;
+                var src = videoEl.src || videoEl.getAttribute('src');
+                if (!src) return;
 
-    function buildPreloadQueue() {
-        var queue = [];
-        var seen = [];
-
-        // Slider/carousel: prioritize by distance from active slide
-        Object.keys(swipers).forEach(function(id) {
-            var swiper = swipers[id];
-            if (!swiper || !swiper.slides) return;
-            var active = swiper.activeIndex;
-            var total = swiper.slides.length;
-            var ranked = [];
-            swiper.slides.forEach(function(slide, i) {
-                var video = slide.querySelector('video.jzsa-video-player');
-                if (!video) return;
-                var distance = Math.abs(i - active);
-                if (swiper.params.loop) {
-                    distance = Math.min(distance, total - distance);
+                // Already cached — just apply the label
+                if (durationCache[src]) {
+                    applyDurationLabels($(videoEl).closest('.jzsa-video-wrapper'));
+                    return;
                 }
-                ranked.push({ video: video, distance: distance });
-            });
-            ranked.sort(function(a, b) { return a.distance - b.distance; });
-            ranked.forEach(function(item) {
-                if (seen.indexOf(item.video) === -1) {
-                    queue.push(item.video);
-                    seen.push(item.video);
+
+                var probe = document.createElement('video');
+                probe.preload = 'metadata';
+                var handled = false;
+
+                function cleanup() {
+                    if (handled) return;
+                    handled = true;
+                    probe.onloadedmetadata = null;
+                    probe.onerror = null;
+                    probe.src = '';
+                    probe = null;
                 }
-            });
-        });
 
-        // All remaining videos in DOM order (gallery, etc.)
-        document.querySelectorAll('video.jzsa-video-player').forEach(function(video) {
-            if (seen.indexOf(video) !== -1) return;
-            queue.push(video);
-            seen.push(video);
-        });
-
-        return queue;
-    }
-
-    /**
-     * Process one video: Step 1 = metadata, Step 2 = full buffer, then next.
-     */
-    function processNextVideo(queue) {
-        if (!queue.length) return;
-        var videoEl = queue.shift();
-        if (videoEl._jzsaBuffered) {
-            processNextVideo(queue);
-            return;
-        }
-        var src = videoEl.src || videoEl.getAttribute('src');
-        if (!src) {
-            processNextVideo(queue);
-            return;
-        }
-        var $wrapper = $(videoEl).closest('.jzsa-video-wrapper');
-
-        // Step 1: fetch metadata (duration)
-        fetchMetadata(videoEl, src, $wrapper, function() {
-            // Step 2: buffer full video
-            bufferVideo(videoEl, src, $wrapper, function() {
-                // Done with this video, move to next
-                processNextVideo(queue);
-            });
-        });
-    }
-
-    function fetchMetadata(videoEl, src, $wrapper, callback) {
-        var probe = document.createElement('video');
-        probe.preload = 'metadata';
-        var handled = false;
-        function cleanup() {
-            if (handled) return;
-            handled = true;
-            probe.onloadedmetadata = null;
-            probe.onerror = null;
-            probe.src = '';
-            probe = null;
-        }
-        probe.onloadedmetadata = function() {
-            if (probe.duration && isFinite(probe.duration)) {
-                var mins = Math.floor(probe.duration / 60);
-                var secs = Math.floor(probe.duration % 60);
-                var durationText = mins + ':' + (secs < 10 ? '0' : '') + secs;
-                if (videoEl._jzsaPlyr) {
-                    var durationEl = $wrapper.find('.plyr__time--duration');
-                    if (durationEl.length) {
-                        durationEl.text(durationText);
+                probe.onloadedmetadata = function() {
+                    if (probe.duration && isFinite(probe.duration)) {
+                        var mins = Math.floor(probe.duration / 60);
+                        var secs = Math.floor(probe.duration % 60);
+                        var text = mins + ':' + (secs < 10 ? '0' : '') + secs;
+                        durationCache[src] = text;
+                        applyDurationLabels($(videoEl).closest('.jzsa-video-wrapper'));
                     }
-                }
-            }
-            cleanup();
-            callback();
-        };
-        probe.onerror = function() {
-            cleanup();
-            callback();
-        };
-        probe.src = src;
-    }
-
-    function bufferVideo(videoEl, _src, _$wrapper, callback) {
-        if (videoEl._jzsaBuffered) {
-            callback();
-            return;
-        }
-
-        // Buffer directly into the real <video> element that Plyr manages.
-        // Access via plyr.media to ensure we're buffering into the actual
-        // player, not a throwaway probe whose cache gets discarded.
-        var media = (videoEl._jzsaPlyr && videoEl._jzsaPlyr.media) || videoEl;
-        var handled = false;
-
-        function onReady() {
-            if (handled) return;
-            handled = true;
-            media.removeEventListener('canplaythrough', onReady);
-            videoEl._jzsaBuffered = true;
-            callback();
-        }
-
-        // If already buffered enough, skip
-        if (media.readyState >= 4) { // HAVE_ENOUGH_DATA
-            videoEl._jzsaBuffered = true;
-            callback();
-            return;
-        }
-
-        media.addEventListener('canplaythrough', onReady, { once: true });
-
-        // Tell the real element to start buffering (do NOT call .load() —
-        // it resets Plyr's internal state and breaks seeking)
-        media.preload = 'auto';
-
-        // Timeout for very large videos — move on, don't block the queue
-        setTimeout(function() {
-            if (!handled) {
-                handled = true;
-                media.removeEventListener('canplaythrough', onReady);
-                callback();
-            }
-        }, 30000);
-    }
-
-    /**
-     * Re-trigger Tier 2 for slider/carousel on slide change.
-     * Sets preload="auto" on adjacent videos immediately (no probe needed
-     * if Tier 2 already cached them).
-     */
-    function preloadAdjacentVideos(swiper, range) {
-        if (!swiper || !swiper.slides) return;
-        range = range || 1;
-        var active = swiper.activeIndex;
-        var total = swiper.slides.length;
-        swiper.slides.forEach(function(slide, i) {
-            var video = slide.querySelector('video.jzsa-video-player');
-            if (!video) return;
-            var distance = Math.abs(i - active);
-            if (swiper.params.loop) {
-                distance = Math.min(distance, total - distance);
-            }
-            if (distance <= range) {
-                if (video.preload !== 'auto') {
-                    video.preload = 'auto';
-                }
-            } else {
-                if (!video.paused) return;
-                if (video.preload !== 'none') {
-                    video.preload = 'none';
-                }
-            }
+                    cleanup();
+                };
+                probe.onerror = function() { cleanup(); };
+                probe.src = src;
+            });
         });
     }
 
@@ -2693,21 +2565,7 @@
 
             setupVideoHandling(swiper, $container, fullscreenChangeParams);
             initPlyrInContainer($container);
-
-            // Tier 1: background metadata preload after idle
-            scheduleVideoPreload();
-
-            // Tier 2: full preload for adjacent video slides (slider/carousel)
-            // Deferred until after page load to avoid competing with page resources
-            if (mode === 'slider' || mode === 'carousel') {
-                var tier2Schedule = window.requestIdleCallback || function(cb) { setTimeout(cb, 500); };
-                tier2Schedule(function() {
-                    preloadAdjacentVideos(swiper, 1);
-                });
-                swiper.on('slideChangeTransitionEnd', function() {
-                    preloadAdjacentVideos(swiper, 1);
-                });
-            }
+            scheduleDurationPrefetch();
 
             // console.log('✅ Swiper initialized:', galleryId);
             // console.log('  - Normal mode slideshow:', slideshow ? 'Enabled (delay: ' + slideshowDelay + 's)' : 'Disabled');
@@ -2986,7 +2844,8 @@
             $container.append($loader);
         }
         initPlyrInContainer($container);
-        scheduleVideoPreload();
+        applyDurationLabels($container);
+        scheduleDurationPrefetch();
     }
 
     /**
