@@ -313,12 +313,48 @@
         }
     }
 
+    // Trace tag for video auto-healing flow (use in browser console filter).
+    var VIDEO_HEAL_TRACE_TAG = '[JZSA_HEAL_TRACE]';
+    // Keep console trace focused strictly on heal attempts and outcomes.
+    var VIDEO_HEAL_TRACE_EVENTS = {
+        'heal-start': true,
+        'heal-refresh-applied': true,
+        'heal-refresh-failed': true,
+        'heal-play-rejected': true,
+        'playback-failed': true
+    };
+
+    function shortMediaUrl(url) {
+        if (!url) {
+            return '';
+        }
+        if (url.length <= 96) {
+            return url;
+        }
+        return url.slice(0, 56) + '…' + url.slice(-24);
+    }
+
+    function traceVideoHeal(eventName, payload) {
+        if (!VIDEO_HEAL_TRACE_EVENTS[eventName]) {
+            return;
+        }
+        if (!window.console || typeof window.console.log !== 'function') {
+            return;
+        }
+        try {
+            console.log(VIDEO_HEAL_TRACE_TAG + ' ' + eventName, payload || {});
+        } catch (e) {
+            // Ignore logging failures.
+        }
+    }
+
     /**
      * Build the inner HTML for a video item (wrapper + video element).
      * Shared across player, carousel, and gallery modes.
      *
      * @param {Object} opts
      * @param {string} opts.src        Video source URL.
+     * @param {number} [opts.mediaIndex] Stable index in the full album array.
      * @param {string} [opts.extraClass] Additional classes on the <video> element.
      * @param {string} [opts.style]      Inline style attribute value for the <video>.
      * @return {string} HTML string.
@@ -329,12 +365,16 @@
         var extraClass = opts.extraClass ? ' ' + opts.extraClass : '';
         var styleAttr = opts.style ? ' style="' + opts.style + '"' : '';
         var posterAttr = poster ? ' poster="' + poster + '"' : '';
+        var mediaIndexAttr = (typeof opts.mediaIndex === 'number' && opts.mediaIndex >= 0)
+            ? ' data-jzsa-media-index="' + opts.mediaIndex + '"'
+            : '';
         return '<div class="jzsa-video-wrapper">' +
             '<video' +
             ' src="' + src + '"' +
             posterAttr +
             ' playsinline preload="none" disablepictureinpicture' +
             ' class="jzsa-video-player' + extraClass + '"' +
+            mediaIndexAttr +
             styleAttr +
             '></video>' +
             '</div>';
@@ -346,7 +386,78 @@
      */
     var _refreshPromises = {};
 
-    function refreshAlbumUrls($albumContainer) {
+    function applyFreshMediaToContainer($albumContainer, freshPhotos, options) {
+        var opts = options || {};
+        var triggerVideoEl = opts.triggerVideoEl || null;
+        var reason = opts.reason || 'unknown';
+        var freshVideos = freshPhotos.filter(function(p) { return p.type === 'video'; });
+        var fallbackVideoCursor = 0;
+        var triggerUpdated = false;
+
+        // Update data attribute so future renders use fresh URLs.
+        $albumContainer.attr('data-all-photos', JSON.stringify(freshPhotos));
+
+        $albumContainer.find('video.jzsa-video-player').each(function() {
+            var videoEl = this;
+            var mediaIndex = parseInt(videoEl.getAttribute('data-jzsa-media-index') || '', 10);
+            var freshEntry = null;
+
+            if (!isNaN(mediaIndex) && mediaIndex >= 0 && mediaIndex < freshPhotos.length) {
+                var candidate = freshPhotos[mediaIndex];
+                if (candidate && candidate.type === 'video') {
+                    freshEntry = candidate;
+                }
+            }
+            if (!freshEntry && fallbackVideoCursor < freshVideos.length) {
+                freshEntry = freshVideos[fallbackVideoCursor++];
+            }
+            if (!freshEntry || !freshEntry.video) {
+                traceVideoHeal('refresh-map-skip', {
+                    reason: reason,
+                    containerId: $albumContainer.attr('id') || '',
+                    mediaIndex: isNaN(mediaIndex) ? null : mediaIndex
+                });
+                return;
+            }
+
+            var oldSrc = videoEl.getAttribute('src') || videoEl.src || '';
+            $(videoEl).attr('src', freshEntry.video);
+            if (freshEntry.preview) {
+                $(videoEl).attr('poster', freshEntry.preview);
+            }
+
+            var isTrigger = !!(triggerVideoEl && videoEl === triggerVideoEl);
+            traceVideoHeal('refresh-map', {
+                reason: reason,
+                containerId: $albumContainer.attr('id') || '',
+                mediaIndex: isNaN(mediaIndex) ? null : mediaIndex,
+                trigger: isTrigger,
+                oldSrc: shortMediaUrl(oldSrc),
+                newSrc: shortMediaUrl(freshEntry.video)
+            });
+
+            // Only force reload for the video that is currently recovering.
+            if (isTrigger) {
+                triggerUpdated = true;
+                videoEl.load();
+            }
+        });
+
+        if (triggerVideoEl && !triggerUpdated && document.documentElement.contains(triggerVideoEl)) {
+            traceVideoHeal('refresh-trigger-fallback-load', {
+                reason: reason,
+                containerId: $albumContainer.attr('id') || '',
+                mediaIndex: triggerVideoEl.getAttribute('data-jzsa-media-index') || null
+            });
+            triggerVideoEl.load();
+        }
+    }
+
+    function refreshAlbumUrls($albumContainer, options) {
+        var opts = options || {};
+        var reason = opts.reason || 'unknown';
+        var triggerVideoEl = opts.triggerVideoEl || null;
+
         // Try the container itself, then walk up to find data-album-url
         // (e.g. gallery slideshow is a sibling of the gallery container).
         var albumUrl = $albumContainer.attr('data-album-url') || '';
@@ -358,18 +469,40 @@
             albumUrl = $parent.attr('data-album-url') || '';
         }
         if (!albumUrl || typeof jzsaAjax === 'undefined') {
-            // console.warn('[jzsa-refresh] ❌ Cannot refresh — albumUrl:', albumUrl, 'jzsaAjax:', typeof jzsaAjax, 'container:', $albumContainer.attr('id'));
+            traceVideoHeal('refresh-skip-missing-context', {
+                reason: reason,
+                containerId: $albumContainer.attr('id') || '',
+                hasAlbumUrl: !!albumUrl,
+                hasAjax: typeof jzsaAjax !== 'undefined'
+            });
             return $.Deferred().reject().promise();
         }
 
-        // Deduplicate: if a refresh is already in flight for this album, reuse it.
-        var containerId = $albumContainer.attr('id') || albumUrl;
-        if (_refreshPromises[containerId]) {
-            return _refreshPromises[containerId];
+        // Deduplicate network calls per album URL; each caller still applies
+        // the fresh response to its own container.
+        if (_refreshPromises[albumUrl]) {
+            traceVideoHeal('refresh-reuse-inflight', {
+                reason: reason,
+                albumUrl: shortMediaUrl(albumUrl),
+                containerId: $albumContainer.attr('id') || ''
+            });
+            return _refreshPromises[albumUrl].then(function(freshPhotos) {
+                applyFreshMediaToContainer($albumContainer, freshPhotos, {
+                    reason: reason,
+                    triggerVideoEl: triggerVideoEl
+                });
+                return freshPhotos;
+            });
         }
 
-        // console.log('[jzsa-refresh] 🔄 Fetching fresh URLs for', containerId);
-        var promise = $.ajax({
+        traceVideoHeal('refresh-fetch-start', {
+            reason: reason,
+            albumUrl: shortMediaUrl(albumUrl),
+            containerId: $albumContainer.attr('id') || '',
+            triggerMediaIndex: triggerVideoEl ? triggerVideoEl.getAttribute('data-jzsa-media-index') || null : null
+        });
+
+        _refreshPromises[albumUrl] = $.ajax({
             url: jzsaAjax.ajaxUrl,
             type: 'POST',
             data: {
@@ -378,39 +511,41 @@
                 album_url: albumUrl
             }
         }).then(function(response) {
-            delete _refreshPromises[containerId];
             if (!response.success || !response.data || !response.data.photos) {
-                // console.warn('[jzsa-refresh] ❌ Server returned no photos');
+                traceVideoHeal('refresh-fetch-invalid-response', {
+                    reason: reason,
+                    albumUrl: shortMediaUrl(albumUrl),
+                    containerId: $albumContainer.attr('id') || ''
+                });
                 return $.Deferred().reject().promise();
             }
-
-            var freshPhotos = response.data.photos;
-            var freshVideos = freshPhotos.filter(function(p) { return p.type === 'video'; });
-            // console.log('[jzsa-refresh] ✅ Got', freshPhotos.length, 'photos (' + freshVideos.length + ' videos)');
-
-            // Update data attribute so future renders use fresh URLs.
-            $albumContainer.attr('data-all-photos', JSON.stringify(freshPhotos));
-
-            // Update all existing <video> elements with fresh URLs.
-            // Videos appear in DOM order matching the video entries in allPhotos.
-            $albumContainer.find('video.jzsa-video-player').each(function(idx) {
-                if (idx >= freshVideos.length) { return; }
-                // console.log('[jzsa-refresh] 🔗 Updated video', idx, freshVideos[idx].video.substring(0, 80) + '…');
-                $(this).attr('src', freshVideos[idx].video);
-                if (freshVideos[idx].preview) {
-                    $(this).attr('poster', freshVideos[idx].preview);
-                }
-                this.load();
+            traceVideoHeal('refresh-fetch-success', {
+                reason: reason,
+                albumUrl: shortMediaUrl(albumUrl),
+                containerId: $albumContainer.attr('id') || '',
+                mediaCount: response.data.photos.length
             });
-
-            return freshPhotos;
-        }).fail(function() {
-            delete _refreshPromises[containerId];
-            // console.error('[jzsa-refresh] ❌ AJAX request failed');
+            return response.data.photos;
+        }).fail(function(jqXHR, textStatus, errorThrown) {
+            traceVideoHeal('refresh-fetch-fail', {
+                reason: reason,
+                albumUrl: shortMediaUrl(albumUrl),
+                containerId: $albumContainer.attr('id') || '',
+                status: jqXHR && typeof jqXHR.status === 'number' ? jqXHR.status : null,
+                textStatus: textStatus || '',
+                error: errorThrown || ''
+            });
+        }).always(function() {
+            delete _refreshPromises[albumUrl];
         });
 
-        _refreshPromises[containerId] = promise;
-        return promise;
+        return _refreshPromises[albumUrl].then(function(freshPhotos) {
+            applyFreshMediaToContainer($albumContainer, freshPhotos, {
+                reason: reason,
+                triggerVideoEl: triggerVideoEl
+            });
+            return freshPhotos;
+        });
     }
 
     /**
@@ -452,20 +587,151 @@
             var $albumContainer = $wrapper.closest('.jzsa-album, .jzsa-gallery-album');
             var $playLarge = $wrapper.find('.plyr__control--overlaid');
 
-            // Loading state: click → spinner, hide after first timeupdate + 500ms.
-            // timeupdate is the most reliable signal that frames are rendering.
+            // Loading state + auto-heal state machine.
+            var LOADING_TIMEOUT_MS = 30000;
+            var STALL_WATCHDOG_MS = 5000;
+            var MAX_AUTO_HEAL_ATTEMPTS = 2;
             var loadingTimeout = null;
+            var stallWatchdogTimer = null;
             var waitingForPlay = false;
+            var healingInProgress = false;
+            var autoHealAttempts = 0;
             var plyrRef = this._jzsaPlyr;
             var videoEl = this;
+
+            function trace(eventName, extra) {
+                traceVideoHeal(eventName, $.extend({
+                    containerId: $albumContainer.attr('id') || '',
+                    mediaIndex: videoEl.getAttribute('data-jzsa-media-index') || null,
+                    waitingForPlay: waitingForPlay,
+                    playing: !!(plyrRef && plyrRef.playing),
+                    attempts: autoHealAttempts,
+                    currentTime: (typeof videoEl.currentTime === 'number' ? videoEl.currentTime : null),
+                    src: shortMediaUrl(videoEl.currentSrc || videoEl.getAttribute('src') || '')
+                }, extra || {}));
+            }
+
+            function clearLoadingTimeout() {
+                if (loadingTimeout) {
+                    clearTimeout(loadingTimeout);
+                    loadingTimeout = null;
+                }
+            }
+
+            function clearStallWatchdog() {
+                if (stallWatchdogTimer) {
+                    clearTimeout(stallWatchdogTimer);
+                    stallWatchdogTimer = null;
+                }
+            }
+
+            function clearRecoveryTimers() {
+                clearLoadingTimeout();
+                clearStallWatchdog();
+            }
+
+            function armStallWatchdog(source) {
+                clearStallWatchdog();
+                if (!waitingForPlay) {
+                    return;
+                }
+                stallWatchdogTimer = setTimeout(function() {
+                    if (!waitingForPlay || (plyrRef && plyrRef.playing)) {
+                        return;
+                    }
+                    trace('stall-watchdog-fired', {
+                        source: source,
+                        timeoutMs: STALL_WATCHDOG_MS,
+                        readyState: videoEl.readyState,
+                        networkState: videoEl.networkState
+                    });
+                    attemptAutoHeal('stall-watchdog');
+                }, STALL_WATCHDOG_MS);
+            }
+
+            function failPlayback(reason, extra) {
+                waitingForPlay = false;
+                healingInProgress = false;
+                clearRecoveryTimers();
+                $playLarge.removeClass('jzsa-plyr-loading');
+                $playLarge.addClass('jzsa-plyr-error');
+                $wrapper.removeClass('jzsa-video-loading');
+                trace('playback-failed', $.extend({ reason: reason }, extra || {}));
+                if (!plyrRef.playing) {
+                    videoEl._jzsaSuppressNextError = true;
+                    try { plyrRef.stop(); } catch (e) { /* ignore */ }
+                }
+            }
+
+            function attemptAutoHeal(reason) {
+                var shouldRetryPlayback = !!(waitingForPlay || plyrRef.playing);
+                if (!shouldRetryPlayback) {
+                    trace('heal-skip-not-active', { reason: reason });
+                    return;
+                }
+                if (healingInProgress) {
+                    trace('heal-skip-inflight', { reason: reason });
+                    return;
+                }
+                if (autoHealAttempts >= MAX_AUTO_HEAL_ATTEMPTS) {
+                    failPlayback('max-attempts-reached', { trigger: reason });
+                    return;
+                }
+
+                healingInProgress = true;
+                autoHealAttempts++;
+                waitingForPlay = true;
+                $playLarge.addClass('jzsa-plyr-loading');
+                $wrapper.addClass('jzsa-video-loading');
+                trace('heal-start', { reason: reason, attempt: autoHealAttempts });
+
+                armStallWatchdog('heal-start');
+
+                refreshAlbumUrls($albumContainer, {
+                    reason: 'auto-heal:' + reason,
+                    triggerVideoEl: videoEl
+                }).then(function() {
+                    trace('heal-refresh-applied', { reason: reason, attempt: autoHealAttempts });
+                    var playPromise = plyrRef.play();
+                    healingInProgress = false;
+                    armStallWatchdog('post-heal-play');
+                    if (playPromise && typeof playPromise.catch === 'function') {
+                        playPromise.catch(function(err) {
+                            trace('heal-play-rejected', {
+                                reason: reason,
+                                attempt: autoHealAttempts,
+                                error: err && err.message ? err.message : String(err || '')
+                            });
+                            if (autoHealAttempts >= MAX_AUTO_HEAL_ATTEMPTS) {
+                                failPlayback('play-rejected-after-heal', { trigger: reason });
+                                return;
+                            }
+                            attemptAutoHeal('play-rejected');
+                        });
+                    }
+                }).fail(function() {
+                    healingInProgress = false;
+                    trace('heal-refresh-failed', { reason: reason, attempt: autoHealAttempts });
+                    if (autoHealAttempts >= MAX_AUTO_HEAL_ATTEMPTS) {
+                        failPlayback('refresh-failed', { trigger: reason });
+                        return;
+                    }
+                    setTimeout(function() {
+                        attemptAutoHeal('refresh-failed-retry');
+                    }, 250);
+                });
+            }
 
             // Expose a cancel function so other videos can abort our buffering
             videoEl._jzsaCancelLoading = function() {
                 if (!waitingForPlay) { return; }
+                trace('cancel-loading');
                 waitingForPlay = false;
-                if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
+                healingInProgress = false;
+                clearRecoveryTimers();
                 $playLarge.removeClass('jzsa-plyr-loading');
                 $wrapper.removeClass('jzsa-video-loading');
+                videoEl._jzsaSuppressNextError = true;
                 plyrRef.stop();
             };
 
@@ -476,6 +742,7 @@
                     if (v._jzsaCancelLoading) { v._jzsaCancelLoading(); }
                     // Stop (reset to start) if already playing
                     if (v._jzsaPlyr && v._jzsaPlyr.playing) {
+                        v._jzsaSuppressNextError = true;
                         v._jzsaPlyr.stop();
                     }
                 });
@@ -483,96 +750,131 @@
 
             function showPlaying() {
                 waitingForPlay = false;
-                if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
+                healingInProgress = false;
+                autoHealAttempts = 0;
+                clearRecoveryTimers();
                 $playLarge.removeClass('jzsa-plyr-loading');
+                $playLarge.removeClass('jzsa-plyr-error');
                 $wrapper.removeClass('jzsa-video-loading');
                 plyrContainer.show();
                 $albumContainer.addClass('jzsa-video-playing');
+                trace('playback-confirmed');
             }
 
             $playLarge.on('click', function() {
-                if (waitingForPlay) { return; }
+                if (waitingForPlay) {
+                    trace('play-click-ignored-waiting');
+                    return;
+                }
                 // Clear any previous error state
                 $playLarge.removeClass('jzsa-plyr-error');
                 // Stop all other videos immediately on click
                 pauseAllPageVideos();
                 waitingForPlay = true;
+                healingInProgress = false;
+                autoHealAttempts = 0;
                 $playLarge.addClass('jzsa-plyr-loading');
                 $wrapper.addClass('jzsa-video-loading');
+                trace('play-click');
 
                 // 30s timeout — show error state if playback never starts
+                clearLoadingTimeout();
                 loadingTimeout = setTimeout(function() {
-                    waitingForPlay = false;
-                    $playLarge.removeClass('jzsa-plyr-loading');
-                    $playLarge.addClass('jzsa-plyr-error');
-                    $wrapper.removeClass('jzsa-video-loading');
-                    if (!plyrRef.playing) { plyrRef.stop(); }
-                }, 30000);
+                    trace('loading-timeout', {
+                        timeoutMs: LOADING_TIMEOUT_MS,
+                        readyState: videoEl.readyState,
+                        networkState: videoEl.networkState
+                    });
+                    if (autoHealAttempts < MAX_AUTO_HEAL_ATTEMPTS) {
+                        attemptAutoHeal('loading-timeout');
+                        return;
+                    }
+                    failPlayback('loading-timeout');
+                }, LOADING_TIMEOUT_MS);
+
+                armStallWatchdog('initial-click');
             });
 
             // timeupdate fires when frames are actively rendering.
             // Wait until currentTime > 0.1s to be sure a real frame has
             // painted over the poster (and its baked-in triangle).
+            this._jzsaPlyr.on('playing', function() {
+                if (waitingForPlay || !$albumContainer.hasClass('jzsa-video-playing')) {
+                    showPlaying();
+                }
+            });
             this._jzsaPlyr.on('timeupdate', function() {
                 if (!waitingForPlay) { return; }
                 if (plyrRef.currentTime > 0.1) {
                     showPlaying();
                 }
             });
+
+            videoEl.addEventListener('waiting', function() {
+                if (!waitingForPlay && !plyrRef.playing) {
+                    return;
+                }
+                trace('native-waiting', {
+                    readyState: videoEl.readyState,
+                    networkState: videoEl.networkState
+                });
+                armStallWatchdog('native-waiting');
+            });
+
+            videoEl.addEventListener('stalled', function() {
+                if (!waitingForPlay && !plyrRef.playing) {
+                    return;
+                }
+                trace('native-stalled', {
+                    readyState: videoEl.readyState,
+                    networkState: videoEl.networkState
+                });
+                attemptAutoHeal('native-stalled');
+            });
+
             this._jzsaPlyr.on('pause', function() {
+                clearRecoveryTimers();
                 plyrContainer.hide();
                 $wrapper.removeClass('jzsa-video-loading');
                 $albumContainer.removeClass('jzsa-video-playing');
                 $albumContainer.trigger('jzsa:video-stopped');
+                trace('plyr-pause');
             });
             this._jzsaPlyr.on('ended', function() {
+                clearRecoveryTimers();
                 plyrContainer.hide();
                 $wrapper.removeClass('jzsa-video-loading');
                 $albumContainer.removeClass('jzsa-video-playing');
                 $albumContainer.trigger('jzsa:video-stopped');
+                trace('plyr-ended');
             });
 
             // If the video URL has expired (HTTP 400), re-fetch fresh URLs
             // from Google Photos and retry.
             this._jzsaPlyr.on('error', function() {
-                // console.warn('[jzsa-refresh] ⚠️ Video error — URL may have expired, refreshing…');
-                // Only auto-retry playback when this specific video was actively
-                // being played (or waiting to start after a user click). Errors
-                // from background preloading must never auto-start hidden videos.
-                var shouldRetryPlayback = !!(waitingForPlay || plyrRef.playing);
-                if (shouldRetryPlayback) {
-                    $playLarge.addClass('jzsa-plyr-loading');
-                    $wrapper.addClass('jzsa-video-loading');
-                    waitingForPlay = true;
+                if (videoEl._jzsaSuppressNextError) {
+                    videoEl._jzsaSuppressNextError = false;
+                    trace('plyr-error-suppressed');
+                    return;
                 }
 
-                refreshAlbumUrls($albumContainer).then(function() {
-                    if (!shouldRetryPlayback) {
-                        waitingForPlay = false;
-                        $playLarge.removeClass('jzsa-plyr-loading');
-                        $wrapper.removeClass('jzsa-video-loading');
-                        return;
-                    }
-
-                    // Fresh URL loaded — auto-retry playback only for the
-                    // user-initiated video.
-                    // console.log('[jzsa-refresh] ▶️ Auto-retrying playback');
-                    var playPromise = plyrRef.play();
-                    if (playPromise && typeof playPromise.catch === 'function') {
-                        playPromise.catch(function() {
-                            waitingForPlay = false;
-                            $playLarge.removeClass('jzsa-plyr-loading');
-                            $wrapper.removeClass('jzsa-video-loading');
-                        });
-                    }
-                }).fail(function() {
-                    // Recovery failed — show error state so user can retry.
-                    waitingForPlay = false;
-                    if (loadingTimeout) { clearTimeout(loadingTimeout); loadingTimeout = null; }
-                    $playLarge.removeClass('jzsa-plyr-loading');
-                    $playLarge.addClass('jzsa-plyr-error');
-                    $wrapper.removeClass('jzsa-video-loading');
+                trace('plyr-error', {
+                    readyState: videoEl.readyState,
+                    networkState: videoEl.networkState
                 });
+
+                // Some failures drop playing=false before the error callback
+                // fires. Recover if playback had already progressed.
+                var hadPlaybackProgress =
+                    typeof videoEl.currentTime === 'number' &&
+                    videoEl.currentTime > 0.1 &&
+                    !videoEl.ended;
+                var shouldRecover = waitingForPlay || plyrRef.playing || healingInProgress || hadPlaybackProgress;
+                if (!shouldRecover) {
+                    trace('plyr-error-ignored-inactive');
+                    return;
+                }
+                attemptAutoHeal('plyr-error');
             });
         });
     }
@@ -746,7 +1048,7 @@
             if (isVideo) {
                 var posterUrl = photo.preview || photo.full || '';
                 html += '<div class="swiper-slide jzsa-slide-video" data-media-type="video">' +
-                    buildVideoHtml({ src: photo.video, poster: posterUrl }) +
+                    buildVideoHtml({ src: photo.video, poster: posterUrl, mediaIndex: index }) +
                     tileFullscreenBtn +
                     '</div>';
             } else {
@@ -2915,7 +3217,7 @@
 
             if (isVideo) {
                 var videoSrc = photo.video || src;
-                mediaHtml = buildVideoHtml({ src: videoSrc, poster: src });
+                mediaHtml = buildVideoHtml({ src: videoSrc, poster: src, mediaIndex: globalIndex });
             } else {
                 mediaHtml =
                     '<img class="jzsa-gallery-thumb' + tileFillClass + '"' +
@@ -3008,7 +3310,7 @@
 
                 if (isVideo) {
                     var videoSrc = item.photo.video || src;
-                    mediaHtml = buildVideoHtml({ src: videoSrc, poster: src });
+                    mediaHtml = buildVideoHtml({ src: videoSrc, poster: src, mediaIndex: item.index });
                 } else {
                     mediaHtml =
                         '<img class="jzsa-gallery-thumb jzsa-justified-thumb"' +

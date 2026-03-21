@@ -1453,12 +1453,11 @@ body.jzsa-no-scroll {
     to { transform: rotate(360deg); }
 }
 
-/* Error state — keep button visible with red-tinted triangle so user can retry */
+/* Error state — blue button stays, triangle turns red so user can retry */
 .jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-error {
     visibility: visible !important;
     opacity: 1 !important;
     display: flex !important;
-    background: rgba(0, 0, 0, 0.5) !important;
 }
 
 .jzsa-video-wrapper .plyr__control--overlaid.jzsa-plyr-error svg {
