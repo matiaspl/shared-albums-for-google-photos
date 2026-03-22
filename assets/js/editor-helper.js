@@ -13,9 +13,24 @@
             e.content = restoreShortcodesFromPlaceholders(e.content);
         });
 
+        /**
+         * Escape text for use inside a double-quoted HTML attribute (TinyMCE-safe;
+         * tinymce.utils.Entities is not available in all WP / TinyMCE builds).
+         */
+        function escapeAttrForData(atts) {
+            if (atts == null) {
+                return '';
+            }
+            return String(atts)
+                .replace(/&/g, '&amp;')
+                .replace(/"/g, '&quot;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;');
+        }
+
         function replaceShortcodesWithPlaceholders(content) {
             return content.replace(/\[(?:jzsa-album|yaga-album)([^\]]*)\]/gi, function(match, atts) {
-                return '<div class="yaga-editor-placeholder mceNonEditable" data-yaga-atts="' + tinymce.utils.Entities.encodeAllRaw(atts) + '">' +
+                return '<div class="yaga-editor-placeholder mceNonEditable" data-yaga-atts="' + escapeAttrForData(atts) + '">' +
                        '<div class="yaga-placeholder-content">' +
                        '<span class="dashicons dashicons-format-gallery"></span>' +
                        '<strong>Google Photos Album</strong>' +
