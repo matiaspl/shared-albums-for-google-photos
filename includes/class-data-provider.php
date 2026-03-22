@@ -92,7 +92,7 @@ class YAGA_Data_Provider {
 			$url,
 			array(
 				'timeout'    => 10,
-				'user-agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ),
+				'user-agent' => $this->get_default_user_agent(),
 			)
 		);
 
@@ -120,7 +120,7 @@ class YAGA_Data_Provider {
 
 		// Extract album metadata
 		$title  = $this->extract_album_title( $html );
-		$photos = $this->extract_photos( $html );
+		$photos = $this->extract_photos( $html, $url );
 
 		if ( empty( $photos ) ) {
 			return array(
@@ -214,6 +214,31 @@ class YAGA_Data_Provider {
 		$title = trim( $title );
 
 		return $title;
+	}
+
+	/**
+	 * Build a consistent user agent for Google requests.
+	 *
+	 * @return string
+	 */
+	private function get_default_user_agent() {
+		return 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' );
+	}
+
+	/**
+	 * Format EXIF numeric values for display.
+	 *
+	 * @param mixed $value Numeric-like value.
+	 * @return string
+	 */
+	private function format_exif_number( $value ) {
+		$number = floatval( $value );
+		if ( floor( $number ) === $number ) {
+			return (string) intval( $number );
+		}
+
+		$text = rtrim( rtrim( number_format( $number, 1, '.', '' ), '0' ), '.' );
+		return str_replace( '.', ',', $text );
 	}
 
 	/**
@@ -335,36 +360,473 @@ class YAGA_Data_Provider {
 	}
 
 	/**
+	 * Build camera/exif display strings from a Google EXIF tuple.
+	 *
+	 * @param string $make     Camera make.
+	 * @param string $model    Camera model.
+	 * @param mixed  $focal    Focal length.
+	 * @param mixed  $aperture Aperture value.
+	 * @param mixed  $iso      ISO value.
+	 * @param mixed  $shutter  Exposure time in seconds.
+	 * @return array{camera:string,exif:string}
+	 */
+	private function build_camera_exif_strings( $make, $model, $focal, $aperture, $iso, $shutter ) {
+		$camera = trim( trim( (string) $make ) . ' ' . trim( (string) $model ) );
+		$parts  = array();
+
+		if ( '' !== (string) $aperture ) {
+			$parts[] = 'ƒ/' . $this->format_exif_number( $aperture );
+		}
+
+		$shutter = floatval( $shutter );
+		if ( $shutter > 0 ) {
+			$parts[] = $shutter < 1 ? '1/' . round( 1 / $shutter ) : $this->format_exif_number( $shutter ) . 's';
+		}
+
+		if ( '' !== (string) $focal ) {
+			$parts[] = $this->format_exif_number( $focal ) . ' mm';
+		}
+
+		if ( intval( $iso ) > 0 ) {
+			$parts[] = 'ISO' . intval( $iso );
+		}
+
+		return array(
+			'camera' => $camera,
+			'exif'   => implode( ' ', $parts ),
+		);
+	}
+
+	/**
+	 * Extract Google batchexecute context from the bootstrap HTML.
+	 *
+	 * @param string $html HTML document.
+	 * @return array{f_sid:string,bl:string,hl:string}
+	 */
+	private function extract_google_rpc_context( $html ) {
+		$f_sid = '';
+		$bl    = '';
+
+		if ( preg_match( '/"FdrFJe":"([^"]+)"/', $html, $match ) ) {
+			$f_sid = $match[1];
+		}
+
+		if ( preg_match( '/"cfb2h":"([^"]+)"/', $html, $match ) ) {
+			$bl = $match[1];
+		}
+
+		$locale = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
+		$hl     = strtolower( substr( str_replace( '_', '-', (string) $locale ), 0, 2 ) );
+		if ( '' === $hl ) {
+			$hl = 'en';
+		}
+
+		return array(
+			'f_sid' => $f_sid,
+			'bl'    => $bl,
+			'hl'    => $hl,
+		);
+	}
+
+	/**
+	 * Extract shared album id/key from the public album URL.
+	 *
+	 * @param string $album_url Shared album URL.
+	 * @return array{share_id:string,share_key:string}
+	 */
+	private function extract_share_context( $album_url ) {
+		$share_id  = '';
+		$share_key = '';
+
+		if ( preg_match( '#/share/([^/?]+)#', $album_url, $match ) ) {
+			$share_id = $match[1];
+		}
+
+		$query = wp_parse_url( $album_url, PHP_URL_QUERY );
+		if ( is_string( $query ) && '' !== $query ) {
+			parse_str( $query, $params );
+			if ( ! empty( $params['key'] ) && is_string( $params['key'] ) ) {
+				$share_key = $params['key'];
+			}
+		}
+
+		return array(
+			'share_id'  => $share_id,
+			'share_key' => $share_key,
+		);
+	}
+
+	/**
+	 * Decode a Google batchexecute response and return the payload for one RPC.
+	 *
+	 * @param string $body   Raw response body.
+	 * @param string $rpc_id RPC identifier to extract.
+	 * @return array
+	 */
+	private function decode_batchexecute_payload( $body, $rpc_id ) {
+		foreach ( preg_split( "/\r?\n/", (string) $body ) as $line ) {
+			$line = trim( $line );
+			if ( '' === $line || '[' !== $line[0] ) {
+				continue;
+			}
+
+			$decoded = json_decode( $line, true );
+			if ( ! is_array( $decoded ) ) {
+				continue;
+			}
+
+			foreach ( $decoded as $entry ) {
+				if ( ! is_array( $entry ) || count( $entry ) < 3 ) {
+					continue;
+				}
+
+				if ( 'wrb.fr' !== $entry[0] || $rpc_id !== $entry[1] || ! is_string( $entry[2] ) ) {
+					continue;
+				}
+
+				$payload = json_decode( $entry[2], true );
+				if ( is_array( $payload ) ) {
+					return $payload;
+				}
+			}
+		}
+
+		return array();
+	}
+
+	/**
+	 * Convert one `fDcn4b` details row into the plugin photo shape.
+	 *
+	 * @param array $row Decoded Google photo details row.
+	 * @return array
+	 */
+	private function extract_photo_details_from_rpc_row( $row ) {
+		if ( ! is_array( $row ) ) {
+			return array();
+		}
+
+		$details = array(
+			'filename'        => '',
+			'timestamp'       => '',
+			'timezone_offset' => '',
+			'width'           => 0,
+			'height'          => 0,
+			'camera'          => '',
+			'exif'            => '',
+			'owner'           => '',
+		);
+
+		if ( isset( $row[2] ) && is_string( $row[2] ) && $this->is_plausible_original_filename( $row[2] ) ) {
+			$details['filename'] = $row[2];
+		}
+
+		if ( isset( $row[3], $row[4] ) && is_numeric( $row[3] ) && is_numeric( $row[4] ) ) {
+			$details['timestamp']       = floatval( $row[3] ) + floatval( $row[4] );
+			$details['timezone_offset'] = intval( $row[4] );
+		}
+
+		if ( isset( $row[6] ) && is_numeric( $row[6] ) ) {
+			$details['width'] = intval( $row[6] );
+		}
+
+		if ( isset( $row[7] ) && is_numeric( $row[7] ) ) {
+			$details['height'] = intval( $row[7] );
+		}
+
+		if ( isset( $row[23] ) && is_array( $row[23] ) ) {
+			$make     = isset( $row[23][0] ) ? $row[23][0] : '';
+			$model    = isset( $row[23][1] ) ? $row[23][1] : '';
+			$focal    = isset( $row[23][3] ) ? $row[23][3] : '';
+			$aperture = isset( $row[23][4] ) ? $row[23][4] : '';
+			$iso      = isset( $row[23][5] ) ? $row[23][5] : '';
+			$shutter  = isset( $row[23][6] ) ? $row[23][6] : '';
+			$exif     = $this->build_camera_exif_strings( $make, $model, $focal, $aperture, $iso, $shutter );
+
+			$details['camera'] = $exif['camera'];
+			$details['exif']   = $exif['exif'];
+		}
+
+		if (
+			isset( $row[28][11][0] ) &&
+			is_string( $row[28][11][0] ) &&
+			'' !== trim( $row[28][11][0] )
+		) {
+			$details['owner'] = 'Shared by ' . trim( $row[28][11][0] );
+		}
+
+		return $details;
+	}
+
+	/**
+	 * Fetch one photo details payload from Google Photos `fDcn4b`.
+	 *
+	 * @param string $photo_id       Photo id.
+	 * @param string $album_url      Shared album URL.
+	 * @param array  $rpc_context    Bootstrap RPC context.
+	 * @param array  $share_context  Shared album id/key.
+	 * @param int    $request_id     Request id suffix for Google batching.
+	 * @return array
+	 */
+	private function fetch_photo_details_from_rpc( $photo_id, $album_url, $rpc_context, $share_context, $request_id ) {
+		if (
+			'' === $photo_id ||
+			empty( $rpc_context['f_sid'] ) ||
+			empty( $rpc_context['bl'] ) ||
+			empty( $share_context['share_id'] ) ||
+			empty( $share_context['share_key'] )
+		) {
+			return array();
+		}
+
+		$query = http_build_query(
+			array(
+				'rpcids'      => 'fDcn4b',
+				'source-path' => '/share/' . $share_context['share_id'] . '/photo/' . $photo_id,
+				'f.sid'       => $rpc_context['f_sid'],
+				'bl'          => $rpc_context['bl'],
+				'hl'          => $rpc_context['hl'],
+				'soc-app'     => '165',
+				'soc-platform'=> '1',
+				'soc-device'  => '1',
+				'_reqid'      => strval( $request_id ),
+				'rt'          => 'c',
+			),
+			'',
+			'&',
+			PHP_QUERY_RFC3986
+		);
+
+		$request_payload = array(
+			array(
+				array(
+					'fDcn4b',
+					wp_json_encode( array( $photo_id, null, $share_context['share_key'], null, null, array( 2 ) ) ),
+					null,
+					'1',
+				),
+			),
+		);
+
+		$response = wp_remote_post(
+			'https://photos.google.com/_/PhotosUi/data/batchexecute?' . $query,
+			array(
+				'timeout'    => 10,
+				'user-agent' => $this->get_default_user_agent(),
+				'headers'    => array(
+					'Content-Type' => 'application/x-www-form-urlencoded;charset=UTF-8',
+					'Origin'       => 'https://photos.google.com',
+					'Referer'      => $album_url,
+				),
+				'body'       => 'f.req=' . rawurlencode( wp_json_encode( $request_payload ) ) . '&',
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			return array();
+		}
+
+		$payload = $this->decode_batchexecute_payload( wp_remote_retrieve_body( $response ), 'fDcn4b' );
+		if ( empty( $payload[0] ) ) {
+			return array();
+		}
+
+		return $this->extract_photo_details_from_rpc_row( $payload[0] );
+	}
+
+	/**
+	 * Fill missing filename/info fields from the Google Photos details RPC.
+	 *
+	 * @param array  $photos    Extracted photo rows.
+	 * @param string $html      Shared album HTML.
+	 * @param string $album_url Shared album URL.
+	 * @return void
+	 */
+	private function resolve_missing_photo_details_from_rpc( &$photos, $html, $album_url ) {
+		$rpc_context   = $this->extract_google_rpc_context( $html );
+		$share_context = $this->extract_share_context( $album_url );
+		$request_id    = 100000;
+
+		if (
+			empty( $rpc_context['f_sid'] ) ||
+			empty( $rpc_context['bl'] ) ||
+			empty( $share_context['share_id'] ) ||
+			empty( $share_context['share_key'] )
+		) {
+			return;
+		}
+
+		foreach ( $photos as &$photo ) {
+			$needs_rpc = empty( $photo['filename'] ) ||
+				empty( $photo['camera'] ) ||
+				empty( $photo['exif'] ) ||
+				empty( $photo['width'] ) ||
+				empty( $photo['height'] );
+
+			if ( ! $needs_rpc || empty( $photo['id'] ) ) {
+				continue;
+			}
+
+			$details    = $this->fetch_photo_details_from_rpc( $photo['id'], $album_url, $rpc_context, $share_context, $request_id );
+			$request_id += 100000;
+
+			if ( empty( $details ) ) {
+				continue;
+			}
+
+			if ( ! empty( $details['filename'] ) ) {
+				$photo['filename'] = $details['filename'];
+			}
+			if ( ! empty( $details['timestamp'] ) ) {
+				$photo['timestamp'] = $details['timestamp'];
+			}
+			if ( isset( $details['timezone_offset'] ) && '' !== $details['timezone_offset'] ) {
+				$photo['timezone_offset'] = intval( $details['timezone_offset'] );
+			}
+			if ( ! empty( $details['width'] ) ) {
+				$photo['width'] = $details['width'];
+			}
+			if ( ! empty( $details['height'] ) ) {
+				$photo['height'] = $details['height'];
+			}
+			if ( ! empty( $details['camera'] ) ) {
+				$photo['camera'] = $details['camera'];
+			}
+			if ( ! empty( $details['exif'] ) ) {
+				$photo['exif'] = $details['exif'];
+			}
+			if ( ! empty( $details['owner'] ) ) {
+				$photo['owner'] = $details['owner'];
+			}
+		}
+		unset( $photo );
+	}
+
+	/**
+	 * Build the original-download URL used by Google Photos.
+	 *
+	 * @param string $photo_url Googleusercontent base URL.
+	 * @return string
+	 */
+	private function build_original_download_url( $photo_url ) {
+		if ( empty( $photo_url ) ) {
+			return '';
+		}
+
+		return preg_replace( '/=[^?&]*$/', '', $photo_url ) . '=s0-d-ip';
+	}
+
+	/**
+	 * Extract the original filename from a Content-Disposition header.
+	 *
+	 * @param string $header Header value.
+	 * @return string
+	 */
+	private function extract_filename_from_content_disposition( $header ) {
+		if ( empty( $header ) || ! is_string( $header ) ) {
+			return '';
+		}
+
+		if ( preg_match( "/filename\\*=(?:UTF-8''|utf-8'')([^;]+)/", $header, $match ) ) {
+			$filename = rawurldecode( trim( $match[1], "\"'" ) );
+			if ( $this->is_plausible_original_filename( $filename ) ) {
+				return $filename;
+			}
+		}
+
+		if ( preg_match( '/filename="?([^";]+)"?/i', $header, $match ) ) {
+			$filename = trim( $match[1] );
+			if ( $this->is_plausible_original_filename( $filename ) ) {
+				return $filename;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * Resolve missing filenames from Google download headers.
+	 *
+	 * @param array  $photos    Extracted photo rows.
+	 * @param string $album_url Original shared album URL for Referer.
+	 * @return void
+	 */
+	private function resolve_missing_filenames_from_headers( &$photos, $album_url ) {
+		foreach ( $photos as &$photo ) {
+			if ( ! empty( $photo['filename'] ) || empty( $photo['url'] ) ) {
+				continue;
+			}
+
+			$download_url = $this->build_original_download_url( $photo['url'] );
+			if ( empty( $download_url ) ) {
+				continue;
+			}
+
+			$response = wp_remote_request(
+				$download_url,
+				array(
+					'method'      => 'HEAD',
+					'timeout'     => 10,
+					'redirection' => 5,
+					'user-agent'  => $this->get_default_user_agent(),
+					'headers'     => array(
+						'Referer' => $album_url,
+					),
+				)
+			);
+
+			if ( is_wp_error( $response ) ) {
+				continue;
+			}
+
+			$filename = $this->extract_filename_from_content_disposition(
+				wp_remote_retrieve_header( $response, 'content-disposition' )
+			);
+
+			if ( $filename !== '' ) {
+				$photo['filename'] = $filename;
+			}
+		}
+		unset( $photo );
+	}
+
+	/**
 	 * Extract photo data from HTML content
 	 * Uses multiple extraction strategies for robustness
 	 *
-	 * @param string $html HTML content
+	 * @param string $html      HTML content
+	 * @param string $album_url Shared album URL.
 	 * @return array Photo data objects [['url' => ..., 'filename' => ...], ...]
 	 */
-	private function extract_photos( $html ) {
+	private function extract_photos( $html, $album_url = '' ) {
 		$photos = array();
 
 		// Stage 1: Extract basic photo objects (URL, ID, Timestamp, TZ Offset)
 		// We look for the pattern: ["ID", ["URL", W, H, ...], TIMESTAMP, "DEDUP", TZ_OFFSET, ...
 		// Using a more robust regex that handles nested arrays in the URL block
-		if ( preg_match_all( '/\[\"(AF1Qip[^\"]+)\"\s*,\s*\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\".*?\]\s*,\s*(\d{10,13})\s*,\s*\"[^\"]*\"\s*,\s*(\d+)/is', $html, $matches ) ) {
+		if ( preg_match_all( '/\[\"(AF1Qip[^\"]+)\"\s*,\s*\[\"(https?:\/\/[^\"]+googleusercontent\.com[^\"]+)\"\s*,\s*(\d+)\s*,\s*(\d+).*?\]\s*,\s*(\d{10,13})\s*,\s*\"[^\"]*\"\s*,\s*(\d+)/is', $html, $matches ) ) {
 			foreach ( $matches[1] as $index => $id ) {
 				$url       = $matches[2][ $index ];
-				$timestamp = $matches[3][ $index ];
-				$tz_offset = $matches[4][ $index ];
+				$width     = intval( $matches[3][ $index ] );
+				$height    = intval( $matches[4][ $index ] );
+				$timestamp = $matches[5][ $index ];
+				$tz_offset = $matches[6][ $index ];
 				$url       = preg_replace( '/=[^&]*$/', '', $url );
 				
 				if ( ! isset( $photos[ $url ] ) ) {
 					$adjusted_ts = floatval($timestamp) + floatval($tz_offset);
 
 					$photos[ $url ] = array(
-						'url'       => $url,
-						'id'        => $id,
-						'timestamp' => $adjusted_ts,
-						'filename'  => '',
-						'camera'    => '',
-						'exif'      => '',
-						'owner_id'  => '',
+						'url'             => $url,
+						'id'              => $id,
+						'timestamp'       => $adjusted_ts,
+						'timezone_offset' => intval( $tz_offset ),
+						'width'           => $width,
+						'height'          => $height,
+						'filename'        => '',
+						'camera'          => '',
+						'exif'            => '',
+						'owner'           => '',
+						'owner_id'        => '',
 					);
 				}
 			}
@@ -382,14 +844,9 @@ class YAGA_Data_Provider {
 				$focal    = $matches[4][ $index ];
 				$aperture = $matches[5][ $index ];
 				$iso      = $matches[6][ $index ];
-				$shutter  = floatval($matches[7][ $index ]);
-				
-				$shutter_display = $shutter < 1 ? '1/' . round(1 / $shutter) : round($shutter, 1) . 's';
-				
-				$exif_map[ $id ] = array(
-					'camera' => trim( $make . ' ' . $model ),
-					'exif'   => sprintf('ƒ/%s • %s • %smm • ISO%d', $aperture, $shutter_display, $focal, $iso)
-				);
+				$shutter  = $matches[7][ $index ];
+
+				$exif_map[ $id ] = $this->build_camera_exif_strings( $make, $model, $focal, $aperture, $iso, $shutter );
 			}
 			
 			foreach ( $photos as &$photo ) {
@@ -446,19 +903,29 @@ class YAGA_Data_Provider {
 			}
 		}
 
-		// Generate filenames from timestamp if still missing
-		foreach ( $photos as &$photo ) {
-			if ( empty($photo['filename']) && !empty($photo['timestamp']) ) {
-				$photo['filename'] = date('Ymd_His', $photo['timestamp'] / 1000) . '.jpg';
-			}
-		}
+		// fDcn4b is the same details RPC the info panel uses and exposes the real basename.
+		$this->resolve_missing_photo_details_from_rpc( $photos, $html, $album_url );
 
-		// Final cleanup: combine info
+		// Last resort only: original download headers still expose the basename if RPC details fail.
+		$this->resolve_missing_filenames_from_headers( $photos, $album_url );
+
+		// Final cleanup: normalize derived display fields.
 		foreach ( $photos as &$photo ) {
 			$info = array();
-			if ( ! empty( $photo['camera'] ) ) $info[] = $photo['camera'];
-			if ( ! empty( $photo['exif'] ) ) $info[] = $photo['exif'];
-			if ( ! empty( $photo['owner'] ) ) $info[] = $photo['owner'];
+			if ( ! empty( $photo['camera'] ) ) {
+				$info[] = $photo['camera'];
+			}
+			if ( ! empty( $photo['exif'] ) ) {
+				$info[] = $photo['exif'];
+			}
+			if ( ! empty( $photo['owner'] ) ) {
+				$info[] = $photo['owner'];
+			}
+			if ( ! empty( $photo['width'] ) && ! empty( $photo['height'] ) ) {
+				$photo['megapixels'] = round( ( intval( $photo['width'] ) * intval( $photo['height'] ) ) / 1000000, 1 );
+			} else {
+				$photo['megapixels'] = 0;
+			}
 			$photo['info_combined'] = implode(' • ', $info);
 		}
 
@@ -469,11 +936,17 @@ class YAGA_Data_Provider {
 					$url = preg_replace( '/=[^&]*$/', '', $url );
 					if ( ! isset( $photos[ $url ] ) ) {
 						$photos[ $url ] = array(
-							'url'       => $url,
-							'filename'  => '',
-							'timestamp' => '',
-							'camera'    => '',
-							'info_combined' => '',
+							'url'             => $url,
+							'filename'        => '',
+							'timestamp'       => '',
+							'timezone_offset' => '',
+							'camera'          => '',
+							'exif'            => '',
+							'width'           => 0,
+							'height'          => 0,
+							'megapixels'      => 0,
+							'owner'           => '',
+							'info_combined'   => '',
 						);
 					}
 				}

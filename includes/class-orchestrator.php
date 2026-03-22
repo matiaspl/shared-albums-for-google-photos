@@ -785,18 +785,30 @@ class YAGA_Shared_Albums {
 		$photos = array();
 		foreach ( $base_urls as $item ) {
 			// Handle both new array structure and old string structure (for backward compatibility with transients)
-			$base      = is_array( $item ) ? $item['url'] : $item;
-			$filename  = is_array( $item ) ? ( isset( $item['filename'] ) ? $item['filename'] : '' ) : '';
-			$timestamp = is_array( $item ) ? ( isset( $item['timestamp'] ) ? $item['timestamp'] : '' ) : '';
-			$camera    = is_array( $item ) ? ( isset( $item['camera'] ) ? $item['camera'] : '' ) : '';
+			$base            = is_array( $item ) ? $item['url'] : $item;
+			$filename        = is_array( $item ) ? ( isset( $item['filename'] ) ? $item['filename'] : '' ) : '';
+			$timestamp       = is_array( $item ) ? ( isset( $item['timestamp'] ) ? $item['timestamp'] : '' ) : '';
+			$timezone_offset = is_array( $item ) ? ( isset( $item['timezone_offset'] ) ? $item['timezone_offset'] : '' ) : '';
+			$camera          = is_array( $item ) ? ( isset( $item['camera'] ) ? $item['camera'] : '' ) : '';
+			$exif            = is_array( $item ) ? ( isset( $item['exif'] ) ? $item['exif'] : '' ) : '';
+			$owner           = is_array( $item ) ? ( isset( $item['owner'] ) ? $item['owner'] : '' ) : '';
+			$width           = is_array( $item ) ? ( isset( $item['width'] ) ? intval( $item['width'] ) : 0 ) : 0;
+			$height          = is_array( $item ) ? ( isset( $item['height'] ) ? intval( $item['height'] ) : 0 ) : 0;
+			$megapixels      = is_array( $item ) ? ( isset( $item['megapixels'] ) ? floatval( $item['megapixels'] ) : 0 ) : 0;
 
 			$photo = array(
-				'full'      => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
-				'filename'  => $filename,
-				'timestamp' => $timestamp,
-				'camera'    => $camera,
-				'info'      => is_array( $item ) ? ( isset( $item['info_combined'] ) ? $item['info_combined'] : '' ) : '',
-				'thumb'     => sprintf( '%s=w%d-h%d-c', $base, self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
+				'full'       => sprintf( '%s=w%d-h%d', $base, $full_width, $full_height ),
+				'filename'   => $filename,
+				'timestamp'  => $timestamp,
+				'timezone_offset' => $timezone_offset,
+				'camera'     => $camera,
+				'exif'       => $exif,
+				'owner'      => $owner,
+				'width'      => $width,
+				'height'     => $height,
+				'megapixels' => $megapixels,
+				'info'       => is_array( $item ) ? ( isset( $item['info_combined'] ) ? $item['info_combined'] : '' ) : '',
+				'thumb'      => sprintf( '%s=w%d-h%d-c', $base, self::DEFAULT_THUMB_WIDTH, self::DEFAULT_THUMB_HEIGHT ),
 			);
 
 			// Add preview URL if dimensions provided.

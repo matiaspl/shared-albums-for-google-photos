@@ -414,6 +414,82 @@
         return splitPascalCaseRun(seg);
     }
 
+    function formatMegapixels(width, height) {
+        var w = parseInt(width, 10);
+        var h = parseInt(height, 10);
+        if (!w || !h) {
+            return '';
+        }
+        var megapixels = (w * h) / 1000000;
+        return megapixels.toFixed(1).replace('.', ',') + ' Mpix';
+    }
+
+    function formatDimensions(width, height) {
+        var w = parseInt(width, 10);
+        var h = parseInt(height, 10);
+        if (!w || !h) {
+            return '';
+        }
+        return String(w) + ' × ' + String(h);
+    }
+
+    function buildCameraLine(photo) {
+        var parts = [];
+        if (photo.camera) {
+            parts.push(photo.camera);
+        }
+        if (photo.exif) {
+            parts.push(photo.exif);
+        }
+        return parts.join(' ').trim();
+    }
+
+    function padNumber(value) {
+        return String(value).padStart(2, '0');
+    }
+
+    function formatTimezoneOffset(offsetMs) {
+        if (offsetMs === '' || offsetMs === null || typeof offsetMs === 'undefined') {
+            return '';
+        }
+        var totalMinutes = Math.round(parseInt(offsetMs, 10) / 60000);
+        if (!isFinite(totalMinutes)) {
+            return '';
+        }
+        var sign = totalMinutes >= 0 ? '+' : '-';
+        var absoluteMinutes = Math.abs(totalMinutes);
+        var hours = Math.floor(absoluteMinutes / 60);
+        var minutes = absoluteMinutes % 60;
+        return 'GMT' + sign + padNumber(hours) + ':' + padNumber(minutes);
+    }
+
+    function formatPhotoDateLine(timestamp, timezoneOffset) {
+        var parsedTimestamp = parseInt(timestamp, 10);
+        if (!parsedTimestamp) {
+            return '';
+        }
+
+        var date = new Date(parsedTimestamp);
+        var dayMonth = new Intl.DateTimeFormat('pl-PL', {
+            day: 'numeric',
+            month: 'short',
+            timeZone: 'UTC'
+        }).format(date).replace(/\.$/, '');
+        var weekday = new Intl.DateTimeFormat('pl-PL', {
+            weekday: 'short',
+            timeZone: 'UTC'
+        }).format(date);
+        var time = new Intl.DateTimeFormat('pl-PL', {
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false,
+            timeZone: 'UTC'
+        }).format(date);
+        var timezone = formatTimezoneOffset(timezoneOffset);
+
+        return [dayMonth, weekday + ',', time, timezone].filter(Boolean).join(' ');
+    }
+
     // Helper: Build slides HTML structure (for photo array)
     function buildSlidesHtml(photos, showFilename, showInfo) {
         var html = '';
@@ -423,26 +499,38 @@
             var fullUrl = photo.full;
             var filename = photo.filename || '';
             var timestamp = photo.timestamp || '';
-            var info = photo.info || '';
+            var timezoneOffset = typeof photo.timezone_offset !== 'undefined' ? photo.timezone_offset : '';
+            var width = photo.width || 0;
+            var height = photo.height || 0;
             
-            // Format timestamp for display
-            var dateStr = '';
-            if (timestamp) {
-                var date = new Date(parseInt(timestamp));
-                dateStr = date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-            }
+            var dateStr = formatPhotoDateLine(timestamp, timezoneOffset);
 
-            var combinedInfo = '';
+            var infoLines = [];
             if (showInfo) {
-                var infoParts = [];
-                if (dateStr) infoParts.push(dateStr);
-                if (info) infoParts.push(info);
-                combinedInfo = infoParts.join(' • ');
+                var cameraLine = buildCameraLine(photo);
+                var megapixelsLine = formatMegapixels(width, height);
+                var dimensionsLine = formatDimensions(width, height);
+
+                if (dateStr) {
+                    infoLines.push(dateStr);
+                }
+                if (cameraLine) {
+                    infoLines.push(cameraLine);
+                }
+                if (photo.owner) {
+                    infoLines.push(photo.owner);
+                }
+                if (megapixelsLine) {
+                    infoLines.push(megapixelsLine);
+                }
+                if (dimensionsLine) {
+                    infoLines.push(dimensionsLine);
+                }
             }
 
             html += '<div class="swiper-slide" ' +
                 'data-filename="' + escapeHtml(filename) + '" ' +
-                'data-info="' + escapeHtml(combinedInfo) + '">' +
+                'data-info="' + escapeHtml(infoLines.join('\n')) + '">' +
                 '<div class="swiper-zoom-container">' +
                 '<img src="' + previewUrl + '" ' +
                 (previewUrl !== fullUrl ? 'data-full-src="' + fullUrl + '" ' : '') +
