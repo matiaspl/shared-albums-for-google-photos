@@ -47,9 +47,8 @@
 /* Persistent Overlays (Stick to Viewport) */
 .yaga-persistent-filename {
     position: absolute;
-    bottom: 40px;
-    left: 50%;
-    transform: translateX(-50%);
+    bottom: 10px;
+    right: 10px;
     background: rgba(0, 0, 0, 0.5);
     color: #fff;
     padding: 4px 12px;
@@ -58,10 +57,11 @@
     z-index: 30;
     pointer-events: none;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    max-width: 80%;
+    max-width: min(80%, calc(100% - 20px));
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    text-align: right;
     opacity: 0;
     transition: opacity 0.2s ease;
     will-change: opacity;
@@ -90,8 +90,12 @@
 }
 
 /* Fullscreen adjustments for persistent overlays */
-.yaga-album.yaga-is-fullscreen .yaga-persistent-filename { bottom: 80px; }
+.yaga-album.yaga-is-fullscreen .yaga-persistent-filename { bottom: 25px; right: 25px; }
 .yaga-album.yaga-is-fullscreen .yaga-persistent-info { bottom: 60px; right: 25px; }
+
+/* Keep multiline info above the filename pill when both are enabled */
+.yaga-album[data-show-filename="true"][data-show-info="true"] .yaga-persistent-info { bottom: 45px; }
+.yaga-album.yaga-is-fullscreen[data-show-filename="true"][data-show-info="true"] .yaga-persistent-info { bottom: 60px; }
 
 /* Control Buttons & Progress */
 .yaga-album .swiper-button-external-link,
