@@ -217,6 +217,124 @@ class YAGA_Data_Provider {
 	}
 
 	/**
+	 * Whether a string looks like an original image filename (not a URL or path).
+	 *
+	 * @param string $fn Candidate.
+	 * @return bool
+	 */
+	private function is_plausible_original_filename( $fn ) {
+		if ( $fn === '' || strlen( $fn ) > 220 ) {
+			return false;
+		}
+		if ( preg_match( '/https?:\/\//i', $fn ) || strpos( $fn, '//' ) !== false ) {
+			return false;
+		}
+		if ( preg_match( '#[\/\\\\]#', $fn ) ) {
+			return false;
+		}
+		return (bool) preg_match( '/\.(?:jpe?g|png|heic|webp)$/iu', $fn );
+	}
+
+	/**
+	 * Prefer filenames that look like camera exports (YAPA_, DSC, long basenames).
+	 *
+	 * @param string $fn Candidate.
+	 * @return int Score (higher is better).
+	 */
+	private function score_filename_candidate( $fn ) {
+		$score = 1 + min( 15, (int) ( strlen( $fn ) / 12 ) );
+		if ( preg_match( '/YAPA\d{4}-\d{2}-\d{2}/i', $fn ) ) {
+			$score += 60;
+		}
+		if ( preg_match( '/^[A-Za-z]{3,}\d{4}-\d{2}-\d{2}/', $fn ) ) {
+			$score += 45;
+		}
+		if ( preg_match( '/^\w+\d{4}-\d{2}-\d{2}_/', $fn ) ) {
+			$score += 40;
+		}
+		if ( strpos( $fn, '_' ) !== false ) {
+			$score += 22;
+		}
+		if ( preg_match( '/^(DSC|IMG|DJI_|PXL_|Photo_|SAM_|_MG)/i', $fn ) ) {
+			$score += 18;
+		}
+		return $score;
+	}
+
+	/**
+	 * Extract original filename for one media id from embedded page JSON.
+	 * Google changes field numbers; scanning a window after the id is more stable than one global regex.
+	 *
+	 * @param string $html     Full HTML/JS payload.
+	 * @param string $media_id AF1Qip… id.
+	 * @return string Filename or empty string.
+	 */
+	private function extract_filename_for_media_id( $html, $media_id ) {
+		if ( $media_id === '' ) {
+			return '';
+		}
+		$needle = '["' . $media_id . '"';
+		$pos    = strpos( $html, $needle );
+		if ( false === $pos ) {
+			$needle = '"' . $media_id . '"';
+			$pos    = strpos( $html, $needle );
+			if ( false === $pos ) {
+				return '';
+			}
+		}
+		$chunk = substr( $html, $pos, 35000 );
+
+		// Known historical field (still present on some responses).
+		if ( preg_match( '/"101428965"\s*:\s*\[\s*(?:\d+|null)\s*,\s*"([^"]+)"/', $chunk, $m ) ) {
+			if ( $this->is_plausible_original_filename( $m[1] ) ) {
+				return $m[1];
+			}
+		}
+
+		// Numeric protobuf-style keys: "12345":[0,"file.jpg"] or with null.
+		if ( preg_match_all( '/"(\d{5,12})"\s*:\s*\[\s*(?:\d+|null)\s*,\s*"([^"]*\.(?:jpg|jpeg|png|heic|webp))"\]/iu', $chunk, $all, PREG_SET_ORDER ) ) {
+			$best       = '';
+			$best_score = 0;
+			foreach ( $all as $row ) {
+				$fn = $row[2];
+				if ( ! $this->is_plausible_original_filename( $fn ) ) {
+					continue;
+				}
+				$score = $this->score_filename_candidate( $fn );
+				if ( $score > $best_score ) {
+					$best_score = $score;
+					$best       = $fn;
+				}
+			}
+			if ( $best !== '' ) {
+				return $best;
+			}
+		}
+
+		// Last resort: quoted *.ext strings in the same window (needs a strong score to avoid noise).
+		if ( preg_match_all( '/"([A-Za-z0-9][^"]{0,180}\.(?:jpg|jpeg|png|heic|webp))"/u', $chunk, $q, PREG_SET_ORDER ) ) {
+			$best       = '';
+			$best_score = 0;
+			foreach ( $q as $row ) {
+				$fn = $row[1];
+				if ( ! $this->is_plausible_original_filename( $fn ) ) {
+					continue;
+				}
+				$score = $this->score_filename_candidate( $fn );
+				if ( $score > $best_score ) {
+					$best_score = $score;
+					$best       = $fn;
+				}
+			}
+			if ( $best !== '' && $best_score >= 30 ) {
+				return $best;
+			}
+		}
+
+		return '';
+	}
+
+	/**
 	 * Extract photo data from HTML content
 	 * Uses multiple extraction strategies for robustness
 	 *
@@ -282,15 +400,31 @@ class YAGA_Data_Provider {
 			}
 		}
 
-		// 2. Filenames/Descriptions from "101428965" key
-		if ( preg_match_all( '/\[\"(AF1Qip[^\"]+)\".*?\"101428965\"\s*:\s*\[\d+\s*,\s*\"([^\"]+)\"\]/is', $html, $matches ) ) {
-			$fn_map = array_combine( $matches[1], $matches[2] );
+		// 2. Filenames/Descriptions from "101428965" key (legacy global pairing).
+		if ( preg_match_all( '/\[\"(AF1Qip[^\"]+)\".*?\"101428965\"\s*:\s*\[\s*(?:\d+|null)\s*,\s*\"([^\"]+)\"\]/is', $html, $matches ) ) {
+			$fn_map = array();
+			foreach ( $matches[1] as $i => $id ) {
+				$fn_map[ $id ] = $matches[2][ $i ];
+			}
 			foreach ( $photos as &$photo ) {
-				if ( isset( $fn_map[ $photo['id'] ] ) ) {
+				if ( isset( $fn_map[ $photo['id'] ] ) && $this->is_plausible_original_filename( $fn_map[ $photo['id'] ] ) ) {
 					$photo['filename'] = $fn_map[ $photo['id'] ];
 				}
 			}
+			unset( $photo );
 		}
+
+		// 2b. Per-photo window scan when global pairing fails (Google JSON shape changes).
+		foreach ( $photos as &$photo ) {
+			if ( ! empty( $photo['filename'] ) || empty( $photo['id'] ) ) {
+				continue;
+			}
+			$found = $this->extract_filename_for_media_id( $html, $photo['id'] );
+			if ( $found !== '' ) {
+				$photo['filename'] = $found;
+			}
+		}
+		unset( $photo );
 
 		// 3. Owner IDs
 		if ( preg_match_all( '/\[\"(AF1Qip[^\"]+)\".*?\[\"(AF1QipNY[^\"]+)\"\]/is', $html, $matches ) ) {
