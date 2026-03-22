@@ -405,7 +405,9 @@
 }
 
 .jzsa-help-section h2 {
-    border-bottom-color: #b12222;
+    border-bottom: none;
+    padding-bottom: 0;
+    color: #b12222;
 }
 
 .jzsa-help-section p {
@@ -430,7 +432,9 @@
 }
 
 .jzsa-happy-section h2 {
-    border-bottom-color: #1a7a3a;
+    border-bottom: none;
+    padding-bottom: 0;
+    color: #1a7a3a;
 }
 
 .jzsa-happy-section p {

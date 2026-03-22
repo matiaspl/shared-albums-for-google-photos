@@ -149,52 +149,38 @@ class JZSA_Settings_Page {
 
 				<div class="jzsa-section jzsa-help-section">
 					<h2><?php esc_html_e( 'This Plugin Has Potential, But...', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p>
-						<?php
-						printf(
-							/* translators: %s: link to GitHub issues. */
-							esc_html__( 'I found a bug! Please %s.', 'janzeman-shared-albums-for-google-photos' ),
-							'<a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues/new" target="_blank" rel="noopener">' . esc_html__( 'report it on GitHub', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-						);
-						?>
+					<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
+						<span class="dashicons dashicons-warning" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #d63638; flex-shrink: 0;"></span>
+						<span><?php esc_html_e( 'Found a bug or something not working right?', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues/new" target="_blank" rel="noopener"><?php esc_html_e( 'Report it on GitHub', 'janzeman-shared-albums-for-google-photos' ); ?></a></span>
 					</p>
-					<p>
-						<?php
-						printf(
-							/* translators: %s: link to WordPress.org support forum. */
-							esc_html__( 'I am missing a feature! Please %s.', 'janzeman-shared-albums-for-google-photos' ),
-							'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener">' . esc_html__( 'request it on the support forum', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-						);
-						?>
+					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+						<span class="dashicons dashicons-lightbulb" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #dba617; flex-shrink: 0;"></span>
+						<span><?php esc_html_e( 'Missing a feature or have an idea for improvement?', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener"><?php esc_html_e( 'Request it on the support forum', 'janzeman-shared-albums-for-google-photos' ); ?></a></span>
 					</p>
 				</div>
 
 				<div class="jzsa-section jzsa-happy-section">
-					<h2><?php esc_html_e( 'I Am a Happy User of This Plugin :)', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p>
-						<?php
-						printf(
-							/* translators: %s: link to WordPress.org reviews. */
-							esc_html__( 'Please %s — it helps other users discover the plugin and keeps development going.', 'janzeman-shared-albums-for-google-photos' ),
-							'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post" target="_blank" rel="noopener">' . esc_html__( 'leave a rating on WordPress.org', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-						);
-						?>
+					<h2><?php esc_html_e( 'Enjoying This Plugin?', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
+						<span class="dashicons dashicons-star-filled" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #f0ad4e; flex-shrink: 0;"></span>
+						<span>
+							<?php
+							printf(
+								/* translators: %s: link to WordPress.org reviews. */
+								esc_html__( 'If this plugin saved you time or made your site better, a quick %s would truly make my day. It helps others find the plugin too!', 'janzeman-shared-albums-for-google-photos' ),
+								'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post" target="_blank" rel="noopener">' . esc_html__( '5-star review', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+							);
+							?>
+						</span>
 					</p>
-					<div class="jzsa-support-coffee" style="margin-top: 16px; padding: 16px; display: flex; align-items: flex-start; gap: 16px;">
-						<img src="<?php echo esc_url( plugins_url( 'assets/Photographer_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 64px; height: 64px; flex-shrink: 0;">
-						<div style="flex: 1;">
-							<a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener" style="font-weight: bold; text-decoration: none;"><?php esc_html_e( 'Buy Me a Coffee', 'janzeman-shared-albums-for-google-photos' ); ?></a> <span style="font-size: 1.2em; margin-left: 5px;">&#9749;</span>
-							<p style="margin: 4px 0 0;">
-								<?php
-								printf(
-									/* translators: %s: Buy Me a Coffee link. */
-									esc_html__( 'Please consider %s. Made by a hobbyist WordPress developer and occasional photographer. Thank you :)', 'janzeman-shared-albums-for-google-photos' ),
-									'<a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener">' . esc_html__( 'supporting its development', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-								);
-								?>
-							</p>
-						</div>
-					</div>
+					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+						<img src="<?php echo esc_url( plugins_url( 'assets/BuyMeACoffee_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
+						<span><?php esc_html_e( 'You can also', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener"><?php esc_html_e( 'buy me a coffee.', 'janzeman-shared-albums-for-google-photos' ); ?></a> <?php esc_html_e( "I'll take my family to a local café and finally explain why all those late-night coding sessions were somehow worth it ;)", 'janzeman-shared-albums-for-google-photos' ); ?></span>
+					</p>
+					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+						<img src="<?php echo esc_url( plugins_url( 'assets/Photographer_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
+						<span><?php esc_html_e( 'Made by a hobbyist WordPress developer and occasional photographer. Thank you for using this plugin!', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+					</p>
 				</div>
 
 				<!-- Quick Onboarding Section -->
@@ -1206,52 +1192,38 @@ class JZSA_Settings_Page {
 
 				<div class="jzsa-section jzsa-help-section">
 					<h2><?php esc_html_e( 'This Plugin Has Potential, But...', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p>
-						<?php
-						printf(
-							/* translators: %s: link to GitHub issues. */
-							esc_html__( 'I found a bug! Please %s.', 'janzeman-shared-albums-for-google-photos' ),
-							'<a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues/new" target="_blank" rel="noopener">' . esc_html__( 'report it on GitHub', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-						);
-						?>
+					<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
+						<span class="dashicons dashicons-warning" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #d63638; flex-shrink: 0;"></span>
+						<span><?php esc_html_e( 'Found a bug or something not working right?', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://github.com/JanZeman/shared-albums-for-google-photos/issues/new" target="_blank" rel="noopener"><?php esc_html_e( 'Report it on GitHub', 'janzeman-shared-albums-for-google-photos' ); ?></a></span>
 					</p>
-					<p>
-						<?php
-						printf(
-							/* translators: %s: link to WordPress.org support forum. */
-							esc_html__( 'I am missing a feature! Please %s.', 'janzeman-shared-albums-for-google-photos' ),
-							'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener">' . esc_html__( 'request it on the support forum', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-						);
-						?>
+					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+						<span class="dashicons dashicons-lightbulb" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #dba617; flex-shrink: 0;"></span>
+						<span><?php esc_html_e( 'Missing a feature or have an idea for improvement?', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/" target="_blank" rel="noopener"><?php esc_html_e( 'Request it on the support forum', 'janzeman-shared-albums-for-google-photos' ); ?></a></span>
 					</p>
 				</div>
 
 				<div class="jzsa-section jzsa-happy-section">
-					<h2><?php esc_html_e( 'I Am a Happy User of This Plugin :)', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
-					<p>
-						<?php
-						printf(
-							/* translators: %s: link to WordPress.org reviews. */
-							esc_html__( 'Please %s — it helps other users discover the plugin and keeps development going.', 'janzeman-shared-albums-for-google-photos' ),
-							'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post" target="_blank" rel="noopener">' . esc_html__( 'leave a rating on WordPress.org', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-						);
-						?>
+					<h2><?php esc_html_e( 'Enjoying This Plugin?', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+					<p style="margin: 4px 0 6px; display: flex; align-items: center; gap: 8px;">
+						<span class="dashicons dashicons-star-filled" style="font-size: 26px; width: 36px; height: 36px; line-height: 36px; text-align: center; color: #f0ad4e; flex-shrink: 0;"></span>
+						<span>
+							<?php
+							printf(
+								/* translators: %s: link to WordPress.org reviews. */
+								esc_html__( 'If this plugin saved you time or made your site better, a quick %s would truly make my day. It helps others find the plugin too!', 'janzeman-shared-albums-for-google-photos' ),
+								'<a href="https://wordpress.org/support/plugin/janzeman-shared-albums-for-google-photos/reviews/#new-post" target="_blank" rel="noopener">' . esc_html__( '5-star review', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
+							);
+							?>
+						</span>
 					</p>
-					<div class="jzsa-support-coffee" style="margin-top: 16px; padding: 16px; display: flex; align-items: flex-start; gap: 16px;">
-						<img src="<?php echo esc_url( plugins_url( 'assets/Photographer_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 64px; height: 64px; flex-shrink: 0;">
-						<div style="flex: 1;">
-							<a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener" style="font-weight: bold; text-decoration: none;"><?php esc_html_e( 'Buy Me a Coffee', 'janzeman-shared-albums-for-google-photos' ); ?></a> <span style="font-size: 1.2em; margin-left: 5px;">&#9749;</span>
-							<p style="margin: 4px 0 0;">
-								<?php
-								printf(
-									/* translators: %s: Buy Me a Coffee link. */
-									esc_html__( 'Please consider %s. Made by a hobbyist WordPress developer and occasional photographer. Thank you :)', 'janzeman-shared-albums-for-google-photos' ),
-									'<a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener">' . esc_html__( 'supporting its development', 'janzeman-shared-albums-for-google-photos' ) . '</a>'
-								);
-								?>
-							</p>
-						</div>
-					</div>
+					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+						<img src="<?php echo esc_url( plugins_url( 'assets/BuyMeACoffee_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
+						<span><?php esc_html_e( 'You can also', 'janzeman-shared-albums-for-google-photos' ); ?> <a href="https://www.buymeacoffee.com/janzeman" target="_blank" rel="noopener"><?php esc_html_e( 'buy me a coffee.', 'janzeman-shared-albums-for-google-photos' ); ?></a> <?php esc_html_e( "I'll take my family to a local café and finally explain why all those late-night coding sessions were somehow worth it ;)", 'janzeman-shared-albums-for-google-photos' ); ?></span>
+					</p>
+					<p style="margin: 6px 0 0; display: flex; align-items: center; gap: 8px;">
+						<img src="<?php echo esc_url( plugins_url( 'assets/Photographer_128x128.png', dirname( __FILE__ ) ) ); ?>" alt="" style="width: 36px; height: 36px; flex-shrink: 0;">
+						<span><?php esc_html_e( 'Made by a hobbyist WordPress developer and occasional photographer. Thank you for using this plugin!', 'janzeman-shared-albums-for-google-photos' ); ?></span>
+					</p>
 				</div>
 			</div>
 		</div>
