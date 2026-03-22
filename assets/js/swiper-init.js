@@ -17,6 +17,38 @@
 
 	jzsaDebug('✅ Shared Albums for Google Photos (by JanZeman) loaded');
 
+	/**
+	 * Recolor inline-SVG icon pseudo-elements for a scoped container.
+	 * Data-URI SVGs cannot reference CSS variables, so we inject a scoped
+	 * <style> that rewrites the white fill (%23ffffff) with the chosen color.
+	 */
+	function applyControlsColorToIcons(scopeSelector, color) {
+		var enc = encodeURIComponent(color);
+		var svgs = {
+			next:       "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 24'><path d='M2 2l8 10-8 10' fill='none' stroke='" + enc + "' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' paint-order='stroke fill'/><path d='M2 2l8 10-8 10' fill='none' stroke='%23000000' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M2 2l8 10-8 10' fill='none' stroke='" + enc + "' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>\")",
+			prev:       "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 24'><path d='M10 2L2 12l8 10' fill='none' stroke='" + enc + "' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' paint-order='stroke fill'/><path d='M10 2L2 12l8 10' fill='none' stroke='%23000000' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/><path d='M10 2L2 12l8 10' fill='none' stroke='" + enc + "' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'/></svg>\")",
+			play:       "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M8 5v14l11-7z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
+			pause:      "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 18h3V6H7v12zm7-12v12h3V6h-3z' fill='" + enc + "' stroke='%23000000' stroke-width='1' paint-order='stroke fill'/></svg>\")",
+			fullscreen: "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
+			exitFs:     "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
+			link:       "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")",
+			download:   "url(\"data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z' fill='" + enc + "' stroke='%23000000' stroke-width='1.5' paint-order='stroke fill'/></svg>\")"
+		};
+		var s = scopeSelector;
+		var css =
+			s + ' .swiper-button-next:after{background-image:' + svgs.next + '}' +
+			s + ' .swiper-button-prev:after{background-image:' + svgs.prev + '}' +
+			s + ' .swiper-button-play-pause:after{background-image:' + svgs.play + '}' +
+			s + ' .swiper-button-play-pause.playing:after{background-image:' + svgs.pause + '}' +
+			s + ' .swiper-button-fullscreen:after{background-image:' + svgs.fullscreen + '}' +
+			s + ':fullscreen .swiper-button-fullscreen:after,' +
+			s + ':-webkit-full-screen .swiper-button-fullscreen:after{background-image:' + svgs.exitFs + '}' +
+			s + ' .swiper-button-external-link:after{background-image:' + svgs.link + '}' +
+			s + ' .swiper-button-download:after{background-image:' + svgs.download + '}';
+		var $style = $('<style>').text(css);
+		$(scopeSelector).append($style);
+	}
+
 	var swipers = {};
 
     // Stop and reset all managed videos on the page. Used when switching
@@ -2916,6 +2948,12 @@
             var swiper = new Swiper($container[0], swiperConfig);
             swipers[galleryId] = swiper;
 
+            // Recolor SVG icons when controls-color is customized
+            var controlsColor = $container.attr('data-controls-color');
+            if (controlsColor) {
+                applyControlsColorToIcons('#' + galleryId, controlsColor);
+            }
+
             // Defensive guard: keep double-click/double-tap zoom disabled.
             // Pinch zoom remains available on touch devices via config.zoom.
             if (swiper.zoom && swiper.zoom.toggle) {
@@ -3330,6 +3368,7 @@
         var controlsColor = $galleryContainer.attr('data-controls-color');
         if (controlsColor) {
             $slideshow[0].style.setProperty('--jzsa-controls-color', controlsColor);
+            applyControlsColorToIcons('#' + $slideshow.attr('id'), controlsColor);
         }
         var videoControlsColor = $galleryContainer.attr('data-video-controls-color');
         if (videoControlsColor) {
@@ -3703,6 +3742,7 @@
         var controlsColor = $container.attr('data-controls-color');
         if (controlsColor) {
             $controls[0].style.setProperty('--jzsa-controls-color', controlsColor);
+            applyControlsColorToIcons('#' + $container.attr('id'), controlsColor);
         }
 
         function isActivationKey(e) {
