@@ -131,6 +131,7 @@ class JZSA_Shared_Albums {
 		add_action( 'wp_ajax_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_jzsa_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
+		add_action( 'wp_ajax_jzsa_clear_cache', array( $this, 'handle_clear_cache' ) );
 
 		// Also load front-end gallery assets on our settings page so the sample
 		// shortcode preview works inside the admin.
@@ -951,6 +952,47 @@ class JZSA_Shared_Albums {
 				'html' => $html,
 			)
 		);
+	}
+
+	/**
+	 * Handle AJAX request to clear all cached album data.
+	 *
+	 * Deletes all jzsa_album_* transients and jzsa_expiry_* options so that
+	 * the next page load fetches fresh data from Google Photos.
+	 */
+	public function handle_clear_cache() {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_send_json_error( __( 'Insufficient permissions', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'jzsa_clear_cache' ) ) {
+			wp_send_json_error( __( 'Invalid nonce', 'janzeman-shared-albums-for-google-photos' ) );
+		}
+
+		global $wpdb;
+
+		// Delete all album transients (stored as _transient_jzsa_album_* in wp_options).
+		$deleted = $wpdb->query(
+			"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%'"
+		);
+
+		// Delete all expiry tracking options.
+		$wpdb->query(
+			"DELETE FROM {$wpdb->options} WHERE option_name LIKE 'jzsa_expiry_%'"
+		);
+
+		$album_count = (int) ( $deleted / 2 );
+
+		$message = $album_count > 0
+			? sprintf(
+				/* translators: %d: number of cached albums cleared */
+				_n( '%d cached album cleared.', '%d cached albums cleared.', $album_count, 'janzeman-shared-albums-for-google-photos' ),
+				$album_count
+			)
+			: __( 'Cache was already empty.', 'janzeman-shared-albums-for-google-photos' );
+
+		wp_send_json_success( array( 'message' => $message ) );
 	}
 
 	/**

@@ -157,6 +157,53 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 	} );
 
+	// Wire the Clear Cache button.
+	var clearCacheBtn = document.getElementById( 'jzsa-clear-cache-btn' );
+	var clearCacheResult = document.getElementById( 'jzsa-clear-cache-result' );
+
+	if ( clearCacheBtn ) {
+		clearCacheBtn.addEventListener( 'click', function () {
+			if ( typeof jzsaAdminAjax === 'undefined' || ! jzsaAdminAjax.ajaxUrl ) {
+				return;
+			}
+
+			clearCacheBtn.disabled = true;
+			clearCacheBtn.textContent = 'Clearing…';
+			if ( clearCacheResult ) {
+				clearCacheResult.textContent = '';
+				clearCacheResult.className = 'jzsa-tool-result';
+			}
+
+			var params = new URLSearchParams();
+			params.append( 'action', 'jzsa_clear_cache' );
+			params.append( 'nonce', jzsaAdminAjax.clearCacheNonce );
+
+			window.fetch( jzsaAdminAjax.ajaxUrl, {
+				method: 'POST',
+				credentials: 'same-origin',
+				headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+				body: params.toString(),
+			} )
+				.then( function ( response ) { return response.json(); } )
+				.then( function ( data ) {
+					clearCacheBtn.disabled = false;
+					clearCacheBtn.textContent = 'Clear Cache';
+					if ( clearCacheResult ) {
+						clearCacheResult.textContent = data.success ? data.data.message : ( data.data || 'Error clearing cache.' );
+						clearCacheResult.className = 'jzsa-tool-result ' + ( data.success ? 'jzsa-tool-result--success' : 'jzsa-tool-result--error' );
+					}
+				} )
+				.catch( function () {
+					clearCacheBtn.disabled = false;
+					clearCacheBtn.textContent = 'Clear Cache';
+					if ( clearCacheResult ) {
+						clearCacheResult.textContent = 'Request failed.';
+						clearCacheResult.className = 'jzsa-tool-result jzsa-tool-result--error';
+					}
+				} );
+		} );
+	}
+
 	// Step 2: wire the Playground textarea to an explicit "Update preview" button.
 	var textarea = document.getElementById( 'jzsa-playground-shortcode' );
 	var previewButton = null;

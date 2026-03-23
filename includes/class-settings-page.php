@@ -63,6 +63,15 @@ class JZSA_Settings_Page {
 			JZSA_VERSION,
 			true
 		);
+
+		wp_localize_script(
+			'jzsa-admin-settings',
+			'jzsaAdminAjax',
+			array(
+				'ajaxUrl'         => admin_url( 'admin-ajax.php' ),
+				'clearCacheNonce' => wp_create_nonce( 'jzsa_clear_cache' ),
+			)
+		);
 	}
 
 	/**
@@ -256,13 +265,31 @@ class JZSA_Settings_Page {
 					</div>
 				</div>
 
+			<!-- Tools Section -->
+			<div class="jzsa-section jzsa-tools-section">
+				<h2><?php esc_html_e( 'Tools', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+
+				<div class="jzsa-tool-row">
+					<div class="jzsa-tool-info">
+						<strong><?php esc_html_e( 'Clear Album Cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<p class="jzsa-help-text"><?php esc_html_e( 'Album data is cached for 24 hours to reduce server load. If you have modified any of your Google Photos albums and need to see the changes immediately, simply click this button.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					</div>
+					<div class="jzsa-tool-action">
+						<button type="button" id="jzsa-clear-cache-btn" class="button button-secondary">
+							<?php esc_html_e( 'Clear Cache', 'janzeman-shared-albums-for-google-photos' ); ?>
+						</button>
+						<span id="jzsa-clear-cache-result" class="jzsa-tool-result" aria-live="polite"></span>
+					</div>
+				</div>
+			</div>
+
 				<!-- Samples Section -->
 				<div class="jzsa-section jzsa-samples-section">
 					<h2><?php esc_html_e( 'Samples', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 						<div class="jzsa-example">
 							<h3><?php esc_html_e( 'Gallery Mode with Limited Entry Count (Without Pagination)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Uses the default "gallery" mode to display album entries as a thumbnail gallery. Every cell has the same size. Click any thumbnail to open it in a fullscreen viewer. Pagination is not required — all thumbnails are shown at once, limited only by limit.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Uses the default "gallery" mode to display album entries as a thumbnail gallery. Every cell has the same size. Click any thumbnail to open it in a fullscreen viewer. Pagination is not required - all thumbnails are shown at once, limited only by limit.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" limit="12"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>

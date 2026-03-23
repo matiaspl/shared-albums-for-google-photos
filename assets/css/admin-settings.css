@@ -30,6 +30,36 @@
 
 /* Playground section stands out slightly so it's easy to find
  * when scrolling back. Light pastel background, subtle border color. */
+.jzsa-tool-row {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.jzsa-tool-info p {
+    margin: 4px 0 0 0;
+}
+
+.jzsa-tool-action {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.jzsa-tool-result {
+    font-size: 13px;
+    min-height: 1.4em;
+    display: block;
+}
+
+.jzsa-tool-result--success {
+    color: #1a7a3a;
+}
+
+.jzsa-tool-result--error {
+    color: #b32d2e;
+}
+
 .jzsa-section.jzsa-playground-section {
     background: #f0fcf4;
     border-color: #1a7a3a;
