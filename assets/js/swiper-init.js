@@ -4939,6 +4939,7 @@
 
             if (layout === 'justified') {
                 var justified = getJustifiedLayoutData($container, allPhotos);
+                $container[0].style.setProperty('--jzsa-gallery-gap', justified.gap + 'px');
 
                 if (useScroller) {
                     renderJustifiedRows(
