@@ -1241,6 +1241,40 @@ body.jzsa-no-scroll {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
+
+    /* Fullscreen (desktop): same hide-on-mouse-away behavior */
+    .jzsa-album.swiper.jzsa-is-fullscreen .swiper-button-prev,
+    .jzsa-album.swiper.jzsa-is-fullscreen .swiper-button-next,
+    .jzsa-album.swiper.jzsa-is-fullscreen .swiper-button-fullscreen,
+    .jzsa-album.swiper.jzsa-is-fullscreen .swiper-button-play-pause,
+    .jzsa-album.swiper.jzsa-is-fullscreen .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-is-fullscreen .swiper-button-download,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-prev,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-next,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-fullscreen,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-play-pause,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen .swiper-button-download {
+        opacity: 0;
+        pointer-events: none;
+        animation: none;
+    }
+
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-prev,
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-next,
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-fullscreen,
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-play-pause,
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-is-fullscreen:hover .swiper-button-download,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-prev,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-next,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-fullscreen,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-play-pause,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-external-link,
+    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-download {
+        opacity: var(--jzsa-controls-visible-opacity);
+        pointer-events: auto;
+    }
 }
 
 .jzsa-gallery-slide-stage {
