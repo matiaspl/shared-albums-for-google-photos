@@ -1164,7 +1164,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>slideshow-inactivity-timeout</code></td>
-								<td>Time in seconds after which slideshow resumes following user interaction</td>
+								<td>When a user swipes or clicks to navigate forward or backward manually, the slideshow pauses. This is the number of seconds of inactivity after which the slideshow resumes and advances automatically. Applies to both inline and fullscreen slideshows.</td>
 								<td>30</td>
 							</tr>
 							<tr>
