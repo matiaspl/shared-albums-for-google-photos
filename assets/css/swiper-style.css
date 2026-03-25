@@ -1148,6 +1148,8 @@ body.jzsa-no-scroll {
 /* Gallery pagination controls (uses existing Swiper-style controls) */
 .jzsa-gallery-shell {
     position: relative;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .jzsa-gallery-shell.jzsa-gallery-shell-bounded {
@@ -1724,6 +1726,8 @@ body.jzsa-no-scroll {
     gap: 8px;
     width: 100%;
     height: 100%;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .jzsa-gallery-wrapper.jzsa-mosaic-left  { flex-direction: row-reverse; }
