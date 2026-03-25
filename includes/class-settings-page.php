@@ -90,6 +90,7 @@ class JZSA_Settings_Page {
 		$mosaic_right_shortcode    = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="right" corner-radius="16"]';
 		$mosaic_rounded_shortcode  = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" corner-radius="0" mosaic-corner-radius="16"]';
 		$mosaic_carousel_shortcode = '[jzsa-album link="' . $mosaic_sample_link . '" mode="carousel" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="18" corner-radius="24"]';
+		$mosaic_gap_opacity_shortcode = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" mosaic-gap="16" mosaic-opacity="0.7" corner-radius="16"]';
 		?>
 		<div class="wrap jzsa-settings-wrap">
 			<h1>
@@ -849,6 +850,21 @@ class JZSA_Settings_Page {
 						</div>
 					</div>
 
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Mosaic Strip with Custom Gap and Opacity', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Demonstrates mosaic-gap and mosaic-opacity together. A tighter gap between thumbnails and a lower inactive opacity create a stronger visual contrast between the active and inactive thumbnails.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code><?php echo esc_html( $mosaic_gap_opacity_shortcode ); ?></code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-mosaic-gap-opacity" style="height:auto;">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( $mosaic_gap_opacity_shortcode );
+							?>
+						</div>
+					</div>
+
 					</div>
 
 				<!-- Start Tutorial -->
@@ -1074,7 +1090,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>corner-radius</code></td>
-								<td><?php esc_html_e( 'Rounded corner radius in pixels. Applies to slider, carousel, gallery thumbnails, and mosaic strips. Use 0 for square corners. Disabled in fullscreen mode.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Rounded corner radius in pixels. Applies to slider, carousel, gallery thumbnails, and mosaic strips. Use 0 for square corners. Disabled in fullscreen mode. Use mosaic-corner-radius to override the radius for the mosaic strip independently.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>0</td>
 							</tr>
 							<tr>
@@ -1258,6 +1274,16 @@ class JZSA_Settings_Page {
 								<td><code>mosaic-count</code></td>
 								<td><?php esc_html_e( 'Number of thumbnails visible at once in the strip. Use an integer (e.g. "5") or "auto" to let the plugin calculate the best fit based on the available space.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>auto</td>
+							</tr>
+							<tr>
+								<td><code>mosaic-gap</code></td>
+								<td><?php esc_html_e( 'Gap in pixels between thumbnails in the mosaic strip.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>8</td>
+							</tr>
+							<tr>
+								<td><code>mosaic-opacity</code></td>
+								<td><?php esc_html_e( 'Opacity of inactive (non-active) thumbnails in the mosaic strip. Accepts a value between 0 (invisible) and 1 (fully opaque). The active thumbnail is always fully opaque.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>0.5</td>
 							</tr>
 							<tr>
 								<td><code>mosaic-corner-radius</code></td>

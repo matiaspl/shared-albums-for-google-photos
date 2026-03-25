@@ -277,6 +277,14 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-mosaic-count="%d"', intval( $config['mosaic-count'] ) );
 		}
 
+		if ( isset( $config['mosaic-gap'] ) ) {
+			$attrs[] = sprintf( 'data-mosaic-gap="%d"', intval( $config['mosaic-gap'] ) );
+		}
+
+		if ( isset( $config['mosaic-opacity'] ) ) {
+			$attrs[] = sprintf( 'data-mosaic-opacity="%s"', esc_attr( $config['mosaic-opacity'] ) );
+		}
+
 		// Numeric/string attributes
 		if ( isset( $config['slideshow-delay'] ) ) {
 			$attrs[] = sprintf( 'data-slideshow-delay="%s"', esc_attr( $config['slideshow-delay'] ) );

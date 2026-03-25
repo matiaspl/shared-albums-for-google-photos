@@ -2740,7 +2740,9 @@
             // Mosaic settings
             mosaic: $container.attr('data-mosaic') === 'true',
             mosaicPosition: $container.attr('data-mosaic-position') || 'right',
-            mosaicCount: parseInt($container.attr('data-mosaic-count'), 10) || 0 // 0 = auto
+            mosaicCount: parseInt($container.attr('data-mosaic-count'), 10) || 0, // 0 = auto
+            mosaicGap: parseInt($container.attr('data-mosaic-gap'), 10) || 8,
+            mosaicOpacity: parseFloat($container.attr('data-mosaic-opacity')) || 0.3
         };
 
         // Safe default: show inline play/pause only when normal-mode slideshow is enabled.
@@ -2780,6 +2782,7 @@
         var mosaic = config.mosaic;
         var mosaicPosition = config.mosaicPosition;
         var mosaicCount = config.mosaicCount;
+        var mosaicOpacity = config.mosaicOpacity;
 
         // console.log('📸 Initializing Swiper for gallery:', galleryId);
         // console.log('  - Mode:', mode);
@@ -2850,7 +2853,8 @@
                 });
                 $mosaicContainer.find('.swiper-wrapper').html(thumbSlidesHtml);
 
-                var mosaicGap = 8;
+                var mosaicGap = config.mosaicGap;
+                $mosaicContainer[0].style.setProperty('--jzsa-mosaic-opacity', mosaicOpacity);
                 var MOSAIC_TARGET_THUMB_SIZE = 100; // px – ideal thumb size for auto-count
 
                 // Calculate how many thumbs fit in the available space.

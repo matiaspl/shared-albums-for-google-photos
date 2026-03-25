@@ -1766,7 +1766,7 @@ body.jzsa-no-scroll {
 /* Thumbnail slides */
 .jzsa-mosaic .swiper-slide {
     cursor: pointer;
-    opacity: 0.5;
+    opacity: var(--jzsa-mosaic-opacity, 0.3);
     transition: all 0.3s ease;
     overflow: hidden;
     border-radius: var(--jzsa-mosaic-corner-radius, var(--jzsa-corner-radius, 0));

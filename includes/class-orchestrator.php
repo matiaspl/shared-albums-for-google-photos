@@ -423,6 +423,8 @@ class JZSA_Shared_Albums {
 			'mosaic'          => $this->parse_bool( $atts, 'mosaic', false ),
 			'mosaic-position' => $this->parse_mosaic_position( $atts ),
 			'mosaic-count'    => $this->parse_mosaic_count( $atts ),
+			'mosaic-gap'      => $this->parse_mosaic_gap( $atts ),
+			'mosaic-opacity'  => $this->parse_mosaic_opacity( $atts ),
 
 			// Visual style
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
@@ -786,6 +788,42 @@ class JZSA_Shared_Albums {
 		$value = intval( $atts['mosaic-count'] );
 
 		return $value > 0 ? $value : 0;
+	}
+
+	/**
+	 * Parse mosaic-gap attribute (pixels, 0–100).
+	 *
+	 * Gap between thumbnails in the mosaic strip.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return int Gap in pixels.
+	 */
+	private function parse_mosaic_gap( $atts ) {
+		if ( ! isset( $atts['mosaic-gap'] ) ) {
+			return 8;
+		}
+
+		$value = intval( $atts['mosaic-gap'] );
+
+		return ( $value >= 0 && $value <= 100 ) ? $value : 8;
+	}
+
+	/**
+	 * Parse mosaic-opacity attribute (0.0–1.0).
+	 *
+	 * Opacity of inactive (non-active) mosaic thumbnails.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return float Opacity value.
+	 */
+	private function parse_mosaic_opacity( $atts ) {
+		if ( ! isset( $atts['mosaic-opacity'] ) ) {
+			return 0.3;
+		}
+
+		$value = floatval( $atts['mosaic-opacity'] );
+
+		return max( 0.0, min( 1.0, $value ) );
 	}
 
 	/**
