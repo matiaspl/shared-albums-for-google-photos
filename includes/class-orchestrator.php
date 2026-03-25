@@ -387,6 +387,7 @@ class JZSA_Shared_Albums {
 				// Display
 				'mode'                 => $this->parse_mode( $atts ),
 				'background-color'     => $this->parse_color( $atts, 'background-color', 'transparent' ),
+				'fullscreen-background-color' => $this->parse_color( $atts, 'fullscreen-background-color', '' ),
 				'controls-color'       => $this->parse_color( $atts, 'controls-color', '#ffffff' ),
 				'video-controls-color' => $this->parse_color( $atts, 'video-controls-color', '#00b2ff' ),
 				'image-fit'            => $this->parse_image_fit( $atts ),

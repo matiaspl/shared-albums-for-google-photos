@@ -1459,6 +1459,12 @@
             // Add fullscreen class for CSS styling
             $(containerElement).addClass('jzsa-is-fullscreen');
 
+            // Apply fullscreen background color if set
+            var fsBgColor = $(containerElement).attr('data-fullscreen-background-color');
+            if (fsBgColor) {
+                params._originalBgColor = containerElement.style.getPropertyValue('--gallery-bg-color');
+                containerElement.style.setProperty('--gallery-bg-color', fsBgColor);
+            }
 
             if (!params.browserPrefix) {
                 // Only log detailed debug info for standard API (avoid log spam)
@@ -1584,6 +1590,16 @@
 
                 setTimeout(tryFix, interval);
             })();
+
+            // Restore original background color
+            if (params._originalBgColor !== undefined) {
+                if (params._originalBgColor) {
+                    containerElement.style.setProperty('--gallery-bg-color', params._originalBgColor);
+                } else {
+                    containerElement.style.removeProperty('--gallery-bg-color');
+                }
+                delete params._originalBgColor;
+            }
 
             // Remove fullscreen class
             $(containerElement).removeClass('jzsa-is-fullscreen');
@@ -3528,6 +3544,7 @@
             'data-image-fit',
             'data-fullscreen-image-fit',
             'data-background-color',
+            'data-fullscreen-background-color',
             'data-controls-color',
             'data-video-controls-color',
             'data-show-download-button',
@@ -3541,7 +3558,9 @@
         }
 
         // Forward --gallery-bg-color CSS custom property for fullscreen background
-        var bgColor = $galleryContainer.attr('data-background-color');
+        // Prefer fullscreen-background-color for the slideshow (which is always fullscreen)
+        var fsBgColor = $galleryContainer.attr('data-fullscreen-background-color');
+        var bgColor = fsBgColor || $galleryContainer.attr('data-background-color');
         if (bgColor) {
             $slideshow[0].style.setProperty('--gallery-bg-color', bgColor);
         }

@@ -317,6 +317,9 @@ class JZSA_Renderer {
 		if ( ! empty( $config['background-color'] ) ) {
 			$attrs[] = sprintf( 'data-background-color="%s"', esc_attr( $config['background-color'] ) );
 		}
+		if ( ! empty( $config['fullscreen-background-color'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-background-color="%s"', esc_attr( $config['fullscreen-background-color'] ) );
+		}
 		if ( ! empty( $config['controls-color'] ) ) {
 			$attrs[] = sprintf( 'data-controls-color="%s"', esc_attr( $config['controls-color'] ) );
 		}
@@ -445,6 +448,9 @@ class JZSA_Renderer {
 
 		if ( ! empty( $config['background-color'] ) ) {
 			$attrs[] = sprintf( 'data-background-color="%s"', esc_attr( $config['background-color'] ) );
+		}
+		if ( ! empty( $config['fullscreen-background-color'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-background-color="%s"', esc_attr( $config['fullscreen-background-color'] ) );
 		}
 		if ( ! empty( $config['controls-color'] ) ) {
 			$attrs[] = sprintf( 'data-controls-color="%s"', esc_attr( $config['controls-color'] ) );

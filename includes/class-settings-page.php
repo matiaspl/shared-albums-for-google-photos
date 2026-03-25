@@ -505,6 +505,21 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'Custom Background Color for Fullscreen', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Same as above but with fullscreen-background-color="#0000FF" to override the fullscreen background to blue, while the inline background stays yellow.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+					<div class="jzsa-code-block">
+						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" image-fit="contain" background-color="#FFE50D" fullscreen-background-color="#0000FF" corner-radius="16"]</code>
+						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+					</div>
+					<div class="jzsa-preview-container jzsa-preview-container-fs-bg-color">
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" image-fit="contain" background-color="#FFE50D" fullscreen-background-color="#0000FF" corner-radius="16"]' );
+						?>
+					</div>
+					</div>
+
+					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'High-Resolution Inline Photos', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Compare default resolution (left) with high-resolution source (right). Both use the same container size and image-fit="cover".', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 					<div class="jzsa-code-block">
@@ -1189,6 +1204,11 @@ class JZSA_Settings_Page {
 								<td><code>fullscreen-image-fit</code></td>
 								<td>How photos fit the frame in fullscreen: "contain" (default, show whole image, no cropping) or "cover" (fill and crop edges).</td>
 								<td>contain</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-background-color</code></td>
+								<td><?php esc_html_e( 'Background color for fullscreen mode. Overrides background-color when viewing in fullscreen. Hex code or "transparent".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>#000000</td>
 							</tr>
 						</tbody>
 					</table>
