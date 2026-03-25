@@ -1748,7 +1748,7 @@ body.jzsa-no-scroll {
     overflow: hidden;
     position: relative;
     background: transparent;
-    border-radius: var(--jzsa-corner-radius, 0);
+    border-radius: var(--jzsa-mosaic-corner-radius, var(--jzsa-corner-radius, 0));
 }
 
 /* Horizontal strip: top/bottom placement */
@@ -1760,7 +1760,7 @@ body.jzsa-no-scroll {
     overflow: hidden;
     position: relative;
     background: transparent;
-    border-radius: var(--jzsa-corner-radius, 0);
+    border-radius: var(--jzsa-mosaic-corner-radius, var(--jzsa-corner-radius, 0));
 }
 
 /* Thumbnail slides */
@@ -1769,7 +1769,7 @@ body.jzsa-no-scroll {
     opacity: 0.5;
     transition: all 0.3s ease;
     overflow: hidden;
-    border-radius: var(--jzsa-corner-radius, 0);
+    border-radius: var(--jzsa-mosaic-corner-radius, var(--jzsa-corner-radius, 0));
     width: 100%;
 }
 

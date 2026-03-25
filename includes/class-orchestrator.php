@@ -425,7 +425,8 @@ class JZSA_Shared_Albums {
 			'mosaic-count'    => $this->parse_mosaic_count( $atts ),
 
 			// Visual style
-			'corner-radius'   => $this->parse_corner_radius( $atts ),
+			'corner-radius'        => $this->parse_corner_radius( $atts ),
+			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
 		);
 
 		return $config;
@@ -801,6 +802,24 @@ class JZSA_Shared_Albums {
 		}
 
 		$value = intval( $atts['corner-radius'] );
+
+		return max( 0, $value );
+	}
+
+	/**
+	 * Parse mosaic-corner-radius attribute.
+	 *
+	 * Falls back to corner-radius when not explicitly set.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return int|null Corner radius in pixels, or null to inherit from corner-radius.
+	 */
+	private function parse_mosaic_corner_radius( $atts ) {
+		if ( ! isset( $atts['mosaic-corner-radius'] ) ) {
+			return null;
+		}
+
+		$value = intval( $atts['mosaic-corner-radius'] );
 
 		return max( 0, $value );
 	}

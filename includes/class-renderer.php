@@ -226,6 +226,9 @@ class JZSA_Renderer {
 		if ( isset( $config['corner-radius'] ) ) {
 			$styles[] = '--jzsa-corner-radius: ' . intval( $config['corner-radius'] ) . 'px';
 		}
+		if ( isset( $config['mosaic-corner-radius'] ) ) {
+			$styles[] = '--jzsa-mosaic-corner-radius: ' . intval( $config['mosaic-corner-radius'] ) . 'px';
+		}
 
 		return implode( '; ', $styles );
 	}
@@ -457,7 +460,10 @@ class JZSA_Renderer {
 		if ( isset( $config['corner-radius'] ) ) {
 			$styles[] = '--jzsa-corner-radius: ' . intval( $config['corner-radius'] ) . 'px';
 		}
-		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
+		if ( isset( $config['mosaic-corner-radius'] ) ) {
+			$styles[] = '--jzsa-mosaic-corner-radius: ' . intval( $config['mosaic-corner-radius'] ) . 'px';
+		}
+		if ( ! empty( $config['width-explicit'] )&& isset( $config['width'] ) && $config['width'] !== 'auto' ) {
 			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';
 		}
 		if ( ! empty( $config['height-explicit'] ) && isset( $config['height'] ) && $config['height'] !== 'auto' ) {

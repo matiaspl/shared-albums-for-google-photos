@@ -88,8 +88,8 @@ class JZSA_Settings_Page {
 		$mosaic_sample_link        = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
 		$mosaic_bottom_shortcode   = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" corner-radius="16"]';
 		$mosaic_right_shortcode    = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="right" corner-radius="16"]';
-		$mosaic_rounded_shortcode  = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" corner-radius="16"]';
-		$mosaic_carousel_shortcode = '[jzsa-album link="' . $mosaic_sample_link . '" mode="carousel" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="18" corner-radius="16"]';
+		$mosaic_rounded_shortcode  = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" corner-radius="0" mosaic-corner-radius="16"]';
+		$mosaic_carousel_shortcode = '[jzsa-album link="' . $mosaic_sample_link . '" mode="carousel" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="18" corner-radius="24"]';
 		?>
 		<div class="wrap jzsa-settings-wrap">
 			<h1>
@@ -791,7 +791,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Mosaic Strip at the Bottom', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Slider with a horizontal thumbnail strip below the main photo. Click any thumbnail to jump to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Slider with a horizontal thumbnail strip below the main photo. Click any thumbnail to jump to that photo. By default, the thumbnails apply the same corner radius as the main photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $mosaic_bottom_shortcode ); ?></code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -805,7 +805,7 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Mosaic Strip With Rounded Corners', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'Mosaic Strip With Explicit Rounded Corners', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Same as above with corner-radius="16" for rounded corners on the slider and thumbnail strip.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $mosaic_rounded_shortcode ); ?></code>
@@ -1258,6 +1258,11 @@ class JZSA_Settings_Page {
 								<td><code>mosaic-count</code></td>
 								<td><?php esc_html_e( 'Number of thumbnails visible at once in the strip. Use an integer (e.g. "5") or "auto" to let the plugin calculate the best fit based on the available space.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>auto</td>
+							</tr>
+							<tr>
+								<td><code>mosaic-corner-radius</code></td>
+								<td><?php esc_html_e( 'Rounded corner radius in pixels for the mosaic strip and its thumbnails. When not set, inherits from corner-radius.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'corner-radius', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 						</tbody>
 					</table>
