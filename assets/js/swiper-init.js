@@ -1643,10 +1643,10 @@
             }
 
             // Set inactivity timer to resume autoplay after configured timeout
-            var timeoutMs = (params.slideshowInactivityTimeout || 30) * 1000;
+            var timeoutMs = (params.slideshowAutoresumeTimeout || 30) * 1000;
             params.inactivityTimer = setTimeout(function() {
 				if (params.slideshowPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
-					jzsaDebug('▶️  Resuming autoplay after ' + (params.slideshowInactivityTimeout || 30) + ' seconds of inactivity');
+					jzsaDebug('▶️  Resuming autoplay after ' + (params.slideshowAutoresumeTimeout || 30) + ' seconds of inactivity');
                     params.slideshowPausedByInteraction = false;
                     swiper.autoplay.start();
                 }
@@ -2180,7 +2180,7 @@
             }
 
             fullscreenChangeParams.slideshowPausedByInteraction = true;
-            var timeoutMs = (fullscreenChangeParams.slideshowInactivityTimeout || 30) * 1000;
+            var timeoutMs = (fullscreenChangeParams.slideshowAutoresumeTimeout || 30) * 1000;
             fullscreenChangeParams.inactivityTimer = setTimeout(function() {
                 if (fullscreenChangeParams.slideshowPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
                     fullscreenChangeParams.slideshowPausedByInteraction = false;
@@ -2188,7 +2188,7 @@
                     jzsaDebug('▶️ Autoplay resumed after video inactivity timeout');
                 }
             }, timeoutMs);
-            jzsaDebug('⏱️ Autoplay inactivity countdown started (' + (fullscreenChangeParams.slideshowInactivityTimeout || 30) + 's)');
+            jzsaDebug('⏱️ Autoplay inactivity countdown started (' + (fullscreenChangeParams.slideshowAutoresumeTimeout || 30) + 's)');
         }
         $container[0].addEventListener('ended', startAutoplayCountdown, true);
         $container[0].addEventListener('pause', startAutoplayCountdown, true);
@@ -2740,7 +2740,7 @@
             slideshowDelay: parseInt($container.attr('data-slideshow-delay')) || DEFAULT_SLIDESHOW_DELAY_FALLBACK,
             fullscreenSlideshow: $container.attr('data-fullscreen-slideshow') === 'true',
             fullscreenSlideshowDelay: parseInt($container.attr('data-fullscreen-slideshow-delay')) || 5,
-            slideshowInactivityTimeout: parseInt($container.attr('data-slideshow-inactivity-timeout')) || 30,
+            slideshowAutoresumeTimeout: parseInt($container.attr('data-slideshow-autoresume-timeout')) || 30,
 
             // Display settings
             loop: allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
@@ -2786,7 +2786,7 @@
         var slideshowDelay = config.slideshowDelay;
         var fullscreenSlideshow = config.fullscreenSlideshow;
         var fullscreenSlideshowDelay = config.fullscreenSlideshowDelay;
-        var slideshowInactivityTimeout = config.slideshowInactivityTimeout;
+        var slideshowAutoresumeTimeout = config.slideshowAutoresumeTimeout;
         var loop = config.loop;
         var interactionLock = config.interactionLock;
         var fullscreenToggle = interactionLock ? 'disabled' : config.fullscreenToggle;
@@ -3181,7 +3181,7 @@
                 slideshow: slideshow,
                 slideshowDelay: slideshowDelay,
                 slideshowPausedByInteraction: slideshowPausedByInteraction,
-                slideshowInactivityTimeout: slideshowInactivityTimeout,
+                slideshowAutoresumeTimeout: slideshowAutoresumeTimeout,
                 browserPrefix: null,
                 // For carousel mode: remember original layout so we can
                 // temporarily switch to a single-slide view in fullscreen.
@@ -3534,7 +3534,7 @@
         var forwardAttrs = [
             'data-fullscreen-slideshow',
             'data-fullscreen-slideshow-delay',
-            'data-slideshow-inactivity-timeout',
+            'data-slideshow-autoresume-timeout',
             'data-fullscreen-toggle',
             'data-interaction-lock',
             'data-show-title',

@@ -14,7 +14,8 @@ If you are upgrading from 1.0.x, you will need to update your shortcodes. Below 
 <code>autoplay-delay</code> → <code>slideshow-delay</code>
 <code>full-screen-autoplay</code> → <code>fullscreen-slideshow</code>
 <code>full-screen-autoplay-delay</code> → <code>fullscreen-slideshow-delay</code>
-<code>autoplay-inactivity-timeout</code> → <code>slideshow-inactivity-timeout</code>
+<code>autoplay-inactivity-timeout</code> → <code>slideshow-autoresume-timeout</code>
+<code>slideshow-inactivity-timeout</code> → <code>slideshow-autoresume-timeout</code>
 <code>full-screen-switch</code> → <code>fullscreen-toggle</code>
 <code>image-width</code> → <code>source-width</code>
 <code>image-height</code> → <code>source-height</code>

@@ -378,8 +378,14 @@ class JZSA_Shared_Albums {
 			'fullscreen-slideshow'       => $this->parse_bool( $atts, 'fullscreen-slideshow', false ),
 			'fullscreen-slideshow-delay' => $this->parse_delay_range( isset( $atts['fullscreen-slideshow-delay'] ) ? $atts['fullscreen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
 
-			// Slideshow inactivity timeout
-			'slideshow-inactivity-timeout' => intval( isset( $atts['slideshow-inactivity-timeout'] ) ? $atts['slideshow-inactivity-timeout'] : self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT ),
+			// Slideshow autoresume timeout (backward compat: slideshow-inactivity-timeout)
+			'slideshow-autoresume-timeout' => intval(
+				isset( $atts['slideshow-autoresume-timeout'] )
+					? $atts['slideshow-autoresume-timeout']
+					: ( isset( $atts['slideshow-inactivity-timeout'] )
+						? $atts['slideshow-inactivity-timeout']
+						: self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT )
+			),
 
 			// Cache refresh interval in minutes (default: 1440 = 24 hours)
 			'cache-refresh' => $this->parse_cache_refresh( $atts ),

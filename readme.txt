@@ -81,7 +81,7 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
     height="375"
     slideshow="false"
     slideshow-delay="5"
-    slideshow-inactivity-timeout="60"
+    slideshow-autoresume-timeout="60"
     start-at="1"
     full-screen-slideshow="false"
     full-screen-slideshow-delay="5"
