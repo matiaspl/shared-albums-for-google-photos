@@ -438,6 +438,40 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M7 18h3V6H7v12zm7-12v12h3V6h-3z' fill='%23ffffff' stroke='%23000000' stroke-width='1' paint-order='stroke fill'/></svg>");
 }
 
+/* Countdown ring when slideshow is interrupted (will auto-resume) */
+.jzsa-album .swiper-button-play-pause .jzsa-countdown-ring {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 26px;
+    height: 26px;
+    transform: translate(-50%, -50%) rotate(-90deg);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+.jzsa-album .swiper-button-play-pause .jzsa-countdown-ring.jzsa-visible {
+    opacity: 0.45;
+}
+
+.jzsa-album .swiper-button-play-pause .jzsa-countdown-ring circle {
+    fill: none;
+    stroke: #ffffff;
+    stroke-width: 2;
+    stroke-linecap: round;
+    /* circumference = 2 * PI * 11 ≈ 69.12 */
+    stroke-dasharray: 69.12;
+    stroke-dashoffset: 69.12;
+    animation: jzsa-countdown 30s linear forwards;
+    filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.6));
+}
+
+@keyframes jzsa-countdown {
+    from { stroke-dashoffset: 69.12; }
+    to { stroke-dashoffset: 0; }
+}
+
 /* Fullscreen button */
 .jzsa-album .swiper-button-fullscreen {
     position: absolute;

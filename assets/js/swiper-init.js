@@ -1604,6 +1604,7 @@
             // Remove fullscreen class
             $(containerElement).removeClass('jzsa-is-fullscreen');
             $(containerElement).removeClass('jzsa-fullscreen-waiting');
+            clearCountdownRing($(containerElement));
 
             params.slideshowPausedByInteraction = false;
 
@@ -1629,13 +1630,52 @@
         }
     }
 
+    // Helper: Show countdown ring on the play/pause button (appears after 5s delay)
+    var COUNTDOWN_RING_DELAY_MS = 5000;
+
+    function showCountdownRing($el, durationSeconds) {
+        var $btn = $el.find('.swiper-button-play-pause');
+        $btn.find('.jzsa-countdown-ring').remove();
+        clearTimeout($el.data('jzsa-countdown-show-timer'));
+        $el.addClass('jzsa-slideshow-interrupted');
+
+        var ns = 'http://www.w3.org/2000/svg';
+        var svg = document.createElementNS(ns, 'svg');
+        svg.setAttribute('class', 'jzsa-countdown-ring');
+        svg.setAttribute('viewBox', '0 0 26 26');
+        var circle = document.createElementNS(ns, 'circle');
+        circle.setAttribute('cx', '13');
+        circle.setAttribute('cy', '13');
+        circle.setAttribute('r', '11');
+        circle.style.animationDuration = durationSeconds + 's';
+        svg.appendChild(circle);
+        $btn.append(svg);
+
+        // Fade in after delay
+        var showTimer = setTimeout(function() {
+            $(svg).addClass('jzsa-visible');
+        }, COUNTDOWN_RING_DELAY_MS);
+        $el.data('jzsa-countdown-show-timer', showTimer);
+    }
+
+    // Helper: Remove countdown ring from the play/pause button
+    function clearCountdownRing($el) {
+        clearTimeout($el.data('jzsa-countdown-show-timer'));
+        $el.removeClass('jzsa-slideshow-interrupted');
+        $el.find('.swiper-button-play-pause .jzsa-countdown-ring').remove();
+    }
+
     // Helper: Pause slideshow on user interaction
     function pauseAutoplayOnInteraction(swiper, params) {
-        // Only pause if autoplay is currently running
-        if (swiper.autoplay && swiper.autoplay.running) {
-            swiper.autoplay.stop();
+        // Act when autoplay is running OR already interrupted (to reset the countdown)
+        if (swiper.autoplay && (swiper.autoplay.running || params.slideshowPausedByInteraction)) {
+            if (swiper.autoplay.running) {
+                swiper.autoplay.stop();
+                jzsaDebug('⏸️  Autoplay paused by user interaction');
+            } else {
+                jzsaDebug('⏸️  Autoresume countdown reset by user interaction');
+            }
             params.slideshowPausedByInteraction = true;
-			jzsaDebug('⏸️  Autoplay paused by user interaction');
 
             // Clear any existing inactivity timer
             if (params.inactivityTimer) {
@@ -1645,10 +1685,12 @@
             // Set inactivity timer to resume autoplay after configured timeout
             if (params.slideshowAutoresume !== 'disabled') {
                 var timeoutMs = (params.slideshowAutoresume || 30) * 1000;
+                showCountdownRing($(swiper.el), params.slideshowAutoresume || 30);
                 params.inactivityTimer = setTimeout(function() {
                     if (params.slideshowPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
                         jzsaDebug('▶️  Resuming autoplay after ' + (params.slideshowAutoresume || 30) + ' seconds of inactivity');
                         params.slideshowPausedByInteraction = false;
+                        clearCountdownRing($(swiper.el));
                         swiper.autoplay.start();
                     }
                 }, timeoutMs);
@@ -1915,6 +1957,8 @@
         // Toggle play/pause
         function togglePlayPause() {
 			if (swiper.autoplay) {
+				// Explicit user action — clear interrupted state
+				clearCountdownRing($container);
 				if (swiper.autoplay.running) {
 					swiper.autoplay.stop();
 					jzsaDebug('⏸️ Autoplay paused');
@@ -2184,9 +2228,11 @@
             fullscreenChangeParams.slideshowPausedByInteraction = true;
             if (fullscreenChangeParams.slideshowAutoresume !== 'disabled') {
                 var timeoutMs = (fullscreenChangeParams.slideshowAutoresume || 30) * 1000;
+                showCountdownRing($container, fullscreenChangeParams.slideshowAutoresume || 30);
                 fullscreenChangeParams.inactivityTimer = setTimeout(function() {
                     if (fullscreenChangeParams.slideshowPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
                         fullscreenChangeParams.slideshowPausedByInteraction = false;
+                        clearCountdownRing($container);
                         swiper.autoplay.start();
                         jzsaDebug('▶️ Autoplay resumed after video inactivity timeout');
                     }
