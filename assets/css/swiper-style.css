@@ -372,12 +372,15 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     bottom: 0px;
 }
 
-/* Show play/pause button in fullscreen, and inline when slideshow is enabled */
-.jzsa-album.jzsa-is-fullscreen .swiper-button-play-pause {
+/* Show play/pause button in fullscreen only when a slideshow is enabled
+   (either fullscreen-slideshow or inline slideshow that carries into fullscreen). */
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="true"] .swiper-button-play-pause,
+.jzsa-album.jzsa-is-fullscreen[data-slideshow="true"] .swiper-button-play-pause {
     display: flex;
     bottom: 46px;
 }
-.jzsa-album.jzsa-is-fullscreen[data-show-counter="false"] .swiper-button-play-pause {
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="true"][data-show-counter="false"] .swiper-button-play-pause,
+.jzsa-album.jzsa-is-fullscreen[data-slideshow="true"][data-show-counter="false"] .swiper-button-play-pause {
     bottom: 7px;
 }
 
