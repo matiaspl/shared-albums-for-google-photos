@@ -1643,14 +1643,16 @@
             }
 
             // Set inactivity timer to resume autoplay after configured timeout
-            var timeoutMs = (params.slideshowAutoresumeTimeout || 30) * 1000;
-            params.inactivityTimer = setTimeout(function() {
-				if (params.slideshowPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
-					jzsaDebug('▶️  Resuming autoplay after ' + (params.slideshowAutoresumeTimeout || 30) + ' seconds of inactivity');
-                    params.slideshowPausedByInteraction = false;
-                    swiper.autoplay.start();
-                }
-            }, timeoutMs);
+            if (params.slideshowAutoresume !== 'disabled') {
+                var timeoutMs = (params.slideshowAutoresume || 30) * 1000;
+                params.inactivityTimer = setTimeout(function() {
+                    if (params.slideshowPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
+                        jzsaDebug('▶️  Resuming autoplay after ' + (params.slideshowAutoresume || 30) + ' seconds of inactivity');
+                        params.slideshowPausedByInteraction = false;
+                        swiper.autoplay.start();
+                    }
+                }, timeoutMs);
+            }
         }
     }
 
@@ -2180,15 +2182,17 @@
             }
 
             fullscreenChangeParams.slideshowPausedByInteraction = true;
-            var timeoutMs = (fullscreenChangeParams.slideshowAutoresumeTimeout || 30) * 1000;
-            fullscreenChangeParams.inactivityTimer = setTimeout(function() {
-                if (fullscreenChangeParams.slideshowPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
-                    fullscreenChangeParams.slideshowPausedByInteraction = false;
-                    swiper.autoplay.start();
-                    jzsaDebug('▶️ Autoplay resumed after video inactivity timeout');
-                }
-            }, timeoutMs);
-            jzsaDebug('⏱️ Autoplay inactivity countdown started (' + (fullscreenChangeParams.slideshowAutoresumeTimeout || 30) + 's)');
+            if (fullscreenChangeParams.slideshowAutoresume !== 'disabled') {
+                var timeoutMs = (fullscreenChangeParams.slideshowAutoresume || 30) * 1000;
+                fullscreenChangeParams.inactivityTimer = setTimeout(function() {
+                    if (fullscreenChangeParams.slideshowPausedByInteraction && swiper.autoplay && !swiper.autoplay.running) {
+                        fullscreenChangeParams.slideshowPausedByInteraction = false;
+                        swiper.autoplay.start();
+                        jzsaDebug('▶️ Autoplay resumed after video inactivity timeout');
+                    }
+                }, timeoutMs);
+                jzsaDebug('⏱️ Autoplay autoresume countdown started (' + (fullscreenChangeParams.slideshowAutoresume || 30) + 's)');
+            }
         }
         $container[0].addEventListener('ended', startAutoplayCountdown, true);
         $container[0].addEventListener('pause', startAutoplayCountdown, true);
@@ -2740,7 +2744,7 @@
             slideshowDelay: parseInt($container.attr('data-slideshow-delay')) || DEFAULT_SLIDESHOW_DELAY_FALLBACK,
             fullscreenSlideshow: $container.attr('data-fullscreen-slideshow') || 'disabled',
             fullscreenSlideshowDelay: parseInt($container.attr('data-fullscreen-slideshow-delay')) || 5,
-            slideshowAutoresumeTimeout: parseInt($container.attr('data-slideshow-autoresume-timeout')) || 30,
+            slideshowAutoresume: $container.attr('data-slideshow-autoresume') === 'disabled' ? 'disabled' : (parseInt($container.attr('data-slideshow-autoresume')) || 30),
 
             // Display settings
             loop: allPhotos.length >= 4, // Loop requires enough slides for Swiper to work properly
@@ -2786,7 +2790,7 @@
         var slideshowDelay = config.slideshowDelay;
         var fullscreenSlideshow = config.fullscreenSlideshow;
         var fullscreenSlideshowDelay = config.fullscreenSlideshowDelay;
-        var slideshowAutoresumeTimeout = config.slideshowAutoresumeTimeout;
+        var slideshowAutoresume = config.slideshowAutoresume;
         var loop = config.loop;
         var interactionLock = config.interactionLock;
         var fullscreenToggle = interactionLock ? 'disabled' : config.fullscreenToggle;
@@ -3182,7 +3186,7 @@
                 slideshow: slideshow,
                 slideshowDelay: slideshowDelay,
                 slideshowPausedByInteraction: slideshowPausedByInteraction,
-                slideshowAutoresumeTimeout: slideshowAutoresumeTimeout,
+                slideshowAutoresume: slideshowAutoresume,
                 browserPrefix: null,
                 // For carousel mode: remember original layout so we can
                 // temporarily switch to a single-slide view in fullscreen.
@@ -3535,7 +3539,7 @@
         var forwardAttrs = [
             'data-fullscreen-slideshow',
             'data-fullscreen-slideshow-delay',
-            'data-slideshow-autoresume-timeout',
+            'data-slideshow-autoresume',
             'data-fullscreen-toggle',
             'data-interaction-lock',
             'data-show-title',

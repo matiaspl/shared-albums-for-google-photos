@@ -378,13 +378,10 @@ class JZSA_Shared_Albums {
 			'fullscreen-slideshow'       => $this->parse_slideshow_mode( $atts, 'fullscreen-slideshow' ),
 			'fullscreen-slideshow-delay' => $this->parse_delay_range( isset( $atts['fullscreen-slideshow-delay'] ) ? $atts['fullscreen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
 
-			// Slideshow autoresume timeout (backward compat: slideshow-inactivity-timeout)
-			'slideshow-autoresume-timeout' => intval(
-				isset( $atts['slideshow-autoresume-timeout'] )
-					? $atts['slideshow-autoresume-timeout']
-					: ( isset( $atts['slideshow-inactivity-timeout'] )
-						? $atts['slideshow-inactivity-timeout']
-						: self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT )
+			// Slideshow autoresume (backward compat: slideshow-autoresume-timeout, slideshow-inactivity-timeout)
+			'slideshow-autoresume' => $this->parse_slideshow_autoresume(
+				$atts,
+				array( 'slideshow-autoresume', 'slideshow-autoresume-timeout', 'slideshow-inactivity-timeout' )
 			),
 
 			// Cache refresh interval in minutes (default: 1440 = 24 hours)
@@ -498,6 +495,33 @@ class JZSA_Shared_Albums {
 			return 'manual';
 		}
 		return 'disabled';
+	}
+
+	/**
+	 * Parse slideshow autoresume: a number of seconds, or 'disabled'.
+	 * Checks multiple attribute names for backward compatibility.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @param array $keys Attribute keys to check, in priority order.
+	 * @return string Number as string, or 'disabled'.
+	 */
+	private function parse_slideshow_autoresume( $atts, $keys ) {
+		$raw = null;
+		foreach ( $keys as $key ) {
+			if ( isset( $atts[ $key ] ) ) {
+				$raw = $atts[ $key ];
+				break;
+			}
+		}
+		if ( null === $raw ) {
+			return (string) self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT;
+		}
+		$value = strtolower( trim( $raw ) );
+		if ( 'disabled' === $value ) {
+			return 'disabled';
+		}
+		$num = intval( $value );
+		return $num > 0 ? (string) $num : (string) self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT;
 	}
 
 

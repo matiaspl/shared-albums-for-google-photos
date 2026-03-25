@@ -312,8 +312,8 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-fullscreen-slideshow-delay="%s"', esc_attr( $config['fullscreen-slideshow-delay'] ) );
 		}
 
-		if ( isset( $config['slideshow-autoresume-timeout'] ) ) {
-			$attrs[] = sprintf( 'data-slideshow-autoresume-timeout="%s"', esc_attr( $config['slideshow-autoresume-timeout'] ) );
+		if ( isset( $config['slideshow-autoresume'] ) ) {
+			$attrs[] = sprintf( 'data-slideshow-autoresume="%s"', esc_attr( $config['slideshow-autoresume'] ) );
 		}
 
 		if ( ! empty( $config['mode'] ) ) {
@@ -440,8 +440,8 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-fullscreen-slideshow-delay="%s"', esc_attr( $config['fullscreen-slideshow-delay'] ) );
 		}
 
-		if ( isset( $config['slideshow-autoresume-timeout'] ) ) {
-			$attrs[] = sprintf( 'data-slideshow-autoresume-timeout="%s"', esc_attr( $config['slideshow-autoresume-timeout'] ) );
+		if ( isset( $config['slideshow-autoresume'] ) ) {
+			$attrs[] = sprintf( 'data-slideshow-autoresume="%s"', esc_attr( $config['slideshow-autoresume'] ) );
 		}
 
 		if ( ! empty( $config['fullscreen-toggle'] ) ) {
