@@ -1489,6 +1489,7 @@ body.jzsa-no-scroll {
     outline: none;
     position: relative;
     z-index: 11;
+    background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* Gallery: video wrapper fills the grid cell */
