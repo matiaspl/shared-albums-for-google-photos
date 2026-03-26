@@ -1116,16 +1116,11 @@ body.jzsa-no-scroll {
 .jzsa-gallery-album[data-gallery-layout="justified"][data-image-fit="contain"] .jzsa-gallery-thumb {
     object-fit: contain;
 }
-/* Shared thumbnail hover */
+/* Shared thumbnail base */
 .jzsa-gallery-thumb {
-    cursor: pointer;
     transition: opacity 0.15s ease;
     -webkit-user-drag: none;
     user-select: none;
-}
-
-.jzsa-gallery-thumb:hover {
-    opacity: 0.85;
 }
 
 
@@ -1214,6 +1209,16 @@ body.jzsa-no-scroll {
 .jzsa-gallery-shell.jzsa-gallery-draggable .jzsa-gallery-slide-track,
 .jzsa-gallery-shell.jzsa-gallery-draggable .jzsa-gallery-slide-panel {
     cursor: inherit;
+}
+
+/* Pointer cursor on gallery items when click or double-click opens fullscreen.
+   Applies to both photo thumbnails and video cells.  Must appear after the
+   draggable cursor rules above (same specificity, source-order wins). */
+.jzsa-gallery-album[data-fullscreen-toggle="click"] .jzsa-gallery-thumb,
+.jzsa-gallery-album[data-fullscreen-toggle="double-click"] .jzsa-gallery-thumb,
+.jzsa-gallery-album[data-fullscreen-toggle="click"] .jzsa-gallery-item-video,
+.jzsa-gallery-album[data-fullscreen-toggle="double-click"] .jzsa-gallery-item-video {
+    cursor: pointer;
 }
 
 .jzsa-gallery-album.jzsa-gallery-scrollable {
@@ -1759,14 +1764,8 @@ body.jzsa-no-scroll {
 
 /* --- Video badge on gallery thumbnails --- */
 
-/* Video items in gallery: pointer cursor to indicate fullscreen action.
-   Photos get this via .jzsa-gallery-thumb; video cells need it on the
-   outer item because there is no .jzsa-gallery-thumb inside them.
-   Drag pagination is disabled for video cells, so pointer stays even
-   inside a .jzsa-gallery-draggable gallery. */
 .jzsa-gallery-item-video {
     position: relative;
-    cursor: pointer;
 }
 
 .jzsa-video-badge {

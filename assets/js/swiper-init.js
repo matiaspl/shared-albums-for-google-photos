@@ -2118,13 +2118,9 @@
 
 		$container.on('click', function(e) {
 				if (!shouldIgnoreClick(e.target) && isFullscreen()) {
-					// On video slides, only block navigation for clicks on the
-					// actual <video> element; wrapper area clicks navigate normally.
-					var $activeSlide = $(swiper.slides[swiper.activeIndex]);
-					if ($activeSlide.attr('data-media-type') === 'video' && e.target.tagName === 'VIDEO') {
-						jzsaDebug('Video element click — skipping navigation');
-						return;
-					}
+					// Video slides: clickToPlay is disabled, so clicks on the
+					// video area are free for navigation (plyr controls are
+					// already filtered by shouldIgnoreClick above).
 
 					e.preventDefault();
 					var clickX = e.originalEvent ? e.originalEvent.clientX : e.clientX;
@@ -2177,10 +2173,13 @@
                 return;
             }
 
-            // Only block clicks on the actual video element or Plyr's video wrapper
+            // Only block clicks on the actual video element or Plyr's video wrapper.
+            // In fullscreen, let clicks through so they reach the navigation handler.
             if (e.target.tagName === 'VIDEO' || $(e.target).closest('.plyr__video-wrapper').length > 0) {
-                e.stopPropagation();
-                e.stopImmediatePropagation();
+                if (!isFullscreen()) {
+                    e.stopPropagation();
+                    e.stopImmediatePropagation();
+                }
             }
 
         }, true);
