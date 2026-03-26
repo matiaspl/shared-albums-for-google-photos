@@ -3347,7 +3347,10 @@
             if (mosaicSwiper) {
                 swiper.on('slideChange', function() {
                     if (mosaicSwiper && !mosaicSwiper.destroyed) {
-                        var pageStart = Math.floor(swiper.activeIndex / mosaicPageSize) * mosaicPageSize;
+                        // With loop=true, activeIndex includes cloned slides.
+                        // Use realIndex so mosaic paging stays aligned with real photos.
+                        var activeRealIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
+                        var pageStart = Math.floor(activeRealIndex / mosaicPageSize) * mosaicPageSize;
                         mosaicSwiper.slideTo(pageStart);
                     }
                 });
