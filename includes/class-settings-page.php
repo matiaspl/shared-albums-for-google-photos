@@ -89,6 +89,7 @@ class JZSA_Settings_Page {
 		$controls_custom_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" slideshow="auto" show-link-button="true" show-download-button="true" controls-color="#FFD400"]';
 		$download_gallery_shortcode = '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="gallery" corner-radius="16" show-download-button="true" show-link-button="true" width="800" limit="6"]';
 		$mosaic_sample_link        = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
+		$playground_default_shortcode = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" corner-radius="16" mosaic="true" mosaic-count="12"]';
 		$mosaic_bottom_shortcode   = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" corner-radius="16" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12"]';
 		$mosaic_right_shortcode    = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" corner-radius="16" width="800" height="600" mosaic="true" mosaic-position="right"]';
 		$mosaic_rounded_shortcode  = '[jzsa-album link="' . $mosaic_sample_link . '" mode="slider" corner-radius="0" width="800" height="600" mosaic="true" mosaic-position="bottom" mosaic-count="12" mosaic-corner-radius="16"]';
@@ -263,13 +264,13 @@ class JZSA_Settings_Page {
 						id="jzsa-playground-shortcode"
 						class="large-text code"
 						rows="3"
-					><?php echo esc_textarea( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider"]' ); ?></textarea>
+					><?php echo esc_textarea( $playground_default_shortcode ); ?></textarea>
 
 					<div class="jzsa-preview-container jzsa-playground-preview">
 						<?php
 							// Step 1: static preview using the same sample album as above.
 							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-							echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider"]' );
+							echo do_shortcode( $playground_default_shortcode );
 						?>
 					</div>
 				</div>
