@@ -2190,8 +2190,8 @@
 		// Uses a dynamic <style> element with a none→real two-frame kick to
 		// force the browser to repaint the cursor (browsers skip repainting
 		// when the cursor value is unchanged on a stationary mouse).
-		var CURSOR_PREV = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\'%3E%3Cpath d=\'M10 4L6 8l4 4\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M10 4L6 8l4 4\' fill=\'none\' stroke=\'white\' stroke-width=\'1\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 8 8, w-resize';
-		var CURSOR_NEXT = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\'%3E%3Cpath d=\'M6 4l4 4-4 4\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M6 4l4 4-4 4\' fill=\'none\' stroke=\'white\' stroke-width=\'1\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 8 8, e-resize';
+		var CURSOR_PREV = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'22\' height=\'22\'%3E%3Cpath d=\'M14 5.6L8.4 11.2l5.6 5.6\' fill=\'none\' stroke=\'black\' stroke-width=\'2.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M14 5.6L8.4 11.2l5.6 5.6\' fill=\'none\' stroke=\'white\' stroke-width=\'1.4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 11 11, w-resize';
+		var CURSOR_NEXT = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'22\' height=\'22\'%3E%3Cpath d=\'M8.4 5.6l5.6 5.6-5.6 5.6\' fill=\'none\' stroke=\'black\' stroke-width=\'2.8\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M8.4 5.6l5.6 5.6-5.6 5.6\' fill=\'none\' stroke=\'white\' stroke-width=\'1.4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 11 11, e-resize';
 		var navCursorActive = false;
 
 		if (params.fullscreenToggle !== 'click' && params.fullscreenToggle !== 'disabled') {
