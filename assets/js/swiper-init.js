@@ -146,7 +146,7 @@
     // To reset for testing: localStorage.removeItem('jzsa-hints-counter')
     function createHintSystem(galleryId) {
         var HINTS_STORAGE_KEY = 'jzsa-hints-counter'; // Global counter for all albums
-        var MAX_HINT_DISPLAYS = 2; // Maximum number of times to show hints
+        var MAX_HINT_DISPLAYS = 1; // Maximum number of times to show hints
         var HINT_FADE_IN_DELAY = 100; // ms
         var HINT_FADE_OUT_DELAY = 500; // ms
         var HINT_DISPLAY_DURATION = 9500; // ms - how long hint stays visible
@@ -165,7 +165,8 @@
 
                 // Build hint message
                 var hints = [];
-                hints.push('Click to navigate \u00B7 Esc or button to exit');
+                hints.push('Click / tap / swipe left or right to browse photos');
+                hints.push('Press Esc or tap \u29C9 to exit fullscreen');
 
                 if (hints.length === 0) {
                     return; // No hints to show
