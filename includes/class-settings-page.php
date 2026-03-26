@@ -657,7 +657,7 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'Single-Click Fullscreen Toggle', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses fullscreen-toggle="click" so clicking anywhere on the slider enters fullscreen. Once in fullscreen, click to navigate between photos. Exit via the Escape key or the fullscreen button.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php echo wp_kses( __( 'Uses fullscreen-toggle="click" so clicking anywhere on the slider enters fullscreen. Trade-off: single-click can no longer navigate between photos in fullscreen — use the arrow buttons or keyboard instead. Exit via the Escape key or the fullscreen button. For a less accidental shortcut that preserves click navigation, <strong>consider double-click instead</strong>.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 					<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" fullscreen-toggle="click"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -671,8 +671,8 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Double-Click Fullscreen Toggle', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Uses fullscreen-toggle="double-click" so double-click (or double-tap) toggles fullscreen on and off. In fullscreen, click still navigates between photos, but double-click is reserved for toggling fullscreen only. Use the Escape key or the fullscreen button as alternatives.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<h3><?php esc_html_e( 'Double-Click Fullscreen Toggle (Recommended)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php echo wp_kses( __( 'Uses fullscreen-toggle="double-click" so double-click (or double-tap on touch) toggles fullscreen on and off. <strong>Recommended over single-click</strong>: single-click still navigates between photos in fullscreen, and the double-click gesture is less likely to be triggered accidentally. Exit via the Escape key or the fullscreen button as alternatives.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 					<div class="jzsa-code-block">
 						<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" fullscreen-toggle="double-click"]</code>
 						<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -810,7 +810,7 @@ class JZSA_Settings_Page {
 
 						<div class="jzsa-example">
 							<h3><?php esc_html_e( 'Video in Gallery (Button-only to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Demonstrates gallery mode with justified thumbnails and videos included.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php esc_html_e( 'Gallery mode with videos included. Fullscreen opens via the fullscreen button only. Once in fullscreen, click left or right to navigate between items.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $video_gallery_shortcode ); ?></code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -825,7 +825,7 @@ class JZSA_Settings_Page {
 
 						<div class="jzsa-example">
 							<h3><?php esc_html_e( 'Video in Gallery (Single-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Gallery with single-click to enter fullscreen. Rose accent, rounded corners.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php echo wp_kses( __( 'Single-click on any thumbnail opens fullscreen. Trade-off: click can no longer navigate between items in fullscreen — use the arrow buttons instead. <strong>Consider double-click instead</strong> to keep click navigation available.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $video_gallery_click_shortcode ); ?></code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -840,7 +840,7 @@ class JZSA_Settings_Page {
 
 						<div class="jzsa-example">
 							<h3><?php esc_html_e( 'Video in Gallery (Double-click to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-							<p><?php esc_html_e( 'Same gallery with double-click to enter and exit fullscreen. No corner radius, violet accent.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							<p><?php echo wp_kses( __( 'Double-click (or double-tap) on any thumbnail opens fullscreen; double-click again to exit. <strong>Recommended over single-click</strong>: click still navigates between items in fullscreen, and the gesture is less likely to be triggered accidentally.', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $video_gallery_dblclick_shortcode ); ?></code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
@@ -1244,7 +1244,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>fullscreen-toggle</code></td>
-								<td>How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on click, "double-click" toggles fullscreen on/off, or "disabled" to prevent fullscreen entirely. In fullscreen, click navigates between photos, while double-click mode reserves double-click for fullscreen toggle only.</td>
+								<td>How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> — it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit.</td>
 								<td>button-only</td>
 							</tr>
 							<tr>
