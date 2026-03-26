@@ -809,7 +809,7 @@ class JZSA_Settings_Page {
 						</div>
 
 						<div class="jzsa-example">
-							<h3><?php esc_html_e( 'Video in Gallery', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+							<h3><?php esc_html_e( 'Video in Gallery (Button-only to Fullscreen)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Demonstrates gallery mode with justified thumbnails and videos included.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code><?php echo esc_html( $video_gallery_shortcode ); ?></code>
