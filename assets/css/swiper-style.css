@@ -1976,7 +1976,7 @@ body.jzsa-no-scroll {
 .jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-prev,
 .jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-prev {
     top: 0 !important; bottom: 0 !important; height: 100% !important;
-    left: 0 !important; right: auto !important; width: 36px !important;
+    left: -6px !important; right: auto !important; width: 36px !important;
     margin: 0 !important;
     background: transparent !important;
     transform: none !important;
@@ -1988,7 +1988,7 @@ body.jzsa-no-scroll {
 .jzsa-gallery-wrapper.jzsa-mosaic-top .jzsa-mosaic-arrow-next,
 .jzsa-gallery-wrapper.jzsa-mosaic-bottom .jzsa-mosaic-arrow-next {
     top: 0 !important; bottom: 0 !important; height: 100% !important;
-    right: 0 !important; left: auto !important; width: 36px !important;
+    right: -6px !important; left: auto !important; width: 36px !important;
     margin: 0 !important;
     background: transparent !important;
     transform: none !important;
