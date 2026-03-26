@@ -102,6 +102,8 @@
                 // Native fullscreen events do not fire for pseudo fullscreen.
                 $(element).trigger('jzsa:fullscreen-state', [true]);
             } else {
+                // Save scroll position so we can restore it when exiting
+                $(element).data('jzsa-scroll-y', window.scrollY || window.pageYOffset);
                 // Enter native fullscreen where supported
                 if (element.requestFullscreen) {
                     element.requestFullscreen();
@@ -383,10 +385,37 @@
         $el.removeClass('jzsa-pseudo-fullscreen jzsa-is-fullscreen');
         $('html, body').removeClass('jzsa-no-scroll');
 
-        // Restore scroll position
-        var savedY = $el.data('jzsa-scroll-y') || 0;
+        notifyGalleryOnFullscreenExit(element, swipers[element.id]);
+    }
+
+    // Helper: Restore page scroll and notify the gallery to navigate to the
+    // last-viewed photo after any fullscreen exit (native or pseudo).
+    // A single shared function ensures both exit paths behave identically
+    // and cannot diverge.
+    //
+    // @param {Element} element  The slideshow DOM element that was in fullscreen.
+    // @param {Object}  swiper   The Swiper instance for that element.
+    function notifyGalleryOnFullscreenExit(element, swiper) {
+        var $el = $(element);
+        var savedY = $el.data('jzsa-scroll-y');
+
+        // Only act if this element was the one that entered fullscreen.
+        // savedY is set exclusively on FS entry; its absence means this
+        // handler fired for a gallery that was never in fullscreen (e.g. a
+        // second gallery on the same page whose fullscreenchange listener
+        // fired as a bystander when another gallery exited).
+        if (savedY == null) {
+            return;
+        }
+
         window.scrollTo(0, savedY);
         $el.removeData('jzsa-scroll-y');
+
+        if ($el.hasClass('jzsa-gallery-slideshow') && swiper) {
+            var currentIndex = (typeof swiper.realIndex === 'number') ? swiper.realIndex : swiper.activeIndex;
+            var galleryId = element.id.replace(/-slideshow$/, '');
+            $('#' + galleryId).trigger('jzsa:focus-index', [currentIndex]);
+        }
     }
 
     // Helper: Check if click should be ignored (clicked on UI element)
@@ -1662,6 +1691,8 @@
             $(containerElement).removeClass('jzsa-is-fullscreen');
             $(containerElement).removeClass('jzsa-fullscreen-waiting');
             clearCountdownRing($(containerElement));
+
+            notifyGalleryOnFullscreenExit(containerElement, swiper);
 
             params.slideshowPausedByInteraction = false;
 
@@ -5561,6 +5592,72 @@
         $container.on('jzsa:video-stopped', function() {
             if (resizePending) {
                 resizePending = false;
+                renderCurrentGalleryPage();
+            }
+        });
+
+        // When the fullscreen slideshow exits, it fires this event so the
+        // gallery can navigate to the page containing the photo the user
+        // was last viewing.  All layout/pagination state lives in this
+        // closure, so the computation happens here rather than in the
+        // fullscreen exit handler.
+        $container.on('jzsa:focus-index', function(_e, targetIndex) {
+            if (typeof targetIndex !== 'number' || targetIndex < 0 || targetIndex >= allPhotos.length) {
+                return;
+            }
+
+            // Scrollable gallery: scroll the item into view inside the container.
+            // Use getBoundingClientRect() rather than offsetTop so the calculation
+            // is correct for both grid (direct children) and justified layout
+            // (items nested inside .jzsa-justified-row elements).
+            var $item = $container.find('[data-index="' + targetIndex + '"]').first();
+            if (galleryScrollable && galleryRows > 0 &&
+                $container[0].scrollHeight > $container[0].clientHeight) {
+                if ($item.length) {
+                    var containerRect = $container[0].getBoundingClientRect();
+                    var itemRect = $item[0].getBoundingClientRect();
+                    $container[0].scrollTop = $container[0].scrollTop
+                        + itemRect.top - containerRect.top
+                        - ($container[0].clientHeight - itemRect.height) / 2;
+                }
+                return;
+            }
+
+            // Paginated gallery: compute the target page and re-render
+            if (paginationState.totalPages <= 1) {
+                // No pagination and no internal scroller — all items are in the
+                // normal page flow.  Scroll the page itself to the target item.
+                if ($item.length) {
+                    $item[0].scrollIntoView({ block: 'center', behavior: 'instant' });
+                }
+                return;
+            }
+
+            var targetPage;
+            if (layout === 'justified') {
+                var justified = getJustifiedLayoutData($container, allPhotos);
+                var rowsPerPage = galleryRows > 0 ? galleryRows : (justified.rows.length || 1);
+                var photosSeen = 0;
+                var targetRow = 0;
+                for (var r = 0; r < justified.rows.length; r++) {
+                    photosSeen += justified.rows[r].length;
+                    if (targetIndex < photosSeen) {
+                        targetRow = r;
+                        break;
+                    }
+                }
+                targetPage = Math.floor(targetRow / rowsPerPage);
+            } else {
+                var activeColumns = getUniformColumnsForViewport($container);
+                var photosPerPage = galleryRows > 0 ? (galleryRows * activeColumns) : allPhotos.length;
+                if (photosPerPage <= 0) {
+                    photosPerPage = allPhotos.length > 0 ? allPhotos.length : 1;
+                }
+                targetPage = Math.floor(targetIndex / photosPerPage);
+            }
+
+            if (targetPage !== paginationState.currentPage) {
+                paginationState.currentPage = targetPage;
                 renderCurrentGalleryPage();
             }
         });
