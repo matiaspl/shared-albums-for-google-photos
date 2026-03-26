@@ -198,8 +198,15 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 2.0.4 =
-* New feature: Mosaic thumbnail preview (mosaic="true") for slider and carousel modes
-* Mosaic feature inspired by Mateusz Starzak's fork (https://github.com/matiaspl)
+* New: Mosaic thumbnail strip (`mosaic="true"`) for slider and carousel modes
+* Mosaic feature inspired by Mateusz Starzak's fork
+* Added `fullscreen-background-color` (default `#000`) to control fullscreen background separately
+* Fixed gallery mode where `show-download-button="true"` did not render the download button
+* Fixed slideshow option logic: use `disabled`, `manual`, or `auto` for `slideshow` and `fullscreen-slideshow`
+* Fixed `fullscreen-toggle="click"` for video slides in gallery mode
+* Improved iPhone pseudo-fullscreen behavior, including fullscreen arrow navigation
+* Added restore-to-last-viewed position when closing fullscreen
+* Thanks to Peter and Ulf for detailed bug reports and testing
 
 = 2.0.3 =
 * New parameter: "cache-refresh"
