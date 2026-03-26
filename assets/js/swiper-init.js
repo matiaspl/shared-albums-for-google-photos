@@ -2817,14 +2817,20 @@
             config.spaceBetween = 0;
             config.centeredSlides = true;
 
-            // On iOS (especially older devices), use fade instead of slide to avoid
+            // Historically, iOS/WebKit (≤ 16) used fade instead of slide to avoid
             // transient black frames during transform-based slide transitions.
-            if (isIosDevice()) {
-                config.effect = 'fade';
-                config.fadeEffect = { crossFade: true };
-            } else {
-                config.effect = 'slide';
-            }
+            // However, testing on iOS 15.7 (Safari and Chrome) showed no black frames,
+            // suggesting the issue was either fixed in WebKit long ago or never reliably
+            // reproducible. The fade fallback is therefore disabled below — retain it
+            // here in case it needs to be re-enabled for a specific future device report.
+            //
+            // if (isOldIosWebkit()) {
+            //     config.effect = 'fade';
+            //     config.fadeEffect = { crossFade: true };
+            // } else {
+            //     config.effect = 'slide';
+            // }
+            config.effect = 'slide';
 
             // Keep zoom touch-only and disable double-click/double-tap toggles.
             // This avoids conflicts with fullscreen switch/navigation gestures.
