@@ -2190,8 +2190,8 @@
 		// Uses a dynamic <style> element with a none→real two-frame kick to
 		// force the browser to repaint the cursor (browsers skip repainting
 		// when the cursor value is unchanged on a stationary mouse).
-		var CURSOR_PREV = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'%3E%3Cpath d=\'M20 8L12 16l8 8\' fill=\'none\' stroke=\'black\' stroke-width=\'4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M20 8L12 16l8 8\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 16 16, w-resize';
-		var CURSOR_NEXT = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'32\' height=\'32\'%3E%3Cpath d=\'M12 8l8 8-8 8\' fill=\'none\' stroke=\'black\' stroke-width=\'4\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M12 8l8 8-8 8\' fill=\'none\' stroke=\'white\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 16 16, e-resize';
+		var CURSOR_PREV = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\'%3E%3Cpath d=\'M10 4L6 8l4 4\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M10 4L6 8l4 4\' fill=\'none\' stroke=\'white\' stroke-width=\'1\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 8 8, w-resize';
+		var CURSOR_NEXT = 'url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'16\' height=\'16\'%3E%3Cpath d=\'M6 4l4 4-4 4\' fill=\'none\' stroke=\'black\' stroke-width=\'2\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3Cpath d=\'M6 4l4 4-4 4\' fill=\'none\' stroke=\'white\' stroke-width=\'1\' stroke-linecap=\'round\' stroke-linejoin=\'round\'/%3E%3C/svg%3E") 8 8, e-resize';
 		var navCursorActive = false;
 
 		if (params.fullscreenToggle !== 'click' && params.fullscreenToggle !== 'disabled') {
