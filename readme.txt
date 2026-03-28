@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 2.0.4
+Stable tag: 2.0.5
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -202,6 +202,11 @@ The plugin provides clear feedback:
 4. Shortcode example in post editor
 
 == Changelog ==
+
+= 2.0.5 =
+* Fullscreen vs inline controls
+* Video download support
+* Download UX & settings improvements
 
 = 2.0.4 =
 * New: Mosaic thumbnail strip (`mosaic="true"`) for slider and carousel modes
