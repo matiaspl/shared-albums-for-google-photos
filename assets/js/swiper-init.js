@@ -456,10 +456,6 @@
 
         var rawValue = $container.attr('data-download-size-warning');
         if (rawValue === undefined || rawValue === null || rawValue === '') {
-            // Backward compatibility with legacy attribute name.
-            rawValue = $container.attr('data-download-max-size-mb');
-        }
-        if (rawValue === undefined || rawValue === null || rawValue === '') {
             return null;
         }
 
@@ -2007,8 +2003,6 @@
             }
             if (raw.warning_size_bytes !== undefined && raw.warning_size_bytes !== null && !isNaN(parseInt(raw.warning_size_bytes, 10))) {
                 maxSizeBytes = parseInt(raw.warning_size_bytes, 10);
-            } else if (raw.max_size_bytes !== undefined && raw.max_size_bytes !== null && !isNaN(parseInt(raw.max_size_bytes, 10))) {
-                maxSizeBytes = parseInt(raw.max_size_bytes, 10);
             }
         }
 
@@ -2298,8 +2292,6 @@
                 };
                 if (downloadWarningSizeBytes !== null) {
                     requestData.warning_size_bytes = downloadWarningSizeBytes;
-                    // Backward compatibility with older server versions.
-                    requestData.max_size_bytes = downloadWarningSizeBytes;
                 }
                 if (allowLargeDownload) {
                     requestData.allow_large_download = 'true';
@@ -4323,8 +4315,7 @@
             'data-show-link-button',
             'data-fullscreen-show-download-button',
             'data-fullscreen-show-link-button',
-            'data-download-size-warning',
-            'data-download-max-size-mb'
+            'data-download-size-warning'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $galleryContainer.attr(forwardAttrs[i]);
@@ -6437,8 +6428,6 @@
                     };
                     if (galleryDownloadWarningSizeBytes !== null) {
                         requestData.warning_size_bytes = galleryDownloadWarningSizeBytes;
-                        // Backward compatibility with older server versions.
-                        requestData.max_size_bytes = galleryDownloadWarningSizeBytes;
                     }
                     if (allowLargeDownload) {
                         requestData.allow_large_download = 'true';

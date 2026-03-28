@@ -1450,7 +1450,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>download-size-warning</code></td>
-								<td>Large-download warning threshold (in MB) for proxied downloads (photo or video). If exceeded, the visitor gets a yes/no confirmation dialog before continuing. Set <code>0</code> to disable the warning. Hard server limit: 512 MB. (Backward compatible alias: <code>download-max-size-mb</code>.)</td>
+								<td>Large-download warning threshold (in MB) for proxied downloads (photo or video). If exceeded, the visitor gets a yes/no confirmation dialog before continuing. Set <code>0</code> to disable the warning. Hard server limit: 512 MB.</td>
 								<td>128</td>
 							</tr>
 						</tbody>

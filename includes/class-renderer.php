@@ -310,13 +310,6 @@ class JZSA_Renderer {
 		if ( isset( $config['download-size-warning'] ) ) {
 			$warning_size = intval( $config['download-size-warning'] );
 			$attrs[]      = sprintf( 'data-download-size-warning="%d"', $warning_size );
-			// Backward compatibility with older frontend bundles.
-			$attrs[]      = sprintf( 'data-download-max-size-mb="%d"', $warning_size );
-		} elseif ( isset( $config['download-max-size-mb'] ) ) {
-			// Backward compatibility with old config key.
-			$warning_size = intval( $config['download-max-size-mb'] );
-			$attrs[]      = sprintf( 'data-download-size-warning="%d"', $warning_size );
-			$attrs[]      = sprintf( 'data-download-max-size-mb="%d"', $warning_size );
 		}
 
 		if ( ! empty( $config['image-fit'] ) ) {
@@ -438,13 +431,6 @@ class JZSA_Renderer {
 		if ( isset( $config['download-size-warning'] ) ) {
 			$warning_size = intval( $config['download-size-warning'] );
 			$attrs[]      = sprintf( 'data-download-size-warning="%d"', $warning_size );
-			// Backward compatibility with older frontend bundles.
-			$attrs[]      = sprintf( 'data-download-max-size-mb="%d"', $warning_size );
-		} elseif ( isset( $config['download-max-size-mb'] ) ) {
-			// Backward compatibility with old config key.
-			$warning_size = intval( $config['download-max-size-mb'] );
-			$attrs[]      = sprintf( 'data-download-size-warning="%d"', $warning_size );
-			$attrs[]      = sprintf( 'data-download-max-size-mb="%d"', $warning_size );
 		}
 
 		if ( isset( $config['start-at'] ) && '' !== $config['start-at'] ) {

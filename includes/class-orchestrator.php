@@ -527,26 +527,15 @@ class JZSA_Shared_Albums {
 	 * Parse large-download warning threshold in MB for proxied downloads.
 	 * 0 disables the warning/confirmation.
 	 *
-	 * Accepts:
-	 * - download-size-warning (preferred)
-	 * - download-max-size-mb (deprecated alias, backward compatibility)
-	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return int Non-negative size in MB.
 	 */
 	private function parse_download_warning_size_mb( $atts ) {
-		$raw_value = null;
-		if ( isset( $atts['download-size-warning'] ) ) {
-			$raw_value = $atts['download-size-warning'];
-		} elseif ( isset( $atts['download-max-size-mb'] ) ) {
-			$raw_value = $atts['download-max-size-mb'];
-		}
-
-		if ( null === $raw_value ) {
+		if ( ! isset( $atts['download-size-warning'] ) ) {
 			return self::DEFAULT_DOWNLOAD_WARNING_SIZE_MB;
 		}
 
-		$value = intval( $raw_value );
+		$value = intval( $atts['download-size-warning'] );
 		if ( $value < 0 ) {
 			return self::DEFAULT_DOWNLOAD_WARNING_SIZE_MB;
 		}
@@ -1460,12 +1449,6 @@ class JZSA_Shared_Albums {
 			if ( $requested_warning_size >= 0 ) {
 				$warning_size_bytes = $requested_warning_size;
 			}
-		} elseif ( isset( $_POST['max_size_bytes'] ) ) {
-			// Backward compatibility for old frontend payloads.
-			$requested_warning_size = intval( wp_unslash( $_POST['max_size_bytes'] ) );
-			if ( $requested_warning_size >= 0 ) {
-				$warning_size_bytes = $requested_warning_size;
-			}
 		}
 
 		// Warning threshold cannot exceed hard maximum when hard maximum is enabled.
@@ -1501,7 +1484,6 @@ class JZSA_Shared_Albums {
 					'message' => __( 'This file is larger than the configured download warning threshold.', 'janzeman-shared-albums-for-google-photos' ),
 					'requires_large_download_confirmation' => true,
 					'actual_size_bytes' => $content_length,
-					'max_size_bytes'    => $warning_size_bytes,
 					'warning_size_bytes' => $warning_size_bytes,
 				),
 				413
@@ -1533,7 +1515,6 @@ class JZSA_Shared_Albums {
 					'message' => __( 'This file is larger than the configured download warning threshold.', 'janzeman-shared-albums-for-google-photos' ),
 					'requires_large_download_confirmation' => true,
 					'actual_size_bytes' => $actual_size_bytes,
-					'max_size_bytes'    => $warning_size_bytes,
 					'warning_size_bytes' => $warning_size_bytes,
 				),
 				413
