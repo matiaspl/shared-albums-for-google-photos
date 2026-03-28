@@ -1262,34 +1262,6 @@ class JZSA_Settings_Page {
 							</tbody>
 						</table>
 
-						<h3><?php esc_html_e( 'Other Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<table class="jzsa-settings-table">
-							<thead>
-								<tr>
-									<th>Parameter</th>
-									<th>Description</th>
-									<th>Default</th>
-								</tr>
-							</thead>
-							<tbody>
-								<tr>
-									<td><code>cache-refresh</code></td>
-									<td>How often the album data is re-fetched from Google Photos, in hours. Useful for albums that are updated frequently (e.g. live event albums). Example: cache-refresh="1" to refresh every hour.</td>
-									<td>168 (7 days)</td>
-								</tr>
-								<tr>
-									<td><code>interaction-lock</code></td>
-									<td>Master interaction lock: when "true", disables swipe/drag, keyboard navigation, click/tap photo navigation, gallery thumbnail fullscreen opening, and fullscreen entry gestures/buttons. Interactive controls are hidden; passive indicators like counter/progress can remain visible.</td>
-									<td>false</td>
-								</tr>
-								<tr>
-									<td><code>download-max-size-mb</code></td>
-									<td>Large-download warning threshold (in MB) for proxied downloads (photo or video). If exceeded, the visitor gets a yes/no confirmation dialog before continuing. Set <code>0</code> to disable the warning.</td>
-									<td>256</td>
-								</tr>
-							</tbody>
-						</table>
-
 						<h3><?php esc_html_e( 'Fullscreen Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<table class="jzsa-settings-table">
 							<thead>
@@ -1453,6 +1425,34 @@ class JZSA_Settings_Page {
 									<td><?php esc_html_e( 'Accent color for video play button and control bar in inline mode. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4"). Use fullscreen-video-controls-color to override this in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 									<td>#00b2ff</td>
 								</tr>
+						</tbody>
+					</table>
+
+					<h3><?php esc_html_e( 'Other Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+					<table class="jzsa-settings-table">
+						<thead>
+							<tr>
+								<th>Parameter</th>
+								<th>Description</th>
+								<th>Default</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr>
+								<td><code>cache-refresh</code></td>
+								<td>How often the album data is re-fetched from Google Photos, in hours. Useful for albums that are updated frequently (e.g. live event albums). Example: cache-refresh="1" to refresh every hour.</td>
+								<td>168 (7 days)</td>
+							</tr>
+							<tr>
+								<td><code>interaction-lock</code></td>
+								<td>Master interaction lock: when "true", disables swipe/drag, keyboard navigation, click/tap photo navigation, gallery thumbnail fullscreen opening, and fullscreen entry gestures/buttons. Interactive controls are hidden; passive indicators like counter/progress can remain visible.</td>
+								<td>false</td>
+							</tr>
+							<tr>
+								<td><code>download-max-size-mb</code></td>
+								<td>Large-download warning threshold (in MB) for proxied downloads (photo or video). If exceeded, the visitor gets a yes/no confirmation dialog before continuing. Set <code>0</code> to disable the warning.</td>
+								<td>256</td>
+							</tr>
 						</tbody>
 					</table>
 
