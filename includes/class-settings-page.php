@@ -1168,11 +1168,11 @@ class JZSA_Settings_Page {
 								<td>Background color hex code or "transparent"</td>
 								<td>transparent</td>
 							</tr>
-							<tr>
-								<td><code>controls-color</code></td>
-								<td>Color for custom album controls (previous/next, fullscreen, link, download, play/pause). Any valid 6-digit hex color.</td>
-								<td>#ffffff</td>
-							</tr>
+								<tr>
+									<td><code>controls-color</code></td>
+									<td>Color for custom album controls (previous/next, fullscreen, link, download, play/pause) in inline mode. Any valid 6-digit hex color. Use <code>fullscreen-controls-color</code> to override this in fullscreen.</td>
+									<td>#ffffff</td>
+								</tr>
 							<tr>
 								<td><code>corner-radius</code></td>
 								<td><?php esc_html_e( 'Rounded corner radius in pixels. Applies to slider, carousel, gallery thumbnails, and mosaic strips. Use 0 for square corners. Disabled in fullscreen mode. Use mosaic-corner-radius to override the radius for the mosaic strip independently.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
@@ -1216,11 +1216,11 @@ class JZSA_Settings_Page {
 								<td>Slideshow delay in normal mode, in seconds. Supports single values like "5" or ranges like "4-12". In paginated gallery mode this is the delay between page changes.</td>
 								<td>5</td>
 							</tr>
-							<tr>
-								<td><code>slideshow-autoresume</code></td>
-								<td>When a user swipes or clicks to navigate forward or backward manually, the slideshow is interrupted. This is the number of seconds of inactivity after which the interrupted slideshow resumes and advances automatically. Set to "disabled" to turn off autoresume — the slideshow stays interrupted until the user presses play. Does not apply when the user pauses the slideshow via the pause button — that stays paused until manually resumed. Applies to both inline and fullscreen slideshows.</td>
-								<td>30</td>
-							</tr>
+								<tr>
+									<td><code>slideshow-autoresume</code></td>
+									<td>When a user swipes or clicks to navigate forward or backward manually, the slideshow is interrupted. This is the number of seconds of inactivity after which the interrupted slideshow resumes and advances automatically. Set to "disabled" to turn off autoresume — the slideshow stays interrupted until the user presses play. Does not apply when the user pauses the slideshow via the pause button — that stays paused until manually resumed. This sets inline behavior; use <code>fullscreen-slideshow-autoresume</code> to override in fullscreen.</td>
+									<td>30</td>
+								</tr>
 							<tr>
 								<td><code>start-at</code></td>
 								<td>Starting photo: a 1-based photo index like "1" or "12", or "random" for a random starting point. Values out of range fall back to 1.</td>
@@ -1229,106 +1229,141 @@ class JZSA_Settings_Page {
 						</tbody>
 					</table>
 
-					<h3><?php esc_html_e( 'Fullscreen Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
-						<thead>
-							<tr>
+						<h3><?php esc_html_e( 'Display Options', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<table class="jzsa-settings-table">
+							<thead>
+								<tr>
 								<th>Parameter</th>
 								<th>Description</th>
 								<th>Default</th>
 							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td><code>fullscreen-source-width</code></td>
-								<td>Photo width to fetch from Google for fullscreen mode</td>
-								<td>1920</td>
-							</tr>
-							<tr>
-								<td><code>fullscreen-source-height</code></td>
-								<td>Photo height to fetch from Google for fullscreen mode</td>
-								<td>1440</td>
-							</tr>
-							<tr>
-								<td><code>fullscreen-slideshow</code></td>
-								<td>Slideshow mode in fullscreen: "auto", "manual", or "disabled". Same behavior as <code>slideshow</code> but applies only when in fullscreen. Backward compatible: "true" = "auto", "false" = "disabled".</td>
-								<td>disabled</td>
-							</tr>
-							<tr>
-								<td><code>fullscreen-slideshow-delay</code></td>
-								<td>Slideshow delay in fullscreen mode, in seconds, supports ranges like "3-5" or single values</td>
-								<td>5</td>
-							</tr>
-							<tr>
-								<td><code>fullscreen-toggle</code></td>
-								<td>How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> — it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit.</td>
-								<td>button-only</td>
-							</tr>
-							<tr>
-								<td><code>fullscreen-image-fit</code></td>
-								<td>How photos fit the frame in fullscreen: "contain" (default, show whole image, no cropping) or "cover" (fill and crop edges).</td>
-								<td>contain</td>
-							</tr>
-							<tr>
-								<td><code>fullscreen-background-color</code></td>
-								<td><?php esc_html_e( 'Background color for fullscreen mode. Overrides background-color when viewing in fullscreen. Hex code or "transparent".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>#000000</td>
-							</tr>
-							<tr>
-								<td><code>fullscreen-show-link-button</code></td>
-								<td>Show external link button in fullscreen view: "false" or "true". Defaults to <code>show-link-button</code> when omitted.</td>
-								<td>inherits show-link-button</td>
-							</tr>
-							<tr>
-								<td><code>fullscreen-show-download-button</code></td>
-								<td>Show download button in fullscreen view: "false" or "true". Defaults to <code>show-download-button</code> when omitted.</td>
-								<td>inherits show-download-button</td>
-							</tr>
-						</tbody>
-					</table>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>interaction-lock</code></td>
+									<td>Master interaction lock: when "true", disables swipe/drag, keyboard navigation, click/tap photo navigation, gallery thumbnail fullscreen opening, and fullscreen entry gestures/buttons. Interactive controls are hidden; passive indicators like counter/progress can remain visible.</td>
+									<td>false</td>
+								</tr>
+								<tr>
+									<td><code>show-navigation</code></td>
+									<td>Show previous/next navigation arrows: "true" or "false"</td>
+									<td>true</td>
+								</tr>
+								<tr>
+									<td><code>show-title</code></td>
+									<td>Display album title: "false" or "true"</td>
+									<td>false</td>
+								</tr>
+								<tr>
+									<td><code>show-counter</code></td>
+									<td>Show the photo counter (e.g., "4 / 50" or "Trip to Bali: 4 / 50"): "true" or "false"</td>
+									<td>true</td>
+								</tr>
+								<tr>
+									<td><code>show-link-button</code></td>
+									<td>Show external link button in inline (non-fullscreen) view: "false" or "true"</td>
+									<td>false</td>
+								</tr>
+								<tr>
+									<td><code>show-download-button</code></td>
+									<td>Show download button in inline (non-fullscreen) view: "false" or "true"</td>
+									<td>false</td>
+								</tr>
+							</tbody>
+						</table>
 
-					<h3><?php esc_html_e( 'Display Options', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
-						<thead>
-							<tr>
-								<th>Parameter</th>
-								<th>Description</th>
-								<th>Default</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td><code>interaction-lock</code></td>
-								<td>Master interaction lock: when "true", disables swipe/drag, keyboard navigation, click/tap photo navigation, gallery thumbnail fullscreen opening, and fullscreen entry gestures/buttons. Interactive controls are hidden; passive indicators like counter/progress can remain visible.</td>
-								<td>false</td>
-							</tr>
-							<tr>
-								<td><code>show-navigation</code></td>
-								<td>Show previous/next navigation arrows: "true" or "false"</td>
-								<td>true</td>
-							</tr>
-							<tr>
-								<td><code>show-title</code></td>
-								<td>Display album title: "false" or "true"</td>
-								<td>false</td>
-							</tr>
-							<tr>
-								<td><code>show-counter</code></td>
-								<td>Show the photo counter (e.g., "4 / 50" or "Trip to Bali: 4 / 50"): "true" or "false"</td>
-								<td>true</td>
-							</tr>
-							<tr>
-								<td><code>show-link-button</code></td>
-								<td>Show external link button in inline (non-fullscreen) view: "false" or "true"</td>
-								<td>false</td>
-							</tr>
-							<tr>
-								<td><code>show-download-button</code></td>
-								<td>Show download button in inline (non-fullscreen) view: "false" or "true"</td>
-								<td>false</td>
-							</tr>
-						</tbody>
-					</table>
+						<h3><?php esc_html_e( 'Fullscreen Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<table class="jzsa-settings-table">
+							<thead>
+								<tr>
+									<th>Parameter</th>
+									<th>Description</th>
+									<th>Default</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr>
+									<td><code>fullscreen-source-width</code></td>
+									<td>Photo width to fetch from Google for fullscreen mode</td>
+									<td>1920</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-source-height</code></td>
+									<td>Photo height to fetch from Google for fullscreen mode</td>
+									<td>1440</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-slideshow</code></td>
+									<td>Slideshow mode in fullscreen: "auto", "manual", or "disabled". Same behavior as <code>slideshow</code> but applies only when in fullscreen. Backward compatible: "true" = "auto", "false" = "disabled".</td>
+									<td>disabled</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-slideshow-delay</code></td>
+									<td>Slideshow delay in fullscreen mode, in seconds, supports ranges like "3-5" or single values</td>
+									<td>5</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-toggle</code></td>
+									<td>How fullscreen is toggled: "button-only" (default) requires the fullscreen button, "click" enters fullscreen on a single click, "double-click" toggles fullscreen on double-click, or "disabled" to prevent fullscreen entirely. Note: "click" disables single-click navigation in fullscreen mode, so mouse users lose the ability to click left/right to browse. <strong>"double-click" is recommended</strong> — it keeps single-click navigation in fullscreen while still offering a gesture shortcut to enter and exit.</td>
+									<td>button-only</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-image-fit</code></td>
+									<td>How photos fit the frame in fullscreen: "contain" (default, show whole image, no cropping) or "cover" (fill and crop edges).</td>
+									<td>contain</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-background-color</code></td>
+									<td><?php esc_html_e( 'Background color for fullscreen mode. Overrides background-color when viewing in fullscreen. Hex code or "transparent".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>#000000</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-show-navigation</code></td>
+									<td>Show previous/next navigation arrows in fullscreen: "true" or "false". Defaults to <code>show-navigation</code> when omitted.</td>
+									<td>inherits show-navigation</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-show-title</code></td>
+									<td>Display album title in fullscreen: "false" or "true". Defaults to <code>show-title</code> when omitted.</td>
+									<td>inherits show-title</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-show-counter</code></td>
+									<td>Show photo counter in fullscreen: "true" or "false". Defaults to <code>show-counter</code> when omitted.</td>
+									<td>inherits show-counter</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-controls-color</code></td>
+									<td>Color for custom album controls in fullscreen view. Any valid 6-digit hex color. Defaults to <code>controls-color</code> when omitted.</td>
+									<td>inherits controls-color</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-video-controls-color</code></td>
+									<td>Accent color for video play button and control bar in fullscreen. Defaults to <code>video-controls-color</code> when omitted.</td>
+									<td>inherits video-controls-color</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-video-controls-autohide</code></td>
+									<td>Auto-hide video control bar in fullscreen after inactivity: "true" or "false". Defaults to <code>video-controls-autohide</code> when omitted.</td>
+									<td>inherits video-controls-autohide</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-slideshow-autoresume</code></td>
+									<td>Number of inactivity seconds before fullscreen slideshow autoresumes, or "disabled". Defaults to <code>slideshow-autoresume</code> when omitted.</td>
+									<td>inherits slideshow-autoresume</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-show-link-button</code></td>
+									<td>Show external link button in fullscreen view: "false" or "true". Defaults to <code>show-link-button</code> when omitted.</td>
+									<td>inherits show-link-button</td>
+								</tr>
+								<tr>
+									<td><code>fullscreen-show-download-button</code></td>
+									<td>Show download button in fullscreen view: "false" or "true". Defaults to <code>show-download-button</code> when omitted.</td>
+									<td>inherits show-download-button</td>
+								</tr>
+							</tbody>
+						</table>
 
 					<h3><?php esc_html_e( 'Video Support (Experimental)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<p><?php echo wp_kses( __( 'Albums containing videos will attempt to detect and play them using the native browser video player. Please notice: <strong>This is an experimental feature. The video playback experience might not be perfect under all conditions.</strong>', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
@@ -1346,16 +1381,16 @@ class JZSA_Settings_Page {
 								<td><?php esc_html_e( 'Include videos from mixed albums: "true" or "false". Set to "false" to display only photos and filter out all video items.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>false</td>
 							</tr>
-							<tr>
-								<td><code>video-controls-autohide</code></td>
-								<td><?php esc_html_e( 'Auto-hide the video control bar after a few seconds of inactivity: "true" or "false". When enabled, controls reappear on hover or tap.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>false</td>
-							</tr>
-							<tr>
-								<td><code>video-controls-color</code></td>
-								<td><?php esc_html_e( 'Accent color for video play button and control bar. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4").', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>#00b2ff</td>
-							</tr>
+								<tr>
+									<td><code>video-controls-autohide</code></td>
+									<td><?php esc_html_e( 'Auto-hide the video control bar after a few seconds of inactivity in inline mode: "true" or "false". When enabled, controls reappear on hover or tap. Use fullscreen-video-controls-autohide to override this in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>false</td>
+								</tr>
+								<tr>
+									<td><code>video-controls-color</code></td>
+									<td><?php esc_html_e( 'Accent color for video play button and control bar in inline mode. Any valid CSS hex color (e.g. "#00b2ff", "#FF69B4"). Use fullscreen-video-controls-color to override this in fullscreen.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+									<td>#00b2ff</td>
+								</tr>
 						</tbody>
 					</table>
 

@@ -265,13 +265,17 @@ class JZSA_Renderer {
 		$boolean_attrs = array(
 			'interaction-lock'        => 'data-interaction-lock',
 			'show-navigation'         => 'data-show-navigation',
+			'fullscreen-show-navigation' => 'data-fullscreen-show-navigation',
 			'show-title'              => 'data-show-title',
+			'fullscreen-show-title'   => 'data-fullscreen-show-title',
 			'show-counter'            => 'data-show-counter',
+			'fullscreen-show-counter' => 'data-fullscreen-show-counter',
 			'show-link-button'        => 'data-show-link-button',
 			'show-download-button'    => 'data-show-download-button',
 			'fullscreen-show-link-button'     => 'data-fullscreen-show-link-button',
 			'fullscreen-show-download-button' => 'data-fullscreen-show-download-button',
 			'video-controls-autohide' => 'data-video-controls-autohide',
+			'fullscreen-video-controls-autohide' => 'data-fullscreen-video-controls-autohide',
 			'mosaic'                  => 'data-mosaic',
 		);
 
@@ -322,6 +326,9 @@ class JZSA_Renderer {
 		if ( isset( $config['slideshow-autoresume'] ) ) {
 			$attrs[] = sprintf( 'data-slideshow-autoresume="%s"', esc_attr( $config['slideshow-autoresume'] ) );
 		}
+		if ( isset( $config['fullscreen-slideshow-autoresume'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-slideshow-autoresume="%s"', esc_attr( $config['fullscreen-slideshow-autoresume'] ) );
+		}
 
 		if ( ! empty( $config['mode'] ) ) {
 			$attrs[] = sprintf( 'data-mode="%s"', esc_attr( $config['mode'] ) );
@@ -336,8 +343,14 @@ class JZSA_Renderer {
 		if ( ! empty( $config['controls-color'] ) ) {
 			$attrs[] = sprintf( 'data-controls-color="%s"', esc_attr( $config['controls-color'] ) );
 		}
+		if ( ! empty( $config['fullscreen-controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-controls-color="%s"', esc_attr( $config['fullscreen-controls-color'] ) );
+		}
 		if ( ! empty( $config['video-controls-color'] ) ) {
 			$attrs[] = sprintf( 'data-video-controls-color="%s"', esc_attr( $config['video-controls-color'] ) );
+		}
+		if ( ! empty( $config['fullscreen-video-controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-video-controls-color="%s"', esc_attr( $config['fullscreen-video-controls-color'] ) );
 		}
 
 		if ( ! empty( $config['album-title'] ) ) {
@@ -431,13 +444,17 @@ class JZSA_Renderer {
 		$slideshow_booleans = array(
 			'interaction-lock'        => 'data-interaction-lock',
 			'show-navigation'         => 'data-show-navigation',
+			'fullscreen-show-navigation' => 'data-fullscreen-show-navigation',
 			'show-title'              => 'data-show-title',
+			'fullscreen-show-title'   => 'data-fullscreen-show-title',
 			'show-counter'            => 'data-show-counter',
+			'fullscreen-show-counter' => 'data-fullscreen-show-counter',
 			'show-link-button'        => 'data-show-link-button',
 			'show-download-button'    => 'data-show-download-button',
 			'fullscreen-show-link-button'     => 'data-fullscreen-show-link-button',
 			'fullscreen-show-download-button' => 'data-fullscreen-show-download-button',
 			'video-controls-autohide' => 'data-video-controls-autohide',
+			'fullscreen-video-controls-autohide' => 'data-fullscreen-video-controls-autohide',
 		);
 		foreach ( $slideshow_booleans as $key => $attr_name ) {
 			if ( isset( $config[ $key ] ) ) {
@@ -451,6 +468,9 @@ class JZSA_Renderer {
 
 		if ( isset( $config['slideshow-autoresume'] ) ) {
 			$attrs[] = sprintf( 'data-slideshow-autoresume="%s"', esc_attr( $config['slideshow-autoresume'] ) );
+		}
+		if ( isset( $config['fullscreen-slideshow-autoresume'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-slideshow-autoresume="%s"', esc_attr( $config['fullscreen-slideshow-autoresume'] ) );
 		}
 
 		if ( ! empty( $config['fullscreen-toggle'] ) ) {
@@ -474,8 +494,14 @@ class JZSA_Renderer {
 		if ( ! empty( $config['controls-color'] ) ) {
 			$attrs[] = sprintf( 'data-controls-color="%s"', esc_attr( $config['controls-color'] ) );
 		}
+		if ( ! empty( $config['fullscreen-controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-controls-color="%s"', esc_attr( $config['fullscreen-controls-color'] ) );
+		}
 		if ( ! empty( $config['video-controls-color'] ) ) {
 			$attrs[] = sprintf( 'data-video-controls-color="%s"', esc_attr( $config['video-controls-color'] ) );
+		}
+		if ( ! empty( $config['fullscreen-video-controls-color'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-video-controls-color="%s"', esc_attr( $config['fullscreen-video-controls-color'] ) );
 		}
 
 		// Gallery mode should keep responsive sizing unless width/height

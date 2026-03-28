@@ -355,13 +355,30 @@ class JZSA_Shared_Albums {
 	 * @return array Configuration
 	 */
 	private function parse_shortcode_config( $atts, $url ) {
+		$show_navigation      = $this->parse_bool( $atts, 'show-navigation', true );
+		$show_title           = $this->parse_bool( $atts, 'show-title', false );
+		$show_counter         = $this->parse_show_counter( $atts );
 		$show_link_button     = $this->parse_bool( $atts, 'show-link-button', false );
 		$show_download_button = $this->parse_bool( $atts, 'show-download-button', false );
+		$controls_color       = $this->parse_color( $atts, 'controls-color', '#ffffff' );
+		$video_controls_color = $this->parse_color( $atts, 'video-controls-color', '#00b2ff' );
+		$video_controls_autohide = $this->parse_bool( $atts, 'video-controls-autohide', false );
+		$slideshow_autoresume = $this->parse_slideshow_autoresume(
+			$atts,
+			array( 'slideshow-autoresume', 'slideshow-autoresume-timeout', 'slideshow-inactivity-timeout' )
+		);
 
-		// Fullscreen controls inherit the inline (non-fullscreen) visibility when
-		// fullscreen-specific attributes are omitted.
+		// Fullscreen display controls inherit the inline (non-fullscreen) values
+		// when fullscreen-specific attributes are omitted.
+		$fullscreen_show_navigation = isset( $atts['fullscreen-show-navigation'] ) ? $this->parse_bool( $atts, 'fullscreen-show-navigation', false ) : $show_navigation;
+		$fullscreen_show_title      = isset( $atts['fullscreen-show-title'] ) ? $this->parse_bool( $atts, 'fullscreen-show-title', false ) : $show_title;
+		$fullscreen_show_counter    = isset( $atts['fullscreen-show-counter'] ) ? $this->parse_bool( $atts, 'fullscreen-show-counter', false ) : $show_counter;
 		$fullscreen_show_link_button = isset( $atts['fullscreen-show-link-button'] ) ? $this->parse_bool( $atts, 'fullscreen-show-link-button', false ) : $show_link_button;
 		$fullscreen_show_download_button = isset( $atts['fullscreen-show-download-button'] ) ? $this->parse_bool( $atts, 'fullscreen-show-download-button', false ) : $show_download_button;
+		$fullscreen_controls_color = isset( $atts['fullscreen-controls-color'] ) ? $this->parse_color( $atts, 'fullscreen-controls-color', '' ) : $controls_color;
+		$fullscreen_video_controls_color = isset( $atts['fullscreen-video-controls-color'] ) ? $this->parse_color( $atts, 'fullscreen-video-controls-color', '' ) : $video_controls_color;
+		$fullscreen_video_controls_autohide = isset( $atts['fullscreen-video-controls-autohide'] ) ? $this->parse_bool( $atts, 'fullscreen-video-controls-autohide', false ) : $video_controls_autohide;
+		$fullscreen_slideshow_autoresume = isset( $atts['fullscreen-slideshow-autoresume'] ) ? $this->parse_slideshow_autoresume( $atts, array( 'fullscreen-slideshow-autoresume' ) ) : $slideshow_autoresume;
 
 		$config = array(
 			// URL
@@ -387,10 +404,8 @@ class JZSA_Shared_Albums {
 			'fullscreen-slideshow-delay' => $this->parse_delay_range( isset( $atts['fullscreen-slideshow-delay'] ) ? $atts['fullscreen-slideshow-delay'] : self::DEFAULT_FULLSCREEN_SLIDESHOW_DELAY ),
 
 			// Slideshow autoresume (backward compat: slideshow-autoresume-timeout, slideshow-inactivity-timeout)
-			'slideshow-autoresume' => $this->parse_slideshow_autoresume(
-				$atts,
-				array( 'slideshow-autoresume', 'slideshow-autoresume-timeout', 'slideshow-inactivity-timeout' )
-			),
+			'slideshow-autoresume' => $slideshow_autoresume,
+			'fullscreen-slideshow-autoresume' => $fullscreen_slideshow_autoresume,
 
 			// Cache refresh interval in minutes (default: 1440 = 24 hours)
 			'cache-refresh' => $this->parse_cache_refresh( $atts ),
@@ -399,15 +414,20 @@ class JZSA_Shared_Albums {
 				'mode'                 => $this->parse_mode( $atts ),
 				'background-color'     => $this->parse_color( $atts, 'background-color', 'transparent' ),
 				'fullscreen-background-color' => $this->parse_color( $atts, 'fullscreen-background-color', '' ),
-				'controls-color'       => $this->parse_color( $atts, 'controls-color', '#ffffff' ),
-				'video-controls-color' => $this->parse_color( $atts, 'video-controls-color', '#00b2ff' ),
+				'controls-color'       => $controls_color,
+				'fullscreen-controls-color' => $fullscreen_controls_color,
+				'video-controls-color' => $video_controls_color,
+				'fullscreen-video-controls-color' => $fullscreen_video_controls_color,
 				'image-fit'            => $this->parse_image_fit( $atts ),
 				'fullscreen-image-fit' => $this->parse_fullscreen_image_fit( $atts ),
 				'fullscreen-toggle'    => $this->parse_fullscreen_toggle_mode( $atts ),
 				'interaction-lock'     => $this->parse_bool( $atts, 'interaction-lock', false ),
-				'show-navigation'      => $this->parse_bool( $atts, 'show-navigation', true ),
-				'show-title'           => $this->parse_bool( $atts, 'show-title', false ),
-				'show-counter'         => $this->parse_show_counter( $atts ),
+				'show-navigation'      => $show_navigation,
+				'fullscreen-show-navigation' => $fullscreen_show_navigation,
+				'show-title'           => $show_title,
+				'fullscreen-show-title' => $fullscreen_show_title,
+				'show-counter'         => $show_counter,
+				'fullscreen-show-counter' => $fullscreen_show_counter,
 				'show-link-button'     => $show_link_button,
 				'show-download-button' => $show_download_button,
 				'fullscreen-show-link-button'     => $fullscreen_show_link_button,
@@ -417,7 +437,8 @@ class JZSA_Shared_Albums {
 				'limit'                => $this->parse_limit( $atts ),
 
 			// Video controls
-			'video-controls-autohide' => $this->parse_bool( $atts, 'video-controls-autohide', false ),
+			'video-controls-autohide' => $video_controls_autohide,
+			'fullscreen-video-controls-autohide' => $fullscreen_video_controls_autohide,
 
 			// Video support
 			'show-videos'            => $this->parse_bool( $atts, 'show-videos', false ),
