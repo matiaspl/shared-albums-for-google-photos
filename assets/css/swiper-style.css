@@ -241,7 +241,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     box-shadow: none !important;
     cursor: pointer;
     z-index: 10;
-    display: flex;
+    display: none;
     align-items: center;
     justify-content: center;
     text-decoration: none;
@@ -278,12 +278,32 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     justify-content: center;
 }
 
-.jzsa-album[data-show-download-button="true"] .swiper-button-download {
+.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-link-button="true"] > .swiper-button-external-link,
+.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-download-button="true"] > .swiper-button-download {
     display: flex;
 }
 
-/* When both link and download buttons are visible, move download button to the right */
-.jzsa-album[data-show-link-button="true"][data-show-download-button="true"] .swiper-button-download {
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-show-link-button="true"] > .swiper-button-external-link,
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-show-link-button="true"] > .swiper-button-external-link,
+.jzsa-album:fullscreen[data-fullscreen-show-link-button="true"] > .swiper-button-external-link,
+.jzsa-album:-webkit-full-screen[data-fullscreen-show-link-button="true"] > .swiper-button-external-link,
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-show-download-button="true"] > .swiper-button-download,
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-show-download-button="true"] > .swiper-button-download,
+.jzsa-album:fullscreen[data-fullscreen-show-download-button="true"] > .swiper-button-download,
+.jzsa-album:-webkit-full-screen[data-fullscreen-show-download-button="true"] > .swiper-button-download {
+    display: flex;
+}
+
+/* Inline mode: when both link and download are visible, offset download button. */
+.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-link-button="true"][data-show-download-button="true"] > .swiper-button-download {
+    left: calc(var(--jzsa-controls-circle-size) + 10px);
+}
+
+/* Fullscreen mode: when both link and download are visible, offset download button. */
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] > .swiper-button-download,
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] > .swiper-button-download,
+.jzsa-album:fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] > .swiper-button-download,
+.jzsa-album:-webkit-full-screen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] > .swiper-button-download {
     left: calc(var(--jzsa-controls-circle-size) + 10px);
 }
 
@@ -927,8 +947,8 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-loaded .swiper-pagination,
 .jzsa-album.jzsa-loaded .swiper-button-fullscreen:not(.jzsa-gallery-thumb-fs-btn),
 .jzsa-album.jzsa-loaded .swiper-button-play-pause,
-.jzsa-album.jzsa-loaded .swiper-button-download,
-.jzsa-album.jzsa-loaded .swiper-button-external-link,
+.jzsa-album.jzsa-loaded .swiper-button-download:not(.jzsa-gallery-thumb-download-btn),
+.jzsa-album.jzsa-loaded .swiper-button-external-link:not(.jzsa-gallery-thumb-link-btn),
 .jzsa-album.jzsa-loaded .swiper-slideshow-progress {
     visibility: visible;
     animation: jzsa-controls-fade-in-soft 1000ms ease-out both;
@@ -1149,6 +1169,7 @@ body.jzsa-no-scroll {
     position: absolute;
     top: 0;
     z-index: 12;
+    display: flex;
     opacity: 0;
     pointer-events: none;
     transition: background var(--jzsa-controls-bg-duration) var(--jzsa-controls-bg-easing),

@@ -1076,16 +1076,6 @@ class JZSA_Settings_Page {
 								<td>Photo height to fetch from Google for inline mode</td>
 								<td>600</td>
 							</tr>
-							<tr>
-								<td><code>fullscreen-source-width</code></td>
-								<td>Photo width to fetch from Google for fullscreen mode</td>
-								<td>1920</td>
-							</tr>
-							<tr>
-								<td><code>fullscreen-source-height</code></td>
-								<td>Photo height to fetch from Google for fullscreen mode</td>
-								<td>1440</td>
-							</tr>
 						</tbody>
 					</table>
 
@@ -1234,6 +1224,16 @@ class JZSA_Settings_Page {
 						</thead>
 						<tbody>
 							<tr>
+								<td><code>fullscreen-source-width</code></td>
+								<td>Photo width to fetch from Google for fullscreen mode</td>
+								<td>1920</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-source-height</code></td>
+								<td>Photo height to fetch from Google for fullscreen mode</td>
+								<td>1440</td>
+							</tr>
+							<tr>
 								<td><code>fullscreen-slideshow</code></td>
 								<td>Slideshow mode in fullscreen: "auto", "manual", or "disabled". Same behavior as <code>slideshow</code> but applies only when in fullscreen. Backward compatible: "true" = "auto", "false" = "disabled".</td>
 								<td>disabled</td>
@@ -1257,6 +1257,16 @@ class JZSA_Settings_Page {
 								<td><code>fullscreen-background-color</code></td>
 								<td><?php esc_html_e( 'Background color for fullscreen mode. Overrides background-color when viewing in fullscreen. Hex code or "transparent".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>#000000</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-show-link-button</code></td>
+								<td>Show external link button in fullscreen view: "false" or "true". Defaults to <code>show-link-button</code> when omitted.</td>
+								<td>inherits show-link-button</td>
+							</tr>
+							<tr>
+								<td><code>fullscreen-show-download-button</code></td>
+								<td>Show download button in fullscreen view: "false" or "true". Defaults to <code>show-download-button</code> when omitted.</td>
+								<td>inherits show-download-button</td>
 							</tr>
 						</tbody>
 					</table>
@@ -1293,12 +1303,12 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>show-link-button</code></td>
-								<td>Show external link button to open album in Google Photos: "false" or "true"</td>
+								<td>Show external link button in inline (non-fullscreen) view: "false" or "true"</td>
 								<td>false</td>
 							</tr>
 							<tr>
 								<td><code>show-download-button</code></td>
-								<td>Show download button to save current photo: "false" or "true"</td>
+								<td>Show download button in inline (non-fullscreen) view: "false" or "true"</td>
 								<td>false</td>
 							</tr>
 						</tbody>

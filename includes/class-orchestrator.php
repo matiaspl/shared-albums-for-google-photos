@@ -355,6 +355,14 @@ class JZSA_Shared_Albums {
 	 * @return array Configuration
 	 */
 	private function parse_shortcode_config( $atts, $url ) {
+		$show_link_button     = $this->parse_bool( $atts, 'show-link-button', false );
+		$show_download_button = $this->parse_bool( $atts, 'show-download-button', false );
+
+		// Fullscreen controls inherit the inline (non-fullscreen) visibility when
+		// fullscreen-specific attributes are omitted.
+		$fullscreen_show_link_button = isset( $atts['fullscreen-show-link-button'] ) ? $this->parse_bool( $atts, 'fullscreen-show-link-button', false ) : $show_link_button;
+		$fullscreen_show_download_button = isset( $atts['fullscreen-show-download-button'] ) ? $this->parse_bool( $atts, 'fullscreen-show-download-button', false ) : $show_download_button;
+
 		$config = array(
 			// URL
 			'album-url' => $url,
@@ -400,8 +408,10 @@ class JZSA_Shared_Albums {
 				'show-navigation'      => $this->parse_bool( $atts, 'show-navigation', true ),
 				'show-title'           => $this->parse_bool( $atts, 'show-title', false ),
 				'show-counter'         => $this->parse_show_counter( $atts ),
-				'show-link-button'     => $this->parse_bool( $atts, 'show-link-button', false ),
-				'show-download-button' => $this->parse_bool( $atts, 'show-download-button', false ),
+				'show-link-button'     => $show_link_button,
+				'show-download-button' => $show_download_button,
+				'fullscreen-show-link-button'     => $fullscreen_show_link_button,
+				'fullscreen-show-download-button' => $fullscreen_show_download_button,
 
 				// Entry count
 				'limit'                => $this->parse_limit( $atts ),

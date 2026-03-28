@@ -91,6 +91,8 @@ Note: Short links (photos.app.goo.gl) are still supported but will show a deprec
     show-counter="true"
     show-link-button="true"
     show-download-button="true"
+    fullscreen-show-link-button="true"
+    fullscreen-show-download-button="true"
 ]`
 
 Tip: `full-screen-image-fit` defaults to `fit`, which preserves the full photo (no crop) while scaling it to fill at least one fullscreen axis.
@@ -100,6 +102,8 @@ Tip: `full-screen-image-fit` defaults to `fit`, which preserves the full photo (
 The only required parameter is **link** — the Google Photos share URL.
 
 All other parameters are optional and control appearance, slideshow, fullscreen behavior, display options, gallery mode, and gallery layout.
+
+Tip: Use `show-link-button` / `show-download-button` for inline (non-fullscreen) controls, and `fullscreen-show-link-button` / `fullscreen-show-download-button` for fullscreen controls. Fullscreen values inherit from inline values when omitted.
 
 For the complete list of all parameters with descriptions and defaults, visit the plugin's **Settings** page in your WordPress admin (Settings → Shared Albums for Google Photos). The Settings page also includes a Playground for experimenting with shortcodes and live Samples you can copy.
 
@@ -166,7 +170,9 @@ Absolutely! The gallery is fully responsive and supports touch gestures (swipe, 
 
 = How does the download button work? =
 
-When enabled with `show-download-button="true"`, a download button appears in the top-left corner. Clicking it downloads the current full-resolution photo to your device. The download uses a server-side proxy to bypass CORS restrictions from Google Photos.
+When enabled with `show-download-button="true"`, a download button appears in inline (non-fullscreen) view. Clicking it downloads the current full-resolution photo to your device. The download uses a server-side proxy to bypass CORS restrictions from Google Photos.
+
+Use `fullscreen-show-download-button` to control the fullscreen download button separately. If omitted, it inherits from `show-download-button`.
 
 = How does the play/pause button work? =
 

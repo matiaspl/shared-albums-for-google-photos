@@ -428,6 +428,15 @@
         return $container.attr('data-gallery-' + suffix);
     }
 
+    // Helper: Read a boolean data attribute with fallback.
+    function readBooleanDataAttr($container, attrName, fallback) {
+        var value = $container.attr(attrName);
+        if (value === undefined) {
+            return !!fallback;
+        }
+        return value === 'true';
+    }
+
     // Helper: Write gallery mode data attributes.
     function writeGalleryAttr($container, suffix, value) {
         $container.attr('data-gallery-' + suffix, value);
@@ -3710,16 +3719,28 @@
                 '<button class="swiper-button-play-pause" title="Play/Pause (Space)"></button>' +
                 '<div class="swiper-slideshow-progress"><div class="swiper-slideshow-progress-bar"></div></div>';
 
-        // External link button
+        // External link button (render if enabled in either inline or fullscreen contexts;
+        // CSS decides visibility based on current fullscreen state).
         var showLink = $galleryContainer.attr('data-show-link-button') === 'true';
+        var showFullscreenLink = readBooleanDataAttr(
+            $galleryContainer,
+            'data-fullscreen-show-link-button',
+            showLink
+        );
         var albumUrl = $galleryContainer.attr('data-album-url') || '';
-        if (showLink && albumUrl) {
+        if ((showLink || showFullscreenLink) && albumUrl) {
             html += '<a href="' + albumUrl + '" target="_blank" rel="noopener noreferrer" ' +
                 'class="swiper-button-external-link" title="Open in Google Photos"></a>';
         }
 
-        // Download button
-        if ($galleryContainer.attr('data-show-download-button') === 'true') {
+        // Download button (same visibility split logic as link button).
+        var showDownload = $galleryContainer.attr('data-show-download-button') === 'true';
+        var showFullscreenDownload = readBooleanDataAttr(
+            $galleryContainer,
+            'data-fullscreen-show-download-button',
+            showDownload
+        );
+        if (showDownload || showFullscreenDownload) {
             html += '<button class="swiper-button-download" title="Download current image"></button>';
         }
 
@@ -3763,7 +3784,9 @@
             'data-controls-color',
             'data-video-controls-color',
             'data-show-download-button',
-            'data-show-link-button'
+            'data-show-link-button',
+            'data-fullscreen-show-download-button',
+            'data-fullscreen-show-link-button'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $galleryContainer.attr(forwardAttrs[i]);

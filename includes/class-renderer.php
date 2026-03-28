@@ -161,8 +161,13 @@ class JZSA_Renderer {
 		);
 		$html .= '<div class="swiper-slideshow-progress"><div class="swiper-slideshow-progress-bar"></div></div>';
 
-		// External link button (if enabled)
-		if ( ! empty( $config['show-link-button'] ) && ! empty( $config['album-url'] ) ) {
+		$show_inline_link_button         = ! empty( $config['show-link-button'] );
+		$show_inline_download_button     = ! empty( $config['show-download-button'] );
+		$show_fullscreen_link_button     = ! empty( $config['fullscreen-show-link-button'] );
+		$show_fullscreen_download_button = ! empty( $config['fullscreen-show-download-button'] );
+
+		// External link button (if enabled in inline and/or fullscreen modes)
+		if ( ( $show_inline_link_button || $show_fullscreen_link_button ) && ! empty( $config['album-url'] ) ) {
 			$html .= sprintf(
 				'<a href="%s" target="_blank" rel="noopener noreferrer" class="swiper-button-external-link" title="%s"></a>',
 				esc_url( $config['album-url'] ),
@@ -170,8 +175,8 @@ class JZSA_Renderer {
 			);
 		}
 
-		// Download button (if enabled)
-		if ( ! empty( $config['show-download-button'] ) ) {
+		// Download button (if enabled in inline and/or fullscreen modes)
+		if ( $show_inline_download_button || $show_fullscreen_download_button ) {
 			$html .= sprintf(
 				'<button class="swiper-button-download" title="%s"></button>',
 				esc_attr__( 'Download current image', 'janzeman-shared-albums-for-google-photos' )
@@ -264,6 +269,8 @@ class JZSA_Renderer {
 			'show-counter'            => 'data-show-counter',
 			'show-link-button'        => 'data-show-link-button',
 			'show-download-button'    => 'data-show-download-button',
+			'fullscreen-show-link-button'     => 'data-fullscreen-show-link-button',
+			'fullscreen-show-download-button' => 'data-fullscreen-show-download-button',
 			'video-controls-autohide' => 'data-video-controls-autohide',
 			'mosaic'                  => 'data-mosaic',
 		);
@@ -428,6 +435,8 @@ class JZSA_Renderer {
 			'show-counter'            => 'data-show-counter',
 			'show-link-button'        => 'data-show-link-button',
 			'show-download-button'    => 'data-show-download-button',
+			'fullscreen-show-link-button'     => 'data-fullscreen-show-link-button',
+			'fullscreen-show-download-button' => 'data-fullscreen-show-download-button',
 			'video-controls-autohide' => 'data-video-controls-autohide',
 		);
 		foreach ( $slideshow_booleans as $key => $attr_name ) {
