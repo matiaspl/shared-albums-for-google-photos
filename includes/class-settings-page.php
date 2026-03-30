@@ -1203,7 +1203,7 @@ class JZSA_Settings_Page {
 						<tbody>
 							<tr>
 								<td><code>slideshow</code></td>
-								<td>Slideshow mode: "auto" — slides advance automatically and the play/pause button is shown. "manual" — the play/pause button is shown but slides do not advance until the user presses play. "disabled" — no slideshow, no button. In <code>mode="gallery"</code> with pagination, this advances gallery pages automatically. Backward compatible: "true" = "auto", "false" = "disabled".</td>
+								<td>Slideshow mode: "auto" — slides advance automatically and the play/pause button is shown. "manual" — the play/pause button is shown but slides do not advance until the user presses play. "disabled" — no slideshow, no button. In <code>mode="gallery"</code> with pagination, this advances gallery pages automatically.</td>
 								<td>disabled</td>
 							</tr>
 							<tr>
@@ -1284,7 +1284,7 @@ class JZSA_Settings_Page {
 								</tr>
 								<tr>
 									<td><code>fullscreen-slideshow</code></td>
-									<td>Slideshow mode in fullscreen: "auto", "manual", or "disabled". Same behavior as <code>slideshow</code> but applies only when in fullscreen. Backward compatible: "true" = "auto", "false" = "disabled".</td>
+									<td>Slideshow mode in fullscreen: "auto", "manual", or "disabled". Same behavior as <code>slideshow</code> but applies only when in fullscreen.</td>
 									<td>disabled</td>
 								</tr>
 								<tr>

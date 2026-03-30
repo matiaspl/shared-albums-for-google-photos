@@ -203,6 +203,9 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.0.6 =
+* Touch devices: Controls appear on tap and fade out on inactivity
+
 = 2.0.5 =
 * Fullscreen vs inline controls
 * Video download support

@@ -2275,7 +2275,7 @@
 
             function restoreButtonState() {
                 $clickedBtn.attr('title', originalTitle);
-                $clickedBtn.css('opacity', '1');
+                $clickedBtn.css('opacity', '');
             }
 
             function requestProxyDownload(allowLargeDownload) {
@@ -4209,6 +4209,58 @@
             setupVideoHandling(swiper, $container, fullscreenChangeParams);
             initPlyrInContainer($container);
             scheduleDurationPrefetch($container);
+
+            // CAROUSEL TOUCH REVEAL: show per-tile overlay buttons on tap; ignore swipe gestures.
+            // Passive listeners so iOS never blocks scroll. Same approach as gallery touch reveal.
+            if (mode === 'carousel' && hasTouchInput()) {
+                (function() {
+                    var carouselEl = $container[0];
+                    function closestSlide(target) {
+                        return target && target.closest ? target.closest('.swiper-slide') : null;
+                    }
+                    function clearAllTouched() {
+                        $container.find('.jzsa-slide-touched').each(function() {
+                            clearTimeout($(this).data('jzsaSlideRevealTimer'));
+                            $(this).removeData('jzsaSlideRevealTimer').removeClass('jzsa-slide-touched');
+                        });
+                    }
+                    carouselEl.addEventListener('touchstart', function(e) {
+                        var slide = closestSlide(e.target);
+                        if (!slide) return;
+                        var t = e.touches[0];
+                        $(slide).data('jzsaRevealTouchX', t.clientX).data('jzsaRevealTouchY', t.clientY);
+                    }, { passive: true });
+                    carouselEl.addEventListener('touchend', function(e) {
+                        var slide = closestSlide(e.target);
+                        if (!slide) return;
+                        // Skip Swiper loop clones — they are repositioned without transition events.
+                        if (slide.classList.contains('swiper-slide-duplicate')) return;
+                        var $slide = $(slide);
+                        var startX = $slide.data('jzsaRevealTouchX');
+                        var startY = $slide.data('jzsaRevealTouchY');
+                        $slide.removeData('jzsaRevealTouchX jzsaRevealTouchY');
+                        if (startX == null) return;
+                        var t = e.changedTouches[0];
+                        if (Math.abs(t.clientX - startX) > 8 || Math.abs(t.clientY - startY) > 8) return;
+                        $container.find('.jzsa-slide-touched').not($slide).each(function() {
+                            clearTimeout($(this).data('jzsaSlideRevealTimer'));
+                            $(this).removeData('jzsaSlideRevealTimer').removeClass('jzsa-slide-touched');
+                        });
+                        $slide.addClass('jzsa-slide-touched');
+                        clearTimeout($slide.data('jzsaSlideRevealTimer'));
+                        $slide.data('jzsaSlideRevealTimer', setTimeout(function() {
+                            $slide.removeData('jzsaSlideRevealTimer').removeClass('jzsa-slide-touched');
+                        }, 3000));
+                    }, { passive: true });
+                    carouselEl.addEventListener('touchcancel', function(e) {
+                        var slide = closestSlide(e.target);
+                        if (!slide) return;
+                        $(slide).removeData('jzsaRevealTouchX jzsaRevealTouchY');
+                    }, { passive: true });
+                    // Clear touched state when a swipe transition starts.
+                    swiper.on('slideChangeTransitionStart', clearAllTouched);
+                }());
+            }
 
             // console.log('✅ Swiper initialized:', galleryId);
             // console.log('  - Normal mode slideshow:', slideshow ? 'Enabled (delay: ' + slideshowDelay + 's)' : 'Disabled');
