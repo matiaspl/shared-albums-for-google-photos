@@ -2639,6 +2639,33 @@
 			});
 		}
 
+		// TOUCH BUTTON REVEAL: show link/download on tap; ignore scroll/swipe gestures.
+		// Passive listeners so iOS never has to wait for JS before committing a scroll frame.
+		if (hasTouchInput()) {
+			var touchRevealTimer = null;
+			var sliderEl = $container[0];
+			sliderEl.addEventListener('touchstart', function(e) {
+				var t = e.touches[0];
+				$container.data('jzsaRevealTouchX', t.clientX).data('jzsaRevealTouchY', t.clientY);
+			}, { passive: true });
+			sliderEl.addEventListener('touchend', function(e) {
+				var startX = $container.data('jzsaRevealTouchX');
+				var startY = $container.data('jzsaRevealTouchY');
+				$container.removeData('jzsaRevealTouchX jzsaRevealTouchY');
+				if (startX == null) return;
+				var t = e.changedTouches[0];
+				if (Math.abs(t.clientX - startX) > 8 || Math.abs(t.clientY - startY) > 8) return;
+				$container.addClass('jzsa-touch-active');
+				clearTimeout(touchRevealTimer);
+				touchRevealTimer = setTimeout(function() {
+					$container.removeClass('jzsa-touch-active');
+				}, 3000);
+			}, { passive: true });
+			sliderEl.addEventListener('touchcancel', function() {
+				$container.removeData('jzsaRevealTouchX jzsaRevealTouchY');
+			}, { passive: true });
+		}
+
 		// FULLSCREEN NAVIGATION CURSOR: left/right chevron cursors in fullscreen
 		// hint at click-to-navigate (button-only and double-click modes only).
 		// Uses a dynamic <style> element with a none→real two-frame kick to
@@ -6494,6 +6521,46 @@
                 requestGalleryProxyDownload(false);
             });
         }
+
+        // GALLERY TOUCH REVEAL: show per-item buttons on tap; ignore scroll gestures.
+        // Passive listeners so iOS never has to wait for JS before committing a scroll frame.
+        (function() {
+            var galleryEl = $container[0];
+            function closestItem(target) {
+                return target && target.closest ? target.closest('.jzsa-gallery-item') : null;
+            }
+            galleryEl.addEventListener('touchstart', function(e) {
+                var item = closestItem(e.target);
+                if (!item) return;
+                var t = e.touches[0];
+                $(item).data('jzsaRevealTouchX', t.clientX).data('jzsaRevealTouchY', t.clientY);
+            }, { passive: true });
+            galleryEl.addEventListener('touchend', function(e) {
+                var item = closestItem(e.target);
+                if (!item) return;
+                var $item = $(item);
+                var startX = $item.data('jzsaRevealTouchX');
+                var startY = $item.data('jzsaRevealTouchY');
+                $item.removeData('jzsaRevealTouchX jzsaRevealTouchY');
+                if (startX == null) return;
+                var t = e.changedTouches[0];
+                if (Math.abs(t.clientX - startX) > 8 || Math.abs(t.clientY - startY) > 8) return;
+                $container.find('.jzsa-item-touched').not($item).each(function() {
+                    clearTimeout($(this).data('jzsaItemTouchTimer'));
+                    $(this).removeData('jzsaItemTouchTimer').removeClass('jzsa-item-touched');
+                });
+                $item.addClass('jzsa-item-touched');
+                clearTimeout($item.data('jzsaItemTouchTimer'));
+                $item.data('jzsaItemTouchTimer', setTimeout(function() {
+                    $item.removeData('jzsaItemTouchTimer').removeClass('jzsa-item-touched');
+                }, 3000));
+            }, { passive: true });
+            galleryEl.addEventListener('touchcancel', function(e) {
+                var item = closestItem(e.target);
+                if (!item) return;
+                $(item).removeData('jzsaRevealTouchX jzsaRevealTouchY');
+            }, { passive: true });
+        }());
 
         jzsaDebug(
             '✅ Gallery initialized:',

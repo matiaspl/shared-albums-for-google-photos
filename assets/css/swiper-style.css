@@ -1264,16 +1264,12 @@ body.jzsa-no-scroll {
     pointer-events: auto;
 }
 
-@media (hover: none) {
-    .jzsa-gallery-album[data-fullscreen-toggle="button-only"] .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn {
-        opacity: var(--jzsa-controls-visible-opacity);
-        pointer-events: auto;
-    }
-    .jzsa-gallery-album[data-show-link-button="true"] .jzsa-gallery-item .jzsa-gallery-thumb-link-btn,
-    .jzsa-gallery-album[data-show-download-button="true"] .jzsa-gallery-item .jzsa-gallery-thumb-download-btn {
-        opacity: var(--jzsa-controls-visible-opacity);
-        pointer-events: auto;
-    }
+/* Touch reveal via JS (covers iOS 13+ where hover:hover is reported but primary input is touch). */
+.jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-fs-btn,
+.jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-link-btn,
+.jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-download-btn {
+    opacity: var(--jzsa-controls-visible-opacity);
+    pointer-events: auto;
 }
 
 .jzsa-gallery-album.jzsa-gallery-draggable {
@@ -1479,6 +1475,23 @@ body.jzsa-no-scroll {
     .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-play-pause,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-external-link,
     .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover .swiper-button-download {
+        opacity: var(--jzsa-controls-visible-opacity);
+        pointer-events: auto;
+    }
+}
+
+/* Touch devices (inline slider): hide link/download until touch; reveal via jzsa-touch-active class. */
+@media (hover: none), (pointer: coarse) {
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-external-link:not(.jzsa-carousel-slide-overlay-btn),
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-download:not(.jzsa-carousel-slide-overlay-btn) {
+        opacity: 0;
+        pointer-events: none;
+        animation: none;
+        transition: opacity var(--jzsa-controls-fade-duration) var(--jzsa-controls-fade-easing);
+    }
+
+    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-external-link:not(.jzsa-carousel-slide-overlay-btn),
+    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-button-download:not(.jzsa-carousel-slide-overlay-btn) {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
