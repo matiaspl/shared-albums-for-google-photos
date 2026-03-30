@@ -1474,7 +1474,7 @@
                 var fullUrl = photo.full;
                 var loadingAttr = '';
                 if (useLazyHints) {
-                    loadingAttr = ' loading="' + (index === eagerIndex ? 'eager' : 'lazy') + '"';
+                    loadingAttr = ' loading="' + (index === eagerIndex ? 'eager' : 'lazy') + '" decoding="async"';
                 }
 
                 html += '<div class="swiper-slide">' +
@@ -4460,7 +4460,7 @@
                     ' data-index="' + globalIndex + '"' +
                     ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
-                    ' loading="lazy"' + tileStyleAttr + '>';
+                    ' loading="lazy" decoding="async"' + tileStyleAttr + '>';
             }
 
             var thumbOverlayBtns = '';
@@ -4569,7 +4569,7 @@
                         ' data-index="' + item.index + '"' +
                         ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (item.index + 1) + '"' +
                         ' draggable="false"' +
-                        ' loading="lazy"' +
+                        ' loading="lazy" decoding="async"' +
                         ' style="width:100%;height:100%;">';
                 }
 
