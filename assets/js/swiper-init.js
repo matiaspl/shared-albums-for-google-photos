@@ -1458,13 +1458,14 @@
     }
 
     // ========================================================================
-    // Info zone system — resolve {token} format strings per photo
+    // Info box system — resolve {token} format strings per photo
     // ========================================================================
 
-    var INFO_ZONE_NAMES = [
+    var INFO_BOX_NAMES = [
+        'info-secondary',
         'info-bottom-left', 'info-bottom-right',
-        'info-top-left', 'info-top',
-        'info-secondary'
+        'info-top-left', 'info-top-right',
+        'info-top'
     ];
 
     /**
@@ -1543,7 +1544,7 @@
     }
 
     /**
-     * Build info zone overlay HTML for a single slide/thumbnail.
+     * Build info box overlay HTML for a single slide/thumbnail.
      *
      * @param {Object} photo       Photo data object.
      * @param {Object} zoneFormats Object with zone names as keys: { 'info-bottom-left': '{name}', ... }
@@ -1552,14 +1553,14 @@
      */
     function buildInfoZoneHtml(photo, zoneFormats, fsFormats) {
         var html = '';
-        for (var i = 0; i < INFO_ZONE_NAMES.length; i++) {
-            var zone = INFO_ZONE_NAMES[i];
+        for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
+            var zone = INFO_BOX_NAMES[i];
             var inlineText = resolveInfoTokens(zoneFormats[zone] || '', photo);
             var fullscreenText = resolveInfoTokens(fsFormats[zone] || zoneFormats[zone] || '', photo);
             if (!inlineText && !fullscreenText) {
                 continue;
             }
-            html += '<div class="jzsa-info-zone jzsa-' + zone + '"' +
+            html += '<div class="jzsa-info-box jzsa-' + zone + '"' +
                 ' data-inline="' + escapeHtml(inlineText) + '"' +
                 ' data-fullscreen="' + escapeHtml(fullscreenText) + '">' +
                 escapeHtml(inlineText) + '</div>';
@@ -1568,7 +1569,7 @@
     }
 
     /**
-     * Read info zone format strings from a container's data attributes.
+     * Read info box format strings from a container's data attributes.
      *
      * @param {jQuery} $container Gallery container element.
      * @return {Object} { inline: { 'info-bottom-left': '...', ... }, fullscreen: { ... } }
@@ -1576,12 +1577,225 @@
     function readInfoZoneFormats($container) {
         var inline = {};
         var fullscreen = {};
-        for (var i = 0; i < INFO_ZONE_NAMES.length; i++) {
-            var zone = INFO_ZONE_NAMES[i];
+        for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
+            var zone = INFO_BOX_NAMES[i];
             inline[zone] = $container.attr('data-' + zone) || '';
             fullscreen[zone] = $container.attr('data-fullscreen-' + zone) || inline[zone];
         }
         return { inline: inline, fullscreen: fullscreen };
+    }
+
+    // ========================================================================
+    // Wave 2: Background EXIF prefetch via AJAX
+    // ========================================================================
+
+    var EXIF_TOKEN_RE = /\{(?:camera|aperture|shutter|focal|iso)\}/;
+    var EXIF_PREFETCH_WORKERS = 3;
+    var exifCache = {};          // mediaId -> { camera, aperture, shutter, focal, iso }
+    var exifQueue = [];          // { mediaId, photoUrl, $container, zoneFormats, photoIndex }
+    var exifQueued = {};         // mediaId -> true
+    var exifInFlight = {};       // mediaId -> true
+    var exifPrefetchActive = 0;
+    var exifPrefetchScheduled = false;
+
+    /**
+     * Check whether any zone format string references EXIF tokens.
+     */
+    function zonesNeedExif(zoneFormats) {
+        if (!zoneFormats) {
+            return false;
+        }
+        var all = zoneFormats.inline || {};
+        var fs  = zoneFormats.fullscreen || {};
+        for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
+            var zone = INFO_BOX_NAMES[i];
+            if (EXIF_TOKEN_RE.test(all[zone] || '') || EXIF_TOKEN_RE.test(fs[zone] || '')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Build the individual photo page URL from the album URL and media ID.
+     */
+    function buildPhotoPageUrl(albumUrl, mediaId) {
+        if (!albumUrl || !mediaId) {
+            return '';
+        }
+        var match = albumUrl.match(/\/share\/([^?]+)\?key=([^&"]+)/);
+        if (!match) {
+            return '';
+        }
+        return 'https://photos.google.com/share/' + match[1] + '/photo/' + mediaId + '?key=' + match[2];
+    }
+
+    /**
+     * After EXIF arrives for a photo, merge into the allPhotos array and
+     * re-resolve zone text on any matching DOM elements.
+     */
+    function applyExifToPhoto(mediaId, exifData, $container, zoneFormats, photoIndex) {
+        if (!exifData || !exifData.camera) {
+            return;
+        }
+
+        // Merge into allPhotos JSON so future slide rebuilds have EXIF.
+        var photosJson = $container.attr('data-all-photos');
+        if (photosJson) {
+            try {
+                var photos = JSON.parse(photosJson);
+                if (photos[photoIndex]) {
+                    var p = photos[photoIndex];
+                    p.camera   = exifData.camera;
+                    p.aperture = exifData.aperture;
+                    p.shutter  = exifData.shutter;
+                    p.focal    = exifData.focal;
+                    p.iso      = exifData.iso;
+                    $container.attr('data-all-photos', JSON.stringify(photos));
+
+                    // Re-resolve zone text in DOM for this photo's slides.
+                    var isFs = $container.hasClass('jzsa-is-fullscreen') ||
+                               $container.hasClass('jzsa-pseudo-fullscreen');
+                    var fmts = isFs ? (zoneFormats.fullscreen || zoneFormats.inline) : zoneFormats.inline;
+                    var fsFmts = zoneFormats.fullscreen || zoneFormats.inline;
+
+                    // Find slides/items with this photo index.
+                    $container.find('.swiper-slide, .jzsa-gallery-item').each(function() {
+                        var $el = $(this);
+                        var slideIndex = $el.attr('data-swiper-slide-index') || $el.attr('data-index');
+                        if (slideIndex === undefined) {
+                            // For non-loop slides, use DOM position.
+                            slideIndex = $el.index();
+                        }
+                        if (parseInt(slideIndex, 10) !== photoIndex) {
+                            return;
+                        }
+                        $el.find('.jzsa-info-box').each(function() {
+                            var $zone = $(this);
+                            var zoneName = '';
+                            for (var z = 0; z < INFO_BOX_NAMES.length; z++) {
+                                if ($zone.hasClass('jzsa-' + INFO_BOX_NAMES[z])) {
+                                    zoneName = INFO_BOX_NAMES[z];
+                                    break;
+                                }
+                            }
+                            if (!zoneName) {
+                                return;
+                            }
+                            var newInline = resolveInfoTokens(zoneFormats.inline[zoneName] || '', p);
+                            var newFs = resolveInfoTokens(fsFmts[zoneName] || zoneFormats.inline[zoneName] || '', p);
+                            $zone.attr('data-inline', newInline);
+                            $zone.attr('data-fullscreen', newFs);
+                            this.textContent = isFs ? newFs : newInline;
+                        });
+                    });
+                }
+            } catch (e) { /* ignore */ }
+        }
+    }
+
+    function processExifQueue() {
+        while (exifPrefetchActive < EXIF_PREFETCH_WORKERS && exifQueue.length) {
+            var item = exifQueue.shift();
+            delete exifQueued[item.mediaId];
+            if (exifCache[item.mediaId] || exifInFlight[item.mediaId]) {
+                // Already have data or in-flight — apply cached if available.
+                if (exifCache[item.mediaId]) {
+                    applyExifToPhoto(item.mediaId, exifCache[item.mediaId], item.$container, item.zoneFormats, item.photoIndex);
+                }
+                continue;
+            }
+
+            if (!item.photoUrl) {
+                continue;
+            }
+
+            exifPrefetchActive++;
+            exifInFlight[item.mediaId] = true;
+
+            (function(queueItem) {
+                $.ajax({
+                    url: jzsaAjax.ajaxUrl,
+                    type: 'POST',
+                    data: {
+                        action: 'jzsa_fetch_photo_meta',
+                        nonce: jzsaAjax.photoMetaNonce,
+                        photo_url: queueItem.photoUrl
+                    }
+                }).done(function(response) {
+                    if (response && response.success && response.data && response.data.camera) {
+                        exifCache[queueItem.mediaId] = response.data;
+                        applyExifToPhoto(queueItem.mediaId, response.data, queueItem.$container, queueItem.zoneFormats, queueItem.photoIndex);
+                    }
+                }).always(function() {
+                    delete exifInFlight[queueItem.mediaId];
+                    exifPrefetchActive = Math.max(0, exifPrefetchActive - 1);
+                    processExifQueue();
+                });
+            })(item);
+        }
+    }
+
+    /**
+     * Schedule Wave 2 EXIF prefetch for all photos in a container.
+     * Only runs if zone format strings reference EXIF tokens.
+     *
+     * @param {jQuery} $container Gallery/album container.
+     * @param {Object} zoneFormats  { inline: {...}, fullscreen: {...} }
+     */
+    function scheduleExifPrefetch($container, zoneFormats) {
+        if (!zonesNeedExif(zoneFormats)) {
+            return;
+        }
+        if (typeof jzsaAjax === 'undefined' || !jzsaAjax.photoMetaNonce) {
+            return;
+        }
+
+        var albumUrl = $container.attr('data-album-url') || '';
+        if (!albumUrl) {
+            return;
+        }
+
+        var photosJson = $container.attr('data-all-photos');
+        if (!photosJson) {
+            return;
+        }
+
+        try {
+            var photos = JSON.parse(photosJson);
+            for (var i = 0; i < photos.length; i++) {
+                var p = photos[i];
+                if (!p.id || p.camera) {
+                    continue; // No ID or already has EXIF from Wave 1.
+                }
+                if (exifCache[p.id] || exifQueued[p.id] || exifInFlight[p.id]) {
+                    continue;
+                }
+                var photoUrl = buildPhotoPageUrl(albumUrl, p.id);
+                if (!photoUrl) {
+                    continue;
+                }
+                exifQueued[p.id] = true;
+                exifQueue.push({
+                    mediaId: p.id,
+                    photoUrl: photoUrl,
+                    $container: $container,
+                    zoneFormats: zoneFormats,
+                    photoIndex: i
+                });
+            }
+        } catch (e) { /* ignore parse errors */ }
+
+        if (!exifQueue.length || exifPrefetchScheduled) {
+            return;
+        }
+        exifPrefetchScheduled = true;
+
+        var schedule = window.requestIdleCallback || function(cb) { setTimeout(cb, 500); };
+        schedule(function() {
+            exifPrefetchScheduled = false;
+            processExifQueue();
+        });
     }
 
     // Helper: Build slides HTML structure (for photo/video array)
@@ -1625,7 +1839,7 @@
                 ? photo.filename.replace(/\.[^.]+$/, '')
                 : 'Photo';
 
-            // Info zone overlays (resolved per-photo from format strings).
+            // Info box overlays (resolved per-photo from format strings).
             var slideZoneHtml = config.zoneFormats
                 ? buildInfoZoneHtml(photo, config.zoneFormats.inline, config.zoneFormats.fullscreen)
                 : '';
@@ -1750,9 +1964,9 @@
 
         applyVideoControlsAutohideSetting($container, videoControlsAutohide);
 
-        // Swap info zone text between inline and fullscreen resolved content.
+        // Swap info box text between inline and fullscreen resolved content.
         var zoneAttrKey = useFullscreen ? 'data-fullscreen' : 'data-inline';
-        $container.find('.jzsa-info-zone').each(function() {
+        $container.find('.jzsa-info-box').each(function() {
             var text = $(this).attr(zoneAttrKey) || '';
             this.textContent = text;
         });
@@ -4393,8 +4607,9 @@
             setupVideoHandling(swiper, $container, fullscreenChangeParams);
             initPlyrInContainer($container);
             scheduleDurationPrefetch($container);
+            scheduleExifPrefetch($container, zoneFormats);
 
-            // CAROUSEL TOUCH REVEAL: show per-tile overlay buttons on tap; ignore swipe gestures.
+            // CAROUSEL TOUCH REVEAL:
             // Passive listeners so iOS never blocks scroll. Same approach as gallery touch reveal.
             if (mode === 'carousel' && hasTouchInput()) {
                 (function() {
@@ -4585,6 +4800,8 @@
             'data-fullscreen-info-bottom-right',
             'data-info-top-left',
             'data-fullscreen-info-top-left',
+            'data-info-top-right',
+            'data-fullscreen-info-top-right',
             'data-info-top',
             'data-fullscreen-info-top',
             'data-info-secondary',
@@ -4747,7 +4964,7 @@
                 thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + globalIndex + '" aria-label="Open ' + mediaLabel + ' ' + (globalIndex + 1) + ' in fullscreen"></div>';
             }
 
-            // Info zone overlays for gallery thumbnails.
+            // Info box overlays for gallery thumbnails.
             var thumbZoneFormats = readInfoZoneFormats($container);
             var thumbZoneHtml = buildInfoZoneHtml(photo, thumbZoneFormats.inline, thumbZoneFormats.fullscreen);
 
@@ -4862,7 +5079,7 @@
                     thumbOverlayBtns += '<div class="jzsa-gallery-thumb-fs-btn swiper-button-fullscreen" role="button" tabindex="0" data-index="' + item.index + '" aria-label="Open ' + mediaLabel + ' ' + (item.index + 1) + ' in fullscreen"></div>';
                 }
 
-                // Info zone overlays for justified thumbnails.
+                // Info box overlays for justified thumbnails.
                 var justifiedZoneFormats = readInfoZoneFormats($container);
                 var justifiedZoneHtml = buildInfoZoneHtml(item.photo, justifiedZoneFormats.inline, justifiedZoneFormats.fullscreen);
 
@@ -6817,6 +7034,10 @@
                 $(item).removeData('jzsaRevealTouchX jzsaRevealTouchY');
             }, { passive: true });
         }());
+
+        // Wave 2: schedule background EXIF prefetch if any zone uses EXIF tokens.
+        var galleryZoneFormats = readInfoZoneFormats($container);
+        scheduleExifPrefetch($container, galleryZoneFormats);
 
         jzsaDebug(
             '✅ Gallery initialized:',

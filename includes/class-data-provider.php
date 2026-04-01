@@ -440,6 +440,9 @@ class JZSA_Data_Provider {
 				$item = array( 'url' => $item );
 			}
 
+			// Media ID (needed by Wave 2 for individual photo page URLs).
+			$item['id'] = $meta['id'];
+
 			// Stage 2b: Timestamp, dimensions, filesize (always present alongside URL).
 			$item['timestamp'] = $meta['timestamp'];
 			$item['width']     = $meta['width'];
@@ -600,6 +603,49 @@ class JZSA_Data_Provider {
 			}
 		}
 
-		return '';
+	return '';
+	}
+
+	/**
+	 * Extract EXIF metadata from an individual photo page HTML.
+	 *
+	 * Individual photo pages embed EXIF in a simpler structure than album pages:
+	 * [width, height, 1, null, ["make", "model", "lens", focal, aperture, iso, shutter, null, N]]
+	 *
+	 * @param string $html HTML content of an individual photo page.
+	 * @return array Associative array with EXIF fields, or empty array if not found.
+	 */
+	public function extract_individual_photo_meta( $html ) {
+		if ( empty( $html ) ) {
+			return array();
+		}
+
+		// Match the EXIF block: [w, h, 1, null, ["make", "model", ...]]
+		if ( ! preg_match(
+			'/\[(\d+)\s*,\s*(\d+)\s*,\s*1\s*,\s*null\s*,\s*\["([^"]+)"\s*,\s*"([^"]+)"\s*,\s*(?:"[^"]*"|null)\s*,\s*([\d.]+)\s*,\s*([\d.]+)\s*,\s*(\d+)\s*,\s*([\d.]+)/s',
+			$html,
+			$m
+		) ) {
+			return array();
+		}
+
+		$make     = $m[3];
+		$model    = $m[4];
+		$focal    = $m[5];
+		$aperture = $m[6];
+		$iso      = (int) $m[7];
+		$shutter  = (float) $m[8];
+
+		$shutter_display = $shutter < 1 && $shutter > 0
+			? '1/' . round( 1 / $shutter )
+			: round( $shutter, 1 ) . 's';
+
+		return array(
+			'camera'   => trim( $make . ' ' . $model ),
+			'aperture' => 'f/' . $aperture,
+			'shutter'  => $shutter_display,
+			'focal'    => $focal . 'mm',
+			'iso'      => 'ISO' . $iso,
+		);
 	}
 }

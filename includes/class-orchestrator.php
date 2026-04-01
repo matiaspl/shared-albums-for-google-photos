@@ -157,6 +157,8 @@ class JZSA_Shared_Albums {
 		add_action( 'wp_ajax_nopriv_jzsa_refresh_urls', array( $this, 'handle_refresh_urls' ) );
 		add_action( 'wp_ajax_jzsa_shortcode_preview', array( $this, 'handle_shortcode_preview' ) );
 		add_action( 'wp_ajax_jzsa_clear_cache', array( $this, 'handle_clear_cache' ) );
+		add_action( 'wp_ajax_jzsa_fetch_photo_meta', array( $this, 'handle_fetch_photo_meta' ) );
+		add_action( 'wp_ajax_nopriv_jzsa_fetch_photo_meta', array( $this, 'handle_fetch_photo_meta' ) );
 
 		// Also load front-end gallery assets on our settings page so the sample
 		// shortcode preview works inside the admin.
@@ -239,15 +241,18 @@ class JZSA_Shared_Albums {
 		$preview_nonce  = wp_create_nonce( 'jzsa_shortcode_preview' );
 		$refresh_nonce  = wp_create_nonce( 'jzsa_refresh_urls' );
 
+		$photo_meta_nonce = wp_create_nonce( 'jzsa_photo_meta' );
+
 		wp_localize_script(
 			'jzsa-init',
 			'jzsaAjax',
 			array(
-				'ajaxUrl'      => admin_url( 'admin-ajax.php' ),
-				'downloadNonce'=> $download_nonce,
-				'previewNonce' => $preview_nonce,
-				'refreshNonce' => $refresh_nonce,
-				'plyrSvgUrl'   => plugins_url( 'assets/vendor/plyr/plyr.svg', $this->plugin_file ),
+				'ajaxUrl'        => admin_url( 'admin-ajax.php' ),
+				'downloadNonce'  => $download_nonce,
+				'previewNonce'   => $preview_nonce,
+				'refreshNonce'   => $refresh_nonce,
+				'photoMetaNonce' => $photo_meta_nonce,
+				'plyrSvgUrl'     => plugins_url( 'assets/vendor/plyr/plyr.svg', $this->plugin_file ),
 			)
 		);
 	}
@@ -482,46 +487,49 @@ class JZSA_Shared_Albums {
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
 
-			// Info zones — format strings with {token} placeholders resolved per photo.
+			// Info boxs — format strings with {token} placeholders resolved per photo.
 			// Backward compat: show-name="true" maps to info-bottom-left="{name}".
-		) + $this->build_info_zone_config( $atts );
+		) + $this->build_info_box_config( $atts );
 
 		return $config;
 	}
 
 	/**
-	 * Build the info zone sub-array for the shortcode config.
+	 * Build the info box sub-array for the shortcode config.
 	 * Extracted to keep the main config array readable.
 	 *
 	 * @param array $atts Raw shortcode attributes.
 	 * @return array
 	 */
-	private function build_info_zone_config( $atts ) {
+	private function build_info_box_config( $atts ) {
 		// Backward compat defaults for info-bottom-left.
 		$show_name_compat    = $this->parse_bool( $atts, 'show-name', false );
 		$fs_show_name_compat = isset( $atts['fullscreen-show-name'] )
 			? $this->parse_bool( $atts, 'fullscreen-show-name', false )
 			: $show_name_compat;
 
-		$bl  = $this->parse_info_zone( $atts, 'info-bottom-left',  $show_name_compat    ? '{name}' : '' );
-		$br  = $this->parse_info_zone( $atts, 'info-bottom-right', '' );
-		$tl  = $this->parse_info_zone( $atts, 'info-top-left',     '' );
-		$top = $this->parse_info_zone( $atts, 'info-top',          '' );
-		$sec = $this->parse_info_zone( $atts, 'info-secondary',    '' );
+		$bl  = $this->parse_info_box( $atts, 'info-bottom-left',  $show_name_compat    ? '{name}' : '' );
+		$br  = $this->parse_info_box( $atts, 'info-bottom-right', '' );
+		$tl  = $this->parse_info_box( $atts, 'info-top-left',     '' );
+		$tr  = $this->parse_info_box( $atts, 'info-top-right',    '' );
+		$top = $this->parse_info_box( $atts, 'info-top',          '' );
+		$sec = $this->parse_info_box( $atts, 'info-secondary',    '' );
 
 		return array(
 			'info-bottom-left'              => $bl,
 			'fullscreen-info-bottom-left'   => isset( $atts['fullscreen-info-bottom-left'] )
-				? $this->parse_info_zone( $atts, 'fullscreen-info-bottom-left', '' )
+				? $this->parse_info_box( $atts, 'fullscreen-info-bottom-left', '' )
 				: ( $fs_show_name_compat ? '{name}' : $bl ),
 			'info-bottom-right'             => $br,
-			'fullscreen-info-bottom-right'  => $this->parse_info_zone( $atts, 'fullscreen-info-bottom-right', $br ),
+			'fullscreen-info-bottom-right'  => $this->parse_info_box( $atts, 'fullscreen-info-bottom-right', $br ),
 			'info-top-left'                 => $tl,
-			'fullscreen-info-top-left'      => $this->parse_info_zone( $atts, 'fullscreen-info-top-left', $tl ),
+			'fullscreen-info-top-left'      => $this->parse_info_box( $atts, 'fullscreen-info-top-left', $tl ),
+			'info-top-right'                => $tr,
+			'fullscreen-info-top-right'     => $this->parse_info_box( $atts, 'fullscreen-info-top-right', $tr ),
 			'info-top'                      => $top,
-			'fullscreen-info-top'           => $this->parse_info_zone( $atts, 'fullscreen-info-top', $top ),
+			'fullscreen-info-top'           => $this->parse_info_box( $atts, 'fullscreen-info-top', $top ),
 			'info-secondary'                => $sec,
-			'fullscreen-info-secondary'     => $this->parse_info_zone( $atts, 'fullscreen-info-secondary', $sec ),
+			'fullscreen-info-secondary'     => $this->parse_info_box( $atts, 'fullscreen-info-secondary', $sec ),
 		);
 	}
 
@@ -547,7 +555,7 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse info zone format string attribute.
+	 * Parse info box format string attribute.
 	 * Returns the sanitized format string, or $default if the attribute is absent.
 	 *
 	 * @param array  $atts    Attributes
@@ -555,7 +563,7 @@ class JZSA_Shared_Albums {
 	 * @param string $default Default format string (empty = zone hidden)
 	 * @return string
 	 */
-	private function parse_info_zone( $atts, $key, $default ) {
+	private function parse_info_box( $atts, $key, $default ) {
 		if ( ! isset( $atts[ $key ] ) ) {
 			return $default;
 		}
@@ -1176,7 +1184,8 @@ class JZSA_Shared_Albums {
 
 			// Pass through Wave 1 metadata fields (all zero-cost, extracted from album HTML).
 			if ( is_array( $item ) ) {
-				foreach ( array( 'filename', 'timestamp', 'width', 'height', 'filesize', 'camera', 'exif', 'aperture', 'shutter', 'focal', 'iso', 'author' ) as $meta_key ) {
+			foreach ( array( 'id', 'filename', 'timestamp', 'width', 'height', 'filesize', 'camera', 'exif', 'aperture', 'shutter', 'focal', 'iso', 'author' ) as $meta_key ) {
+				// Note: 'id' is the AF1Qip… media ID, needed by Wave 2 JS for individual photo page fetching.
 					if ( isset( $item[ $meta_key ] ) ) {
 						$photo[ $meta_key ] = $item[ $meta_key ];
 					}
@@ -1356,6 +1365,57 @@ class JZSA_Shared_Albums {
 			: __( 'Cache was already empty.', 'janzeman-shared-albums-for-google-photos' );
 
 		wp_send_json_success( array( 'message' => $message ) );
+	}
+
+	/**
+	 * Handle AJAX request to fetch EXIF metadata for an individual photo.
+	 *
+	 * Wave 2: JS calls this endpoint in the background for each photo that
+	 * needs EXIF data. The PHP side fetches the individual photo page from
+	 * Google Photos (bypassing CORS) and extracts camera/EXIF fields.
+	 */
+	public function handle_fetch_photo_meta() {
+		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
+		if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'jzsa_photo_meta' ) ) {
+			wp_send_json_error( 'Invalid nonce' );
+			return;
+		}
+
+		$photo_url = isset( $_POST['photo_url'] ) ? esc_url_raw( wp_unslash( $_POST['photo_url'] ) ) : '';
+		if ( empty( $photo_url ) ) {
+			wp_send_json_error( 'Missing photo URL' );
+			return;
+		}
+
+		// Validate it's a Google Photos URL.
+		if ( false === strpos( $photo_url, 'photos.google.com/share/' ) ) {
+			wp_send_json_error( 'Invalid photo URL' );
+			return;
+		}
+
+		// Fetch the individual photo page.
+		$response = wp_remote_get(
+			$photo_url,
+			array(
+				'timeout'    => 15,
+				'user-agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ),
+			)
+		);
+
+		if ( is_wp_error( $response ) ) {
+			wp_send_json_error( 'Fetch failed' );
+			return;
+		}
+
+		$html = wp_remote_retrieve_body( $response );
+		if ( empty( $html ) ) {
+			wp_send_json_error( 'Empty response' );
+			return;
+		}
+
+		$meta = $this->provider->extract_individual_photo_meta( $html );
+
+		wp_send_json_success( $meta );
 	}
 
 	/**
