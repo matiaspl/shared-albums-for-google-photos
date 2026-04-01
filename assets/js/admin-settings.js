@@ -10,57 +10,52 @@
  * @param {HTMLElement} button - The button element clicked
  * @param {string} text - The text to copy to clipboard
  */
+/**
+ * Flash a button green with a confirmation label, then restore.
+ */
+function jzsaFlashButton( button, label, duration ) {
+	var ms = duration || 1200;
+	var origText = button.textContent;
+	button.textContent = label;
+	button.style.background = '#46b450';
+	setTimeout( function () {
+		button.textContent = origText;
+		button.style.background = '';
+	}, ms );
+}
+
 function jzsaCopyToClipboard( button, text ) {
-	// Create temporary textarea
 	var textarea = document.createElement( 'textarea' );
 	textarea.value = text;
 	textarea.style.position = 'fixed';
 	textarea.style.opacity = '0';
 	document.body.appendChild( textarea );
-
-	// Select and copy
 	textarea.select();
 	document.execCommand( 'copy' );
 	document.body.removeChild( textarea );
-
-	// Visual feedback
-	var originalText = button.textContent;
-	button.textContent = 'Copied!';
-	button.style.background = '#46b450';
-
-	setTimeout( function() {
-		button.textContent = originalText;
-		button.style.background = '';
-	}, 2000 );
+	jzsaFlashButton( button, 'Copied!' );
 }
 
 /**
- * Request a shortcode preview for the Playground via AJAX and update the
- * preview container. This step intentionally does NOT re-initialize Swiper
- * on the result; it is purely about checking that the shortcode renders
- * without errors.
+ * Shared Apply handler: sends a shortcode from a code element to the AJAX
+ * preview endpoint and replaces the preview container HTML.
+ *
+ * @param {HTMLElement} codeEl           The <code> element with the shortcode text.
+ * @param {HTMLElement} applyBtn         The Apply button (disabled during request).
+ * @param {HTMLElement} previewContainer The container to update with the rendered HTML.
  */
-function jzsaRunPlaygroundPreview() {
-	var textarea = document.getElementById( 'jzsa-playground-shortcode' );
-	var preview  = document.querySelector( '.jzsa-playground-preview' );
-
-	if ( ! textarea || ! preview ) {
-		return;
-	}
-
-	var shortcode = textarea.value.trim();
+function jzsaApplyPreview( codeEl, applyBtn, previewContainer ) {
+	var shortcode = ( codeEl.textContent || '' ).trim();
 	if ( ! shortcode ) {
-		preview.innerHTML = '';
 		return;
 	}
-
-	// Show a very small loading state.
-	preview.innerHTML = '<p class="jzsa-help-text">Loading preview…</p>';
-
 	if ( typeof jzsaAjax === 'undefined' || ! jzsaAjax.ajaxUrl || ! jzsaAjax.previewNonce ) {
-		preview.innerHTML = '<div class="jzsa-playground-error">Preview is not available – AJAX settings are missing.</div>';
 		return;
 	}
+
+	applyBtn.disabled = true;
+	applyBtn.textContent = 'Applying…';
+	previewContainer.style.opacity = '0.5';
 
 	var params = new URLSearchParams();
 	params.append( 'action', 'jzsa_shortcode_preview' );
@@ -70,52 +65,29 @@ function jzsaRunPlaygroundPreview() {
 	window.fetch( jzsaAjax.ajaxUrl, {
 		method: 'POST',
 		credentials: 'same-origin',
-		headers: {
-			'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
-		},
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
 		body: params.toString(),
 	} )
-		.then( function ( response ) {
-			return response.json();
-		} )
+		.then( function ( r ) { return r.json(); } )
 		.then( function ( data ) {
-			if ( ! data || typeof data.success === 'undefined' ) {
-				preview.innerHTML = '<div class="jzsa-playground-error">Unexpected response from server.</div>';
+			applyBtn.disabled = false;
+			applyBtn.textContent = 'Apply';
+			previewContainer.style.opacity = '';
+
+			if ( ! data || ! data.success || ! data.data || ! data.data.html ) {
+				var msg = ( data && data.data && typeof data.data === 'string' ) ? data.data : 'Preview failed.';
+				previewContainer.innerHTML = '<div class="jzsa-playground-error">' + msg + '</div>';
 				return;
 			}
 
-			if ( ! data.success ) {
-				var message = '';
-				if ( data.data && typeof data.data === 'string' ) {
-					message = data.data;
-				} else if ( data.data && data.data.message ) {
-					message = data.data.message;
-				} else {
-					message = 'Preview failed.';
-				}
-				preview.innerHTML = '<div class="jzsa-playground-error"></div>';
-				var errorEl = preview.querySelector( '.jzsa-playground-error' );
-				if ( errorEl ) {
-					errorEl.textContent = message;
-				}
-				return;
-			}
+			previewContainer.innerHTML = data.data.html;
 
-			if ( ! data.data || typeof data.data.html === 'undefined' ) {
-				preview.innerHTML = '<div class=\"jzsa-playground-error\">Preview did not return any HTML.</div>';
-				return;
-			}
+			jzsaFlashButton( applyBtn, 'Applied!' );
 
-			// Replace preview HTML.
-			preview.innerHTML = data.data.html;
-
-			// Step 2b: initialize Swiper for the newly rendered gallery, using the
-			// same initializer as the front‑end. This makes the preview fully
-			// interactive, but we only do it once per Update click.
 			if ( window.SharedGooglePhotos ) {
-				var album = preview.querySelector( '.jzsa-album' );
+				var album = previewContainer.querySelector( '.jzsa-album' );
 				if ( album ) {
-					var mode = album.getAttribute( 'data-mode' ) || 'slideshow';
+					var mode = album.getAttribute( 'data-mode' ) || 'slider';
 					if ( mode === 'gallery' && typeof window.SharedGooglePhotos.initializeGallery === 'function' ) {
 						window.SharedGooglePhotos.initializeGallery( album );
 					} else if ( typeof window.SharedGooglePhotos.initialize === 'function' ) {
@@ -124,16 +96,11 @@ function jzsaRunPlaygroundPreview() {
 				}
 			}
 		} )
-		.catch( function ( error ) {
-				var errorMessage = 'Preview rendering error';
-			if ( error && error.message ) {
-				errorMessage += ': ' + error.message;
-			}
-			preview.innerHTML = '<div class="jzsa-playground-error"></div>';
-			preview.querySelector( '.jzsa-playground-error' ).textContent = errorMessage;
-			if ( window.console && console.error ) {
-				console.error( 'JZSA Shortcode Playground preview error:', error );
-			}
+		.catch( function () {
+			applyBtn.disabled = false;
+			applyBtn.textContent = 'Apply';
+			previewContainer.style.opacity = '';
+			previewContainer.innerHTML = '<div class="jzsa-playground-error">Request failed.</div>';
 		} );
 }
 
@@ -144,16 +111,80 @@ document.addEventListener( 'DOMContentLoaded', function () {
 	var blocks = document.querySelectorAll( '.jzsa-code-block' );
 
 	blocks.forEach( function ( block ) {
-		var button = block.querySelector( '.jzsa-copy-btn' );
 		var codeEl = block.querySelector( 'code' );
-
-		if ( ! button || ! codeEl ) {
+		if ( ! codeEl ) {
 			return;
 		}
 
-		button.addEventListener( 'click', function () {
-			// Use the visible code content as the text to copy.
-			jzsaCopyToClipboard( button, codeEl.textContent || '' );
+		var previewContainer = block.nextElementSibling;
+		var hasPreview = previewContainer && previewContainer.classList.contains( 'jzsa-preview-container' );
+		var originalText = codeEl.textContent || '';
+
+		// Make editable if there's a preview to update.
+		if ( hasPreview ) {
+			codeEl.contentEditable = 'true';
+			codeEl.spellcheck = false;
+			codeEl.classList.add( 'jzsa-editable-code' );
+		}
+
+		// Build button column: Copy + (Apply + Revert if preview exists).
+		var btnCol = document.createElement( 'div' );
+		btnCol.className = 'jzsa-code-block-btns';
+
+		var copyBtn = document.createElement( 'button' );
+		copyBtn.type = 'button';
+		copyBtn.className = 'jzsa-action-btn';
+		copyBtn.textContent = 'Copy';
+		btnCol.appendChild( copyBtn );
+
+		var applyBtn = null;
+		var revertBtn = null;
+
+		if ( hasPreview ) {
+			applyBtn = document.createElement( 'button' );
+			applyBtn.type = 'button';
+			applyBtn.className = 'jzsa-action-btn';
+			applyBtn.textContent = 'Apply';
+			applyBtn.disabled = true;
+			btnCol.appendChild( applyBtn );
+
+			revertBtn = document.createElement( 'button' );
+			revertBtn.type = 'button';
+			revertBtn.className = 'jzsa-action-btn';
+			revertBtn.textContent = 'Revert';
+			revertBtn.disabled = true;
+			btnCol.appendChild( revertBtn );
+		}
+
+		block.appendChild( btnCol );
+
+		// Copy handler.
+		copyBtn.addEventListener( 'click', function () {
+			jzsaCopyToClipboard( copyBtn, codeEl.textContent || '' );
+		} );
+
+		if ( ! hasPreview ) {
+			return;
+		}
+
+		// Enable/disable Apply+Revert when content changes.
+		codeEl.addEventListener( 'input', function () {
+			var changed = ( codeEl.textContent || '' ) !== originalText;
+			applyBtn.disabled = ! changed;
+			revertBtn.disabled = ! changed;
+		} );
+
+		// Revert with green flash.
+		revertBtn.addEventListener( 'click', function () {
+			codeEl.textContent = originalText;
+			applyBtn.disabled = true;
+			revertBtn.disabled = true;
+			jzsaFlashButton( revertBtn, 'Reverted!' );
+		} );
+
+		// Apply: AJAX preview.
+		applyBtn.addEventListener( 'click', function () {
+			jzsaApplyPreview( codeEl, applyBtn, previewContainer );
 		} );
 	} );
 
@@ -204,21 +235,77 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 	}
 
-	// Step 2: wire the Playground textarea to an explicit "Update preview" button.
+	// Playground: convert textarea into the same code-block + 3-button layout.
 	var textarea = document.getElementById( 'jzsa-playground-shortcode' );
-	var previewButton = null;
-
 	if ( textarea ) {
-		previewButton = document.createElement( 'button' );
-		previewButton.type = 'button';
-		previewButton.className = 'button button-primary jzsa-playground-run';
-		previewButton.textContent = 'Update preview';
+		var playgroundSection = textarea.closest( '.jzsa-playground-section' );
+		var playgroundPreview = playgroundSection ? playgroundSection.querySelector( '.jzsa-playground-preview' ) : null;
+		var playgroundOriginal = textarea.value || '';
 
-		// Insert the button just after the textarea.
-		textarea.parentNode.insertBefore( previewButton, textarea.nextSibling );
+		// Replace textarea with a code-block layout.
+		var pgBlock = document.createElement( 'div' );
+		pgBlock.className = 'jzsa-code-block';
 
-		previewButton.addEventListener( 'click', function () {
-			jzsaRunPlaygroundPreview();
+		var pgCode = document.createElement( 'code' );
+		pgCode.contentEditable = 'true';
+		pgCode.spellcheck = false;
+		pgCode.className = 'jzsa-editable-code';
+		pgCode.textContent = playgroundOriginal;
+		pgBlock.appendChild( pgCode );
+
+		var pgBtns = document.createElement( 'div' );
+		pgBtns.className = 'jzsa-code-block-btns';
+
+		var pgCopy = document.createElement( 'button' );
+		pgCopy.type = 'button';
+		pgCopy.className = 'jzsa-action-btn';
+		pgCopy.textContent = 'Copy';
+		pgBtns.appendChild( pgCopy );
+
+		var pgApply = document.createElement( 'button' );
+		pgApply.type = 'button';
+		pgApply.className = 'jzsa-action-btn';
+		pgApply.textContent = 'Apply';
+		pgApply.disabled = true;
+		pgBtns.appendChild( pgApply );
+
+		var pgRevert = document.createElement( 'button' );
+		pgRevert.type = 'button';
+		pgRevert.className = 'jzsa-action-btn';
+		pgRevert.textContent = 'Revert';
+		pgRevert.disabled = true;
+		pgBtns.appendChild( pgRevert );
+
+		pgBlock.appendChild( pgBtns );
+
+		// Also remove the screen-reader label.
+		var pgLabel = playgroundSection ? playgroundSection.querySelector( 'label[for="jzsa-playground-shortcode"]' ) : null;
+		if ( pgLabel ) {
+			pgLabel.remove();
+		}
+		textarea.parentNode.insertBefore( pgBlock, textarea );
+		textarea.remove();
+
+		pgCopy.addEventListener( 'click', function () {
+			jzsaCopyToClipboard( pgCopy, pgCode.textContent || '' );
+		} );
+
+		pgCode.addEventListener( 'input', function () {
+			var changed = ( pgCode.textContent || '' ) !== playgroundOriginal;
+			pgApply.disabled = ! changed;
+			pgRevert.disabled = ! changed;
+		} );
+
+		pgRevert.addEventListener( 'click', function () {
+			pgCode.textContent = playgroundOriginal;
+			pgApply.disabled = true;
+			pgRevert.disabled = true;
+		} );
+
+		pgApply.addEventListener( 'click', function () {
+			if ( playgroundPreview ) {
+				jzsaApplyPreview( pgCode, pgApply, playgroundPreview );
+			}
 		} );
 	}
 } );
