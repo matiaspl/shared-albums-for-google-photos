@@ -487,7 +487,7 @@ class JZSA_Shared_Albums {
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
 
-			// Info boxs — format strings with {token} placeholders resolved per photo.
+			// Info boxes — format strings with {token} placeholders resolved per photo.
 			// Backward compat: show-name="true" maps to info-bottom-left="{name}".
 		) + $this->build_info_box_config( $atts );
 
@@ -511,16 +511,16 @@ class JZSA_Shared_Albums {
 		// info-bottom-center backward compat: derive from show-counter / show-title when not set.
 		$show_counter_compat = $this->parse_bool( $atts, 'show-counter', true );
 		$show_title_compat   = $this->parse_bool( $atts, 'show-title', false );
-		$primary_default     = '';
+		$bc_default     = '';
 		if ( $show_title_compat && $show_counter_compat ) {
-			$primary_default = '{album-title}: {counter}';
+			$bc_default = '{album-title}: {counter}';
 		} elseif ( $show_title_compat ) {
-			$primary_default = '{album-title}';
+			$bc_default = '{album-title}';
 		} elseif ( $show_counter_compat ) {
-			$primary_default = '{counter}';
+			$bc_default = '{counter}';
 		}
 
-		$pri = $this->parse_info_box( $atts, 'info-bottom-center', $primary_default );
+		$bc = $this->parse_info_box( $atts, 'info-bottom-center', $bc_default );
 		$bl  = $this->parse_info_box( $atts, 'info-bottom-left',  $show_name_compat    ? '{name}' : '' );
 		$br  = $this->parse_info_box( $atts, 'info-bottom-right', '' );
 		$tl  = $this->parse_info_box( $atts, 'info-top-left',     '' );
@@ -528,8 +528,8 @@ class JZSA_Shared_Albums {
 		$top = $this->parse_info_box( $atts, 'info-top-center',          '' );
 
 		return array(
-			'info-bottom-center'                  => $pri,
-			'fullscreen-info-bottom-center'       => $this->parse_info_box( $atts, 'fullscreen-info-bottom-center', $pri ),
+			'info-bottom-center'                  => $bc,
+			'fullscreen-info-bottom-center'       => $this->parse_info_box( $atts, 'fullscreen-info-bottom-center', $bc ),
 			'info-bottom-left'              => $bl,
 			'fullscreen-info-bottom-left'   => isset( $atts['fullscreen-info-bottom-left'] )
 				? $this->parse_info_box( $atts, 'fullscreen-info-bottom-left', '' )
@@ -572,7 +572,7 @@ class JZSA_Shared_Albums {
 	 *
 	 * @param array  $atts    Attributes
 	 * @param string $key     Attribute key
-	 * @param string $default Default format string (empty = zone hidden)
+	 * @param string $default Default format string (empty = box hidden)
 	 * @return string
 	 */
 	private function parse_info_box( $atts, $key, $default ) {
