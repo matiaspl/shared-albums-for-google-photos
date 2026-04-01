@@ -337,10 +337,11 @@ class JZSA_Data_Provider {
 	 * @return array Enriched media items.
 	 */
 	private function enrich_with_metadata( $html, $items ) {
-		// Stage 0: Build url → id + timestamp lookup map.
-		$url_meta = array(); // base_url → [ 'id' => ..., 'timestamp' => ..., ]
+		// Stage 0: Build url → id + dimensions + filesize + timestamp lookup map.
+		// Structure per photo: ["AF1Qip…", ["url", WIDTH, HEIGHT, null×5, […], [FILESIZE]], TIMESTAMP, "", TZ_OFFSET]
+		$url_meta = array();
 		if ( preg_match_all(
-			'/\["(AF1Qip[^"]+)"\s*,\s*\["(https?:\/\/[^"]+googleusercontent\.com[^"]+)".*?\]\s*,\s*(\d{10,13})\s*,\s*"[^"]*"\s*,\s*(\d+)/is',
+			'/\["(AF1Qip[^"]+)"\s*,\s*\["(https?:\/\/[^"]+googleusercontent\.com[^"]+)"\s*,\s*(\d+)\s*,\s*(\d+).*?\[(\d+)\]\s*\]\s*,\s*(\d{10,13})\s*,\s*"[^"]*"\s*,\s*(\d+)/is',
 			$html,
 			$id_matches
 		) ) {
@@ -350,8 +351,11 @@ class JZSA_Data_Provider {
 				if ( ! isset( $url_meta[ $base_url ] ) ) {
 					$url_meta[ $base_url ] = array(
 						'id'        => $id,
-						'timestamp' => (int) $id_matches[3][ $i ],
-						'tz_offset' => (int) $id_matches[4][ $i ],
+						'width'     => (int) $id_matches[3][ $i ],
+						'height'    => (int) $id_matches[4][ $i ],
+						'filesize'  => (int) $id_matches[5][ $i ],
+						'timestamp' => (int) $id_matches[6][ $i ],
+						'tz_offset' => (int) $id_matches[7][ $i ],
 					);
 				}
 			}
@@ -432,8 +436,11 @@ class JZSA_Data_Provider {
 				$item = array( 'url' => $item );
 			}
 
-			// Stage 2b: Timestamp (always present).
+			// Stage 2b: Timestamp, dimensions, filesize (always present alongside URL).
 			$item['timestamp'] = $meta['timestamp'];
+			$item['width']     = $meta['width'];
+			$item['height']    = $meta['height'];
+			$item['filesize']  = $meta['filesize'];
 
 			// Stage 2a: Filename extraction (windowed search per media ID).
 			$filename = $this->extract_filename_for_media_id( $html, $meta['id'] );

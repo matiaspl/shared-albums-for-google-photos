@@ -1127,7 +1127,7 @@ class JZSA_Shared_Albums {
 
 			// Pass through Wave 1 metadata fields (all zero-cost, extracted from album HTML).
 			if ( is_array( $item ) ) {
-				foreach ( array( 'filename', 'timestamp', 'camera', 'exif', 'author' ) as $meta_key ) {
+				foreach ( array( 'filename', 'timestamp', 'width', 'height', 'filesize', 'camera', 'exif', 'author' ) as $meta_key ) {
 					if ( isset( $item[ $meta_key ] ) ) {
 						$photo[ $meta_key ] = $item[ $meta_key ];
 					}

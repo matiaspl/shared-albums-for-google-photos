@@ -1486,6 +1486,24 @@ class JZSA_Settings_Page {
 								<td>✅ <?php esc_html_e( 'Always available', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
+								<td><code>{dimensions}</code></td>
+								<td><?php esc_html_e( 'Photo resolution in pixels', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>6000 × 4000</td>
+								<td>✅ <?php esc_html_e( 'Always available', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{megapixels}</code></td>
+								<td><?php esc_html_e( 'Resolution in megapixels (derived from dimensions)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>24.2 Mpix</td>
+								<td>✅ <?php esc_html_e( 'Always available', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{filesize}</code></td>
+								<td><?php esc_html_e( 'File size of the original photo', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>7.0 MB</td>
+								<td>✅ <?php esc_html_e( 'Always available', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
 								<td><code>{filename}</code></td>
 								<td><?php esc_html_e( 'Original filename as stored in Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>IMG_4095.JPG</td>
@@ -1532,24 +1550,6 @@ class JZSA_Settings_Page {
 								<td><?php esc_html_e( 'ISO sensitivity', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>ISO400</td>
 								<td>❌ <?php esc_html_e( 'EXIF — stripped by Google on most albums', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-							</tr>
-							<tr>
-								<td><code>{dimensions}</code></td>
-								<td><?php esc_html_e( 'Photo resolution in pixels', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>6000 × 4000</td>
-								<td>🚧 <?php esc_html_e( 'Not yet implemented', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-							</tr>
-							<tr>
-								<td><code>{megapixels}</code></td>
-								<td><?php esc_html_e( 'Resolution in megapixels (derived from dimensions)', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>24.2 Mpix</td>
-								<td>🚧 <?php esc_html_e( 'Not yet implemented', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-							</tr>
-							<tr>
-								<td><code>{filesize}</code></td>
-								<td><?php esc_html_e( 'File size of the original photo', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>7.0 MB</td>
-								<td>🚧 <?php esc_html_e( 'Not yet implemented', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 						</tbody>
 					</table>
