@@ -89,7 +89,7 @@ function jzsaHighlightTokens( codeEl ) {
 	} catch ( e ) { /* ignore */ }
 }
 
-function jzsaApplyPreview( codeEl, applyBtn, previewContainer ) {
+function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
 	var shortcode = ( codeEl.textContent || '' ).trim();
 	if ( ! shortcode ) {
 		return;
@@ -98,8 +98,9 @@ function jzsaApplyPreview( codeEl, applyBtn, previewContainer ) {
 		return;
 	}
 
-	applyBtn.disabled = true;
-	applyBtn.textContent = 'Applying…';
+	var savedLabel = triggerBtn.textContent;
+	triggerBtn.disabled = true;
+	triggerBtn.textContent = 'Applying\u2026';
 	previewContainer.style.opacity = '0.5';
 
 	var params = new URLSearchParams();
@@ -115,8 +116,8 @@ function jzsaApplyPreview( codeEl, applyBtn, previewContainer ) {
 	} )
 		.then( function ( r ) { return r.json(); } )
 		.then( function ( data ) {
-			applyBtn.disabled = false;
-			applyBtn.textContent = 'Apply';
+			triggerBtn.disabled = false;
+			triggerBtn.textContent = savedLabel;
 			previewContainer.style.opacity = '';
 
 			if ( ! data || ! data.success || ! data.data || ! data.data.html ) {
@@ -127,7 +128,7 @@ function jzsaApplyPreview( codeEl, applyBtn, previewContainer ) {
 
 			previewContainer.innerHTML = data.data.html;
 
-			jzsaFlashButton( applyBtn, 'Applied!' );
+			jzsaFlashButton( triggerBtn, flashLabel || 'Applied!' );
 
 			if ( window.SharedGooglePhotos ) {
 				var album = previewContainer.querySelector( '.jzsa-album' );
@@ -142,8 +143,8 @@ function jzsaApplyPreview( codeEl, applyBtn, previewContainer ) {
 			}
 		} )
 		.catch( function () {
-			applyBtn.disabled = false;
-			applyBtn.textContent = 'Apply';
+			triggerBtn.disabled = false;
+			triggerBtn.textContent = savedLabel;
 			previewContainer.style.opacity = '';
 			previewContainer.innerHTML = '<div class="jzsa-playground-error">Request failed.</div>';
 		} );
@@ -223,12 +224,13 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		// Highlight tokens on initial load.
 		jzsaHighlightTokens( codeEl );
 
-		// Revert with green flash.
+		// Revert: restore original shortcode, re-highlight tokens, and re-apply the preview.
 		revertBtn.addEventListener( 'click', function () {
 			codeEl.textContent = originalText;
+			jzsaHighlightTokens( codeEl );
 			applyBtn.disabled = true;
 			revertBtn.disabled = true;
-			jzsaFlashButton( revertBtn, 'Reverted!' );
+			jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!' );
 		} );
 
 		// Apply: AJAX preview.
@@ -350,8 +352,12 @@ document.addEventListener( 'DOMContentLoaded', function () {
 
 		pgRevert.addEventListener( 'click', function () {
 			pgCode.textContent = playgroundOriginal;
+			jzsaHighlightTokens( pgCode );
 			pgApply.disabled = true;
 			pgRevert.disabled = true;
+			if ( playgroundPreview ) {
+				jzsaApplyPreview( pgCode, pgRevert, playgroundPreview, 'Reverted!' );
+			}
 		} );
 
 		pgApply.addEventListener( 'click', function () {
