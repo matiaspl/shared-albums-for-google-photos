@@ -1605,7 +1605,7 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Photo Details (Always-Available Tokens)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'Meta Information Based on the Always-Available Tokens)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Showcases all tokens that resolve instantly without background fetching: counter in the bottom-center pagination pill, date in the bottom left, dimensions and megapixels in the top left, and filesize in the bottom right. All boxes update on each slide change.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
 							<code>[jzsa-album link="https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R" mode="slider" corner-radius="16" info-bottom-center="{counter}" info-bottom-left="{date}" info-top-left="{dimensions} · {megapixels}" info-bottom-right="{filesize}"]</code>
@@ -1620,7 +1620,7 @@ class JZSA_Settings_Page {
 					</div>
 
 					<div class="jzsa-example">
-						<h3><?php esc_html_e( 'Full Photo Info with EXIF', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<h3><?php esc_html_e( 'EXIF Based Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Combines always-available tokens with background-fetched EXIF data. Counter stays in the bottom-center pill, date appears in the bottom left, camera model in the top left, and exposure settings (aperture, shutter, focal length, ISO) in the top right. EXIF tokens appear with a brief delay as each photo\'s data is fetched in the background. Photos without EXIF (e.g. phone screenshots) silently hide those boxes.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<p style="margin: 8px 0 0 0; display: flex; align-items: flex-start; gap: 8px;">
 							<span class="dashicons dashicons-warning" style="font-size: 20px; width: 20px; height: 20px; line-height: 20px; color: #dba617; flex-shrink: 0;"></span>
