@@ -27,6 +27,14 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-info-min-gap: 8px;
     --jzsa-info-center-max-width: 33%;
     --jzsa-info-corner-max-width: calc((100% - var(--jzsa-info-center-max-width)) / 2 - var(--jzsa-info-horizontal-inset) - var(--jzsa-info-min-gap));
+    --jzsa-info-center-max-width-fs: calc(var(--jzsa-info-center-max-width) / var(--jzsa-controls-fs-scale));
+    --jzsa-info-corner-max-width-fs: calc(var(--jzsa-info-corner-max-width) / var(--jzsa-controls-fs-scale));
+    --jzsa-info-top-fs-offset: 9px;
+    --jzsa-info-bottom-fs-offset: 20px;
+    --jzsa-controls-circle-size-fs: 55px;
+    --jzsa-info-top-left-fs-offset-single: calc(var(--jzsa-controls-circle-size-fs) + var(--jzsa-info-min-gap));
+    --jzsa-info-top-left-fs-offset-double: calc(var(--jzsa-controls-circle-size) + var(--jzsa-controls-circle-size-fs) + var(--jzsa-info-min-gap));
+    --jzsa-info-top-right-fs-offset: calc(var(--jzsa-controls-circle-size-fs) + var(--jzsa-info-min-gap));
     --jzsa-nav-opacity: 1;
     --jzsa-nav-opacity-hover: 1;
     --jzsa-nav-opacity-active: 1;
@@ -546,6 +554,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album:fullscreen .swiper-button-fullscreen,
 .jzsa-album:-webkit-full-screen .swiper-button-fullscreen,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-button-fullscreen {
+    top: -2px;
     transform: scale(var(--jzsa-controls-fs-scale));
     transform-origin: top right;
 }
@@ -556,6 +565,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album:fullscreen .swiper-button-download,
 .jzsa-album:-webkit-full-screen .swiper-button-download,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-button-download {
+    top: -2px;
     transform: scale(var(--jzsa-controls-fs-scale));
     transform-origin: top left;
 }
@@ -584,8 +594,9 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album:fullscreen .swiper-pagination,
 .jzsa-album:-webkit-full-screen .swiper-pagination,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-pagination {
-    transform: scale(var(--jzsa-controls-fs-scale));
+    transform: translateX(-50%) scale(var(--jzsa-controls-fs-scale));
     transform-origin: bottom center;
+    max-width: var(--jzsa-info-center-max-width-fs);
 }
 
 .jzsa-album:fullscreen .swiper-album-title,
@@ -673,11 +684,12 @@ body.jzsa-no-scroll {
     border-radius: var(--jzsa-controls-pill-radius);
     display: inline-block;
     bottom: 9px;
-    left: 10px;
-    right: 10px;
-    margin: 0 auto;
+    left: 50%;
+    right: auto;
+    margin: 0;
+    transform: translateX(-50%);
     max-width: var(--jzsa-info-center-max-width);
-    width: auto;
+    width: max-content;
     font-size: 12px;
     line-height: 1.5;
     text-align: center;
@@ -690,7 +702,7 @@ body.jzsa-no-scroll {
 
 /* Move pagination up in fullscreen to make room for progress bar below */
 .jzsa-album.jzsa-is-fullscreen .swiper-pagination {
-    bottom: 20px;
+    bottom: var(--jzsa-info-bottom-fs-offset);
 }
 
 /* Loading state */
@@ -1140,6 +1152,83 @@ body.jzsa-no-scroll {
 .jzsa-info-top-right     { top: 9px; right: 12px; left: auto; bottom: auto; }
 .jzsa-info-top-center           { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width); }
 
+.jzsa-album:fullscreen .jzsa-info-top-left,
+.jzsa-album:-webkit-full-screen .jzsa-info-top-left,
+.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-top-left,
+.jzsa-album.jzsa-is-fullscreen .jzsa-info-top-left {
+    top: var(--jzsa-info-top-fs-offset);
+    left: 12px;
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top left;
+    max-width: var(--jzsa-info-corner-max-width-fs);
+}
+
+.jzsa-album:fullscreen .jzsa-info-top-center,
+.jzsa-album:-webkit-full-screen .jzsa-info-top-center,
+.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-top-center,
+.jzsa-album.jzsa-is-fullscreen .jzsa-info-top-center {
+    top: var(--jzsa-info-top-fs-offset);
+    transform: translateX(-50%) scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top center;
+    max-width: var(--jzsa-info-center-max-width-fs);
+}
+
+.jzsa-album:fullscreen .jzsa-info-top-right,
+.jzsa-album:-webkit-full-screen .jzsa-info-top-right,
+.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-top-right,
+.jzsa-album.jzsa-is-fullscreen .jzsa-info-top-right {
+    top: var(--jzsa-info-top-fs-offset);
+    right: 12px;
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: top right;
+    max-width: var(--jzsa-info-corner-max-width-fs);
+}
+
+.jzsa-album:fullscreen .jzsa-info-bottom-left,
+.jzsa-album:-webkit-full-screen .jzsa-info-bottom-left,
+.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-bottom-left,
+.jzsa-album.jzsa-is-fullscreen .jzsa-info-bottom-left {
+    bottom: var(--jzsa-info-bottom-fs-offset);
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: bottom left;
+    max-width: var(--jzsa-info-corner-max-width-fs);
+}
+
+.jzsa-album:fullscreen .jzsa-info-bottom-right,
+.jzsa-album:-webkit-full-screen .jzsa-info-bottom-right,
+.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-bottom-right,
+.jzsa-album.jzsa-is-fullscreen .jzsa-info-bottom-right {
+    bottom: var(--jzsa-info-bottom-fs-offset);
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: bottom right;
+    max-width: var(--jzsa-info-corner-max-width-fs);
+}
+
+.jzsa-album:fullscreen[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+.jzsa-album:-webkit-full-screen[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
+.jzsa-album:fullscreen[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+.jzsa-album:-webkit-full-screen[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-show-download-button="true"] .jzsa-info-top-left {
+    left: var(--jzsa-info-top-left-fs-offset-single);
+}
+
+.jzsa-album:fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+.jzsa-album:-webkit-full-screen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+.jzsa-album.jzsa-pseudo-fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
+.jzsa-album.jzsa-is-fullscreen[data-fullscreen-show-link-button="true"][data-fullscreen-show-download-button="true"] .jzsa-info-top-left {
+    left: var(--jzsa-info-top-left-fs-offset-double);
+}
+
+.jzsa-album:fullscreen:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right,
+.jzsa-album:-webkit-full-screen:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right,
+.jzsa-album.jzsa-pseudo-fullscreen:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right,
+.jzsa-album.jzsa-is-fullscreen:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right {
+    right: var(--jzsa-info-top-right-fs-offset);
+}
+
 /* Compact variant for gallery thumbnails */
 .jzsa-gallery-item .jzsa-info-box {
     font-size: 10px;
@@ -1544,16 +1633,8 @@ body.jzsa-no-scroll {
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover[data-show-download-button="true"] .jzsa-info-top-left,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within[data-show-link-button="true"] .jzsa-info-top-left,
     .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within[data-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-is-fullscreen:hover[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-is-fullscreen:hover[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-is-fullscreen:focus-within[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-pseudo-fullscreen:hover[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-pseudo-fullscreen:focus-within[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]):hover .jzsa-info-top-right,
-    .jzsa-album.swiper:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]):focus-within .jzsa-info-top-right {
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right,
+    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right {
         opacity: 0;
     }
 }
@@ -1584,11 +1665,7 @@ body.jzsa-no-scroll {
 
     .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-link-button="true"] .jzsa-info-top-left,
     .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-touch-active.jzsa-is-fullscreen[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-touch-active.jzsa-is-fullscreen[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-touch-active.jzsa-pseudo-fullscreen[data-fullscreen-show-link-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-touch-active.jzsa-pseudo-fullscreen[data-fullscreen-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-touch-active:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right {
+    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right {
         opacity: 0;
     }
 }
