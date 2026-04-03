@@ -35,7 +35,7 @@ class JZSA_Shared_Albums {
 	const DEFAULT_CACHE_REFRESH = 168;
 
 	/**
-	 * Per-photo EXIF cache TTL in seconds.
+	 * Per-photo metadata cache TTL in seconds.
 	 *
 	 * Individual photo metadata is effectively immutable, so keep it cached much
 	 * longer than album HTML.
@@ -1204,14 +1204,14 @@ class JZSA_Shared_Albums {
 				$photo['full'] .= '-no';
 			}
 
-			// Pass through Wave 1 metadata fields (all zero-cost, extracted from album HTML).
+			// Pass through metadata fields extracted from album HTML.
 			if ( is_array( $item ) ) {
-			foreach ( array( 'id', 'filename', 'timestamp', 'width', 'height', 'filesize', 'camera', 'exif', 'aperture', 'shutter', 'focal', 'iso', 'author' ) as $meta_key ) {
-				// Note: 'id' is the AF1Qip… media ID, needed by Wave 2 JS for individual photo page fetching.
-					if ( isset( $item[ $meta_key ] ) ) {
-						$photo[ $meta_key ] = $item[ $meta_key ];
+				foreach ( array( 'id', 'filename', 'timestamp', 'width', 'height', 'filesize', 'camera', 'exif', 'aperture', 'shutter', 'focal', 'iso' ) as $meta_key ) {
+					// Note: 'id' is the AF1Qip… media ID, needed by Wave 2 JS for individual photo page fetching.
+						if ( isset( $item[ $meta_key ] ) ) {
+							$photo[ $meta_key ] = $item[ $meta_key ];
+						}
 					}
-				}
 			}
 
 			$photos[] = $photo;
@@ -1281,7 +1281,7 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Get cache key for per-photo EXIF metadata.
+	 * Get cache key for per-photo metadata.
 	 *
 	 * @param string $photo_url Individual Google Photos page URL.
 	 * @return string
@@ -1292,6 +1292,120 @@ class JZSA_Shared_Albums {
 		}
 
 		return 'jzsa_photo_meta_' . md5( $photo_url );
+	}
+
+	/**
+	 * Parse a filename from a Content-Disposition header.
+	 *
+	 * @param string $content_disposition Header value.
+	 * @return string
+	 */
+	private function parse_content_disposition_filename( $content_disposition ) {
+		if ( empty( $content_disposition ) || ! is_string( $content_disposition ) ) {
+			return '';
+		}
+
+		if ( preg_match( "/filename\*\s*=\s*(?:UTF-8''|utf-8'')?([^;]+)/i", $content_disposition, $matches ) ) {
+			return sanitize_file_name( rawurldecode( trim( $matches[1], " \t\n\r\0\x0B\"'" ) ) );
+		}
+
+		if ( preg_match( '/filename\s*=\s*"([^"]+)"/i', $content_disposition, $matches ) ) {
+			return sanitize_file_name( $matches[1] );
+		}
+
+		if ( preg_match( '/filename\s*=\s*([^;]+)/i', $content_disposition, $matches ) ) {
+			return sanitize_file_name( trim( $matches[1], " \t\n\r\0\x0B\"'" ) );
+		}
+
+		return '';
+	}
+
+	/**
+	 * Normalize a Google media URL so it returns download headers with filename.
+	 *
+	 * @param string $media_url  Raw media URL.
+	 * @param string $media_type Media type: photo or video.
+	 * @return string
+	 */
+	private function normalize_media_url_for_filename( $media_url, $media_type ) {
+		$media_url = html_entity_decode( (string) $media_url, ENT_QUOTES );
+		$media_url = str_replace(
+			array( '\u003d', '\u0026', '\/' ),
+			array( '=', '&', '/' ),
+			$media_url
+		);
+
+		if ( 'video' === $media_type ) {
+			return $media_url;
+		}
+
+		$base = preg_replace( '/=.+$/', '', $media_url );
+		return $base . '=d';
+	}
+
+	/**
+	 * Fetch original filename from a Google media response header.
+	 *
+	 * @param string $media_url  Media URL.
+	 * @param string $media_type Media type: photo or video.
+	 * @return string
+	 */
+	private function fetch_remote_filename( $media_url, $media_type ) {
+		if ( empty( $media_url ) ) {
+			return '';
+		}
+
+		$request_url = $this->normalize_media_url_for_filename( $media_url, $media_type );
+		$parsed_url  = wp_parse_url( $request_url );
+		if ( empty( $parsed_url['scheme'] ) || 'https' !== $parsed_url['scheme'] || empty( $parsed_url['host'] ) ) {
+			return '';
+		}
+
+		$host = strtolower( $parsed_url['host'] );
+		if ( 'googleusercontent.com' !== $host && substr( $host, -strlen( '.googleusercontent.com' ) ) !== '.googleusercontent.com' ) {
+			return '';
+		}
+
+		$context = stream_context_create(
+			array(
+				'http' => array(
+					'method'        => 'GET',
+					'timeout'       => 20,
+					'ignore_errors' => true,
+					'header'        => "Range: bytes=0-0\r\nUser-Agent: WordPress/" . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ) . "\r\n",
+				),
+			)
+		);
+
+		$headers = @get_headers( $request_url, true, $context );
+		if ( false === $headers || ! is_array( $headers ) ) {
+			return '';
+		}
+
+		$content_disposition = '';
+		foreach ( $headers as $key => $value ) {
+			if ( 0 === strcasecmp( (string) $key, 'Content-Disposition' ) ) {
+				$content_disposition = is_array( $value ) ? end( $value ) : $value;
+				break;
+			}
+		}
+
+		return $this->parse_content_disposition_filename( $content_disposition );
+	}
+
+	/**
+	 * Strip internal cache bookkeeping keys from a photo meta payload.
+	 *
+	 * @param array $meta Cached meta array.
+	 * @return array
+	 */
+	private function filter_public_photo_meta( $meta ) {
+		if ( ! is_array( $meta ) ) {
+			return array();
+		}
+
+		unset( $meta['_fetched_exif'], $meta['_fetched_filename'] );
+		return $meta;
 	}
 
 	/**
@@ -1404,11 +1518,12 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Handle AJAX request to fetch EXIF metadata for an individual photo.
+	 * Handle AJAX request to fetch per-photo metadata for an individual photo.
 	 *
 	 * Wave 2: JS calls this endpoint in the background for each photo that
-	 * needs EXIF data. The PHP side fetches the individual photo page from
-	 * Google Photos (bypassing CORS) and extracts camera/EXIF fields.
+	 * needs EXIF and/or filename data. The PHP side fetches the individual
+	 * photo page from Google Photos (bypassing CORS), extracts camera/EXIF
+	 * fields, and resolves the original filename from media response headers.
 	 */
 	public function handle_fetch_photo_meta() {
 		$nonce = isset( $_POST['nonce'] ) ? sanitize_text_field( wp_unslash( $_POST['nonce'] ) ) : '';
@@ -1418,6 +1533,10 @@ class JZSA_Shared_Albums {
 		}
 
 		$photo_url = isset( $_POST['photo_url'] ) ? esc_url_raw( wp_unslash( $_POST['photo_url'] ) ) : '';
+		$media_url = isset( $_POST['media_url'] ) ? esc_url_raw( wp_unslash( $_POST['media_url'] ) ) : '';
+		$media_type = isset( $_POST['media_type'] ) ? sanitize_key( wp_unslash( $_POST['media_type'] ) ) : 'photo';
+		$need_exif = isset( $_POST['need_exif'] ) ? filter_var( wp_unslash( $_POST['need_exif'] ), FILTER_VALIDATE_BOOLEAN ) : true;
+		$need_filename = isset( $_POST['need_filename'] ) ? filter_var( wp_unslash( $_POST['need_filename'] ), FILTER_VALIDATE_BOOLEAN ) : true;
 		if ( empty( $photo_url ) ) {
 			wp_send_json_error( 'Missing photo URL' );
 			return;
@@ -1431,35 +1550,89 @@ class JZSA_Shared_Albums {
 
 		$cache_key   = $this->get_photo_meta_cache_key( $photo_url );
 		$cached_meta = get_transient( $cache_key );
-		if ( false !== $cached_meta && is_array( $cached_meta ) ) {
-			wp_send_json_success( $cached_meta );
+		if ( ! is_array( $cached_meta ) ) {
+			$cached_meta = array();
+		}
+
+		$has_cached_exif_state = array_key_exists( '_fetched_exif', $cached_meta );
+		$has_cached_filename_state = array_key_exists( '_fetched_filename', $cached_meta );
+		$need_exif_fetch = $need_exif && ! $has_cached_exif_state;
+		$need_filename_fetch = $need_filename && ! $has_cached_filename_state;
+
+		// Backward compatibility with older cache entries that stored fields but no state flags.
+		if ( $need_exif && ! $need_exif_fetch && empty( $cached_meta['_fetched_exif'] ) ) {
+			$need_exif_fetch = false;
+		} elseif ( $need_exif && ! $has_cached_exif_state && (
+			! empty( $cached_meta['camera'] ) ||
+			! empty( $cached_meta['aperture'] ) ||
+			! empty( $cached_meta['shutter'] ) ||
+			! empty( $cached_meta['focal'] ) ||
+			! empty( $cached_meta['iso'] )
+		) ) {
+			$need_exif_fetch = false;
+		}
+		if ( $need_filename && ! $has_cached_filename_state && ! empty( $cached_meta['filename'] ) ) {
+			$need_filename_fetch = false;
+		}
+
+		if ( ! $need_exif_fetch && ! $need_filename_fetch ) {
+			wp_send_json_success( $this->filter_public_photo_meta( $cached_meta ) );
 			return;
 		}
 
-		// Fetch the individual photo page.
-		$response = wp_remote_get(
-			$photo_url,
-			array(
-				'timeout'    => 15,
-				'user-agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ),
-			)
-		);
+		$meta = $cached_meta;
+		$html = '';
 
-		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( 'Fetch failed' );
-			return;
+		if ( $need_exif_fetch || ( $need_filename_fetch && ( 'video' === $media_type || empty( $media_url ) ) ) ) {
+			$response = wp_remote_get(
+				$photo_url,
+				array(
+					'timeout'    => 15,
+					'user-agent' => 'WordPress/' . get_bloginfo( 'version' ) . '; ' . get_bloginfo( 'url' ),
+				)
+			);
+
+			if ( is_wp_error( $response ) ) {
+				wp_send_json_error( 'Fetch failed' );
+				return;
+			}
+
+			$html = wp_remote_retrieve_body( $response );
+			if ( empty( $html ) ) {
+				wp_send_json_error( 'Empty response' );
+				return;
+			}
 		}
 
-		$html = wp_remote_retrieve_body( $response );
-		if ( empty( $html ) ) {
-			wp_send_json_error( 'Empty response' );
-			return;
+		if ( $need_exif_fetch ) {
+			$meta['_fetched_exif'] = true;
+			$exif_meta = ! empty( $html ) ? $this->provider->extract_individual_photo_meta( $html ) : array();
+			if ( ! empty( $exif_meta ) ) {
+				$meta = array_merge( $meta, $exif_meta );
+			}
 		}
 
-		$meta = $this->provider->extract_individual_photo_meta( $html );
+		if ( $need_filename_fetch ) {
+			$meta['_fetched_filename'] = true;
+			$filename_source_url = $media_url;
+			if ( ! empty( $html ) ) {
+				$media_urls = $this->provider->extract_individual_photo_media_urls( $html );
+				if ( 'video' === $media_type && ! empty( $media_urls['video'] ) ) {
+					$filename_source_url = $media_urls['video'];
+				} elseif ( empty( $filename_source_url ) && ! empty( $media_urls['image'] ) ) {
+					$filename_source_url = $media_urls['image'];
+				}
+			}
+
+			$filename = $this->fetch_remote_filename( $filename_source_url, $media_type );
+			if ( '' !== $filename ) {
+				$meta['filename'] = $filename;
+			}
+		}
+
 		set_transient( $cache_key, $meta, self::PHOTO_META_CACHE_TTL );
 
-		wp_send_json_success( $meta );
+		wp_send_json_success( $this->filter_public_photo_meta( $meta ) );
 	}
 
 	/**

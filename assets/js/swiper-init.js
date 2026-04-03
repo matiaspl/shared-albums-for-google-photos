@@ -1487,7 +1487,7 @@
 
         var name = photo.filename
             ? photo.filename.replace(/\.[^.]+$/, '')
-            : formatPhotoDate(photo.timestamp);
+            : '';
 
         var dims = '';
         if (photo.width && photo.height) {
@@ -1521,7 +1521,7 @@
             '{name}': name || '',
             '{filename}': photo.filename || '',
             '{date}': photo.timestamp ? formatPhotoDate(photo.timestamp) : '',
-            '{author}': photo.author || '',
+            '{author}': '',
             '{camera}': photo.camera || '',
             '{aperture}': photo.aperture || '',
             '{shutter}': photo.shutter || '',
@@ -1562,14 +1562,17 @@
         var html = '';
         for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
             var zone = INFO_BOX_NAMES[i];
-            var inlineText = resolveInfoTokens(zoneFormats[zone] || '', photo, context);
-            var fullscreenText = resolveInfoTokens(fsFormats[zone] || zoneFormats[zone] || '', photo, context);
-            if (!inlineText && !fullscreenText) {
+            var inlineFormat = zoneFormats[zone] || '';
+            var fullscreenFormat = fsFormats[zone] || inlineFormat;
+            var inlineText = resolveInfoTokens(inlineFormat, photo, context);
+            var fullscreenText = resolveInfoTokens(fullscreenFormat, photo, context);
+            if (!inlineFormat && !fullscreenFormat) {
                 continue;
             }
             html += '<div class="jzsa-info-box jzsa-' + zone + '"' +
                 ' data-inline="' + escapeHtml(inlineText) + '"' +
-                ' data-fullscreen="' + escapeHtml(fullscreenText) + '">' +
+                ' data-fullscreen="' + escapeHtml(fullscreenText) + '"' +
+                (inlineText ? '' : ' style="display:none"') + '>' +
                 escapeHtml(inlineText) + '</div>';
         }
         return html;
@@ -1601,12 +1604,13 @@
     }
 
     // ========================================================================
-    // Wave 2: Background EXIF prefetch via AJAX
+    // Wave 2: Background photo metadata prefetch via AJAX
     // ========================================================================
 
     var EXIF_TOKEN_RE = /\{(?:camera|aperture|shutter|focal|iso)\}/;
+    var FILENAME_TOKEN_RE = /\{(?:filename|name)\}/;
     var EXIF_PREFETCH_WORKERS = 3;
-    var exifCache = {};          // mediaId -> { camera, aperture, shutter, focal, iso }
+    var exifCache = {};          // mediaId -> { camera, aperture, shutter, focal, iso, filename }
     var exifQueue = [];          // { mediaId, photoUrl }
     var exifQueued = {};         // mediaId -> true
     var exifInFlight = {};       // mediaId -> true
@@ -1615,25 +1619,27 @@
     var exifPrefetchScheduled = false;
 
     /**
-     * Check whether any zone format string references EXIF tokens.
+     * Check whether any zone format string references Wave 2 metadata tokens.
      */
-    function zonesNeedExif(zoneFormats) {
+    function getPhotoMetaNeeds(zoneFormats) {
         if (!zoneFormats) {
-            return false;
+            return { exif: false, filename: false };
         }
         var all = zoneFormats.inline || {};
         var fs  = zoneFormats.fullscreen || {};
         var bottomCenter = zoneFormats.bottomCenter || {};
+        var needs = {
+            exif: false,
+            filename: false
+        };
         for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
             var zone = INFO_BOX_NAMES[i];
-            if (EXIF_TOKEN_RE.test(all[zone] || '') || EXIF_TOKEN_RE.test(fs[zone] || '')) {
-                return true;
-            }
+            needs.exif = needs.exif || EXIF_TOKEN_RE.test(all[zone] || '') || EXIF_TOKEN_RE.test(fs[zone] || '');
+            needs.filename = needs.filename || FILENAME_TOKEN_RE.test(all[zone] || '') || FILENAME_TOKEN_RE.test(fs[zone] || '');
         }
-        if (EXIF_TOKEN_RE.test(bottomCenter.inline || '') || EXIF_TOKEN_RE.test(bottomCenter.fullscreen || '')) {
-            return true;
-        }
-        return false;
+        needs.exif = needs.exif || EXIF_TOKEN_RE.test(bottomCenter.inline || '') || EXIF_TOKEN_RE.test(bottomCenter.fullscreen || '');
+        needs.filename = needs.filename || FILENAME_TOKEN_RE.test(bottomCenter.inline || '') || FILENAME_TOKEN_RE.test(bottomCenter.fullscreen || '');
+        return needs;
     }
 
     /**
@@ -1667,7 +1673,7 @@
                 if (photos[photoIndex]) {
                     var p = photos[photoIndex];
                     var changed = false;
-                    var fields = ['camera', 'aperture', 'shutter', 'focal', 'iso'];
+                    var fields = ['camera', 'aperture', 'shutter', 'focal', 'iso', 'filename'];
                     for (var f = 0; f < fields.length; f++) {
                         if (exifData[fields[f]]) {
                             p[fields[f]] = exifData[fields[f]];
@@ -1740,11 +1746,15 @@
                     data: {
                         action: 'jzsa_fetch_photo_meta',
                         nonce: jzsaAjax.photoMetaNonce,
-                        photo_url: queueItem.photoUrl
+                        photo_url: queueItem.photoUrl,
+                        media_url: queueItem.mediaUrl,
+                        media_type: queueItem.mediaType,
+                        need_exif: queueItem.needExif ? 'true' : 'false',
+                        need_filename: queueItem.needFilename ? 'true' : 'false'
                     }
                 }).done(function(response) {
                     if (response && response.success && response.data) {
-                        exifCache[queueItem.mediaId] = response.data;
+                        exifCache[queueItem.mediaId] = $.extend({}, exifCache[queueItem.mediaId] || {}, response.data);
                         flushExifWaiters(queueItem.mediaId, response.data);
                     }
                 }).always(function() {
@@ -1760,14 +1770,15 @@
     }
 
     /**
-     * Schedule Wave 2 EXIF prefetch for all photos in a container.
-     * Only runs if zone format strings reference EXIF tokens.
+     * Schedule Wave 2 metadata prefetch for all photos in a container.
+     * Only runs if zone format strings reference filename/name or EXIF tokens.
      *
      * @param {jQuery} $container Gallery/album container.
      * @param {Object} zoneFormats  { inline: {...}, fullscreen: {...} }
      */
     function scheduleExifPrefetch($container, zoneFormats) {
-        if (!zonesNeedExif(zoneFormats)) {
+        var metaNeeds = getPhotoMetaNeeds(zoneFormats);
+        if (!metaNeeds.exif && !metaNeeds.filename) {
             return;
         }
         if (typeof jzsaAjax === 'undefined' || !jzsaAjax.photoMetaNonce) {
@@ -1788,12 +1799,19 @@
             var photos = JSON.parse(photosJson);
             for (var i = 0; i < photos.length; i++) {
                 var p = photos[i];
-                if (!p.id || p.camera) {
-                    continue; // No ID or already has EXIF from Wave 1.
-                }
+                var cachedMeta = exifCache[p.id] || {};
+                var needsExifForPhoto = metaNeeds.exif && !p.camera && !cachedMeta.camera;
+                var needsFilenameForPhoto = metaNeeds.filename && !p.filename && !cachedMeta.filename;
 
                 if (exifCache[p.id]) {
-                    applyExifToPhoto(p.id, exifCache[p.id], $container, zoneFormats, i);
+                    (function(mediaId, cachedMeta, containerEl, formats, photoIndex) {
+                        window.setTimeout(function() {
+                            applyExifToPhoto(mediaId, cachedMeta, containerEl, formats, photoIndex);
+                        }, 0);
+                    })(p.id, exifCache[p.id], $container, zoneFormats, i);
+                }
+
+                if (!p.id || (!needsExifForPhoto && !needsFilenameForPhoto)) {
                     continue;
                 }
 
@@ -1810,7 +1828,11 @@
                 exifQueued[p.id] = true;
                 exifQueue.push({
                     mediaId: p.id,
-                    photoUrl: photoUrl
+                    photoUrl: photoUrl,
+                    mediaUrl: p.type === 'video' ? (p.video || '') : (p.full || p.preview || ''),
+                    mediaType: p.type === 'video' ? 'video' : 'photo',
+                    needExif: needsExifForPhoto,
+                    needFilename: needsFilenameForPhoto
                 });
             }
         } catch (e) { /* ignore parse errors */ }
@@ -1951,12 +1973,16 @@
                     counter: buildSinglePhotoCounterText(index, carouselTotalCount),
                     albumTitle: carouselAlbumTitle
                 });
-                if (tileInfo.topCenter) {
-                    tileInfoHtml += '<div class="jzsa-info-box jzsa-info-top-center jzsa-carousel-tile-info-box jzsa-carousel-tile-info-top-center">' +
+                var topCenterFormat = (carouselZoneFormats.inline && carouselZoneFormats.inline['info-top-center']) || '';
+                var bottomCenterFormat = (carouselZoneFormats.bottomCenter && carouselZoneFormats.bottomCenter.inline) || '';
+                if (topCenterFormat) {
+                    tileInfoHtml += '<div class="jzsa-info-box jzsa-info-top-center jzsa-carousel-tile-info-box jzsa-carousel-tile-info-top-center"' +
+                        (tileInfo.topCenter ? '' : ' style="display:none"') + '>' +
                         escapeHtml(tileInfo.topCenter) + '</div>';
                 }
-                if (tileInfo.bottomCenter) {
-                    tileInfoHtml += '<div class="jzsa-info-box jzsa-info-bottom-center jzsa-carousel-tile-info-box jzsa-carousel-tile-info-bottom-center">' +
+                if (bottomCenterFormat) {
+                    tileInfoHtml += '<div class="jzsa-info-box jzsa-info-bottom-center jzsa-carousel-tile-info-box jzsa-carousel-tile-info-bottom-center"' +
+                        (tileInfo.bottomCenter ? '' : ' style="display:none"') + '>' +
                         escapeHtml(tileInfo.bottomCenter) + '</div>';
                 }
             }
@@ -2041,6 +2067,48 @@
             if ($bottom.length) {
                 $bottom.text(tileInfo.bottomCenter).toggle(tileInfo.bottomCenter !== '');
             }
+        });
+    }
+
+    function updateGalleryThumbnailInfoBoxes($container) {
+        if (!$container || !$container.length || $container.attr('data-mode') !== 'gallery') {
+            return;
+        }
+
+        var photosJson = $container.attr('data-all-photos');
+        var total = 0;
+        if (photosJson) {
+            try {
+                total = JSON.parse(photosJson).length;
+            } catch (e) {
+                total = 0;
+            }
+        }
+        var albumTitle = $container.attr('data-album-title') || '';
+
+        $container.find('.jzsa-gallery-item, .jzsa-gallery-item-video').each(function() {
+            var $item = $(this);
+            var photoIndex = parseInt($item.attr('data-index'), 10);
+            if (isNaN(photoIndex) || photoIndex < 0) {
+                return;
+            }
+
+            var photo = getContainerPhoto($container, photoIndex);
+            $item.find('.jzsa-info-box').each(function() {
+                var $box = $(this);
+                var inlineFmt = '';
+                for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
+                    if ($box.hasClass('jzsa-' + INFO_BOX_NAMES[i])) {
+                        inlineFmt = $container.attr('data-' + INFO_BOX_NAMES[i]) || '';
+                        break;
+                    }
+                }
+                var text = resolveInfoTokens(inlineFmt, photo, {
+                    counter: buildSinglePhotoCounterText(photoIndex, total),
+                    albumTitle: albumTitle
+                });
+                $box.text(text).toggle(text !== '');
+            });
         });
     }
 
@@ -2788,17 +2856,65 @@
             };
         }
 
+        function getDownloadPhotoIndex(downloadIndex) {
+            if (!isNaN(downloadIndex) && downloadIndex > 0) {
+                return downloadIndex - 1;
+            }
+            if (typeof swiper.realIndex === 'number' && !isNaN(swiper.realIndex)) {
+                return swiper.realIndex;
+            }
+            return swiper.activeIndex;
+        }
+
         function buildFilename(mediaType, downloadIndex) {
-            var currentIndex = typeof swiper.realIndex === 'number' ? swiper.realIndex : swiper.activeIndex;
+            var currentIndex = getDownloadPhotoIndex(downloadIndex);
             // Use original filename from Google Photos when available.
             var photo = allPhotos[currentIndex];
             if (photo && photo.filename) {
                 return photo.filename;
             }
-            var safeIndex = (!isNaN(downloadIndex) && downloadIndex > 0) ? downloadIndex : (currentIndex + 1);
+            var safeIndex = currentIndex + 1;
             var prefix = mediaType === 'video' ? 'video-' : 'photo-';
             var extension = mediaType === 'video' ? '.mp4' : '.jpg';
             return prefix + safeIndex + extension;
+        }
+
+        function fetchFilenameForDownload(mediaType, mediaUrl, downloadIndex, onDone) {
+            var photoIndex = getDownloadPhotoIndex(downloadIndex);
+            var photo = allPhotos[photoIndex] || {};
+            if (!photo.id || photo.filename || typeof jzsaAjax === 'undefined' || !jzsaAjax.photoMetaNonce) {
+                onDone(buildFilename(mediaType, downloadIndex));
+                return;
+            }
+
+            var albumUrl = $container.attr('data-album-url') || '';
+            var photoUrl = buildPhotoPageUrl(albumUrl, photo.id);
+            if (!photoUrl) {
+                onDone(buildFilename(mediaType, downloadIndex));
+                return;
+            }
+
+            $.ajax({
+                url: jzsaAjax.ajaxUrl,
+                type: 'POST',
+                data: {
+                    action: 'jzsa_fetch_photo_meta',
+                    nonce: jzsaAjax.photoMetaNonce,
+                    photo_url: photoUrl,
+                    media_url: mediaUrl,
+                    media_type: mediaType,
+                    need_exif: 'false',
+                    need_filename: 'true'
+                }
+            }).done(function(response) {
+                if (response && response.success && response.data && response.data.filename) {
+                    photo.filename = response.data.filename;
+                    allPhotos[photoIndex] = photo;
+                    $container.attr('data-all-photos', JSON.stringify(allPhotos));
+                }
+            }).always(function() {
+                onDone(buildFilename(mediaType, downloadIndex));
+            });
         }
 
         $downloadBtn.on('click', function(e) {
@@ -2831,11 +2947,10 @@
                 mediaType = inferMediaTypeFromUrl(mediaUrl);
             }
 
-            var filename = buildFilename(mediaType, downloadIndex);
-
             // Google Photos doesn't allow direct downloads due to CORS
             // We need to download via WordPress AJAX proxy
             var originalTitle = $clickedBtn.attr('title');
+            var filename = '';
 
             function restoreButtonState() {
                 $clickedBtn.attr('title', originalTitle);
@@ -2927,7 +3042,10 @@
                 });
             }
 
-            requestProxyDownload(false);
+            fetchFilenameForDownload(mediaType, mediaUrl, downloadIndex, function(resolvedFilename) {
+                filename = resolvedFilename;
+                requestProxyDownload(false);
+            });
         });
     }
 
@@ -4523,6 +4641,12 @@
                 });
                 $container.on('jzsa:exif-update', function() {
                     updateCarouselTileInfoBoxes($container, swiper, zoneFormats);
+                });
+            }
+
+            if (mode === 'gallery') {
+                $container.on('jzsa:exif-update', function() {
+                    updateGalleryThumbnailInfoBoxes($container);
                 });
             }
 
@@ -7268,7 +7392,19 @@
             }, { passive: true });
         }());
 
-        // Wave 2: schedule background EXIF prefetch if any zone uses EXIF tokens.
+        $container.off('jzsa:exif-update.jzsaGalleryInfoRefresh');
+        $container.on('jzsa:exif-update.jzsaGalleryInfoRefresh', function() {
+            var latestPhotosJson = $container.attr('data-all-photos');
+            if (latestPhotosJson) {
+                try {
+                    allPhotos = JSON.parse(latestPhotosJson);
+                } catch (e) { /* ignore */ }
+            }
+            updateGalleryThumbnailInfoBoxes($container);
+        });
+
+        // Wave 2: schedule background metadata prefetch if any zone uses
+        // filename/name or EXIF tokens.
         var galleryZoneFormats = readInfoZoneFormats($container);
         scheduleExifPrefetch($container, galleryZoneFormats);
 

@@ -584,7 +584,10 @@ class JZSA_Renderer {
 	 * @return string Gallery ID
 	 */
 	private function generate_gallery_id() {
-		static $counter = 0;
-		return 'jzsa-gallery-' . ++$counter;
+		if ( function_exists( 'wp_unique_id' ) ) {
+			return wp_unique_id( 'jzsa-gallery-' );
+		}
+
+		return 'jzsa-gallery-' . uniqid();
 	}
 }

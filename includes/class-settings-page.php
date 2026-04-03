@@ -762,9 +762,6 @@ class JZSA_Settings_Page {
 						</div>
 						</div>
 
-						<h3><?php esc_html_e( 'Video Samples (Temporary Album)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'These examples use a temporary mixed album that contains videos. They demonstrate layout modes with different accent colors and key video parameters.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-
 						<div class="jzsa-example">
 							<h3><?php esc_html_e( 'Video in Slider Mode (Blue Accent)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php esc_html_e( 'Baseline video sample in slider mode with videos enabled and blue accent color.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
@@ -1510,19 +1507,13 @@ class JZSA_Settings_Page {
 								<td><code>{filename}</code></td>
 								<td><?php esc_html_e( 'Original filename as stored in Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>IMG_4095.JPG</td>
-								<td>⚠️ <?php esc_html_e( 'Rare — Google strips filenames from most shared albums', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>⏳ <?php esc_html_e( 'Background — fetched per photo, appears with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
 								<td><code>{name}</code></td>
 								<td><?php esc_html_e( 'Filename without extension', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>IMG_4095</td>
-								<td>⚠️ <?php esc_html_e( 'Rare — same as {filename}', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-							</tr>
-							<tr>
-								<td><code>{author}</code></td>
-								<td><?php esc_html_e( 'Display name of the photo contributor', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>John Doe</td>
-								<td>⚠️ <?php esc_html_e( 'Multi-contributor albums only', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>⏳ <?php esc_html_e( 'Background — fetched per photo, appears with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
 								<td><code>{camera}</code></td>

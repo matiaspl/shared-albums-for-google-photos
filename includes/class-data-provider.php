@@ -371,35 +371,6 @@ class JZSA_Data_Provider {
 		// across when album order changes.
 		$exif_map = array(); // id → [ 'camera' => ..., 'exif' => ... ]
 
-		// Stage 2d: Owner/author extraction (two passes over full HTML).
-		// Pass 1: photo_id → owner_id.
-		$photo_owner_map = array(); // photo_id → owner_id
-		if ( preg_match_all(
-			'/\["(AF1Qip[^"]+)".*?\["(AF1QipNY[^"]+)"\]/is',
-			$html,
-			$owner_ref_matches
-		) ) {
-			foreach ( $owner_ref_matches[1] as $i => $photo_id ) {
-				if ( ! isset( $photo_owner_map[ $photo_id ] ) ) {
-					$photo_owner_map[ $photo_id ] = $owner_ref_matches[2][ $i ];
-				}
-			}
-		}
-
-		// Pass 2: owner_id → display name.
-		$owner_names = array(); // owner_id → name
-		if ( ! empty( $photo_owner_map ) && preg_match_all(
-			'/\["(AF1QipNY[^"]+)"\s*,\s*"[^"]+"\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*\["[^"]+"\s*,\s*"[^"]+"\]\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*null\s*,\s*\["([^"]+)"/i',
-			$html,
-			$name_matches
-		) ) {
-			foreach ( $name_matches[1] as $i => $owner_id ) {
-				if ( ! isset( $owner_names[ $owner_id ] ) ) {
-					$owner_names[ $owner_id ] = $name_matches[2][ $i ];
-				}
-			}
-		}
-
 		// Merge metadata into items.
 		foreach ( $items as &$item ) {
 			$base_url = is_array( $item ) ? $item['url'] : $item;
@@ -441,14 +412,6 @@ class JZSA_Data_Provider {
 				$item['shutter']  = $exif['shutter'];
 				$item['focal']    = $exif['focal'];
 				$item['iso']      = $exif['iso'];
-			}
-
-			// Stage 2d: Owner/author (pure display name, no prefix).
-			if ( isset( $photo_owner_map[ $meta['id'] ] ) ) {
-				$owner_id = $photo_owner_map[ $meta['id'] ];
-				if ( isset( $owner_names[ $owner_id ] ) ) {
-					$item['author'] = $owner_names[ $owner_id ];
-				}
 			}
 		}
 		unset( $item );
@@ -693,5 +656,50 @@ class JZSA_Data_Provider {
 			'focal'    => $focal . 'mm',
 			'iso'      => 'ISO' . $iso,
 		);
+	}
+
+	/**
+	 * Extract direct media URLs from an individual photo page HTML.
+	 *
+	 * Returns the canonical image URL (when present) and the dedicated
+	 * video-download URL for video items.
+	 *
+	 * @param string $html HTML content of an individual photo page.
+	 * @return array{image?:string,video?:string}
+	 */
+	public function extract_individual_photo_media_urls( $html ) {
+		$urls = array();
+
+		if ( empty( $html ) ) {
+			return $urls;
+		}
+
+		if ( preg_match( '/"((?:https:\/\/lh3\.googleusercontent\.com\/[^"]+?)(?:\\\\u003d|=)s0-d-ip)"/i', $html, $m ) ) {
+			$urls['image'] = $this->decode_google_photos_url( $m[1] );
+		} elseif ( preg_match( '/"(https:\/\/lh3\.googleusercontent\.com\/[^"]+)"/i', $html, $m ) ) {
+			$urls['image'] = $this->decode_google_photos_url( $m[1] );
+		}
+
+		if ( preg_match( '/"(https:\/\/video-downloads\.googleusercontent\.com\/[^"\\\\]+)"/i', $html, $m ) ) {
+			$urls['video'] = $this->decode_google_photos_url( $m[1] );
+		}
+
+		return $urls;
+	}
+
+	/**
+	 * Decode Google Photos URL escapes found inside photo page HTML.
+	 *
+	 * @param string $url Escaped URL string.
+	 * @return string
+	 */
+	private function decode_google_photos_url( $url ) {
+		$decoded = str_replace(
+			array( '\\u003d', '\\u0026', '\\/', '&amp;' ),
+			array( '=', '&', '/', '&' ),
+			$url
+		);
+
+		return html_entity_decode( $decoded, ENT_QUOTES );
 	}
 }
