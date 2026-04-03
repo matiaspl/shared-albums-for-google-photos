@@ -25,9 +25,12 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-controls-square-radius: 4px;
     --jzsa-info-horizontal-inset: 12px;
     --jzsa-info-min-gap: 8px;
-    --jzsa-info-center-max-width: 33%;
-    --jzsa-info-corner-max-width: calc((100% - var(--jzsa-info-center-max-width)) / 2 - var(--jzsa-info-horizontal-inset) - var(--jzsa-info-min-gap));
-    --jzsa-info-center-max-width-fs: calc(var(--jzsa-info-center-max-width) / var(--jzsa-controls-fs-scale));
+    --jzsa-info-center-max-width-default: 33%;
+    --jzsa-info-center-max-width-expanded: 66%;
+    --jzsa-info-center-max-width: var(--jzsa-info-center-max-width-default);
+    --jzsa-info-corner-max-width: calc((100% - var(--jzsa-info-center-max-width-default)) / 2 - var(--jzsa-info-horizontal-inset) - var(--jzsa-info-min-gap));
+    --jzsa-info-center-max-width-fs: calc(var(--jzsa-info-center-max-width-default) / var(--jzsa-controls-fs-scale));
+    --jzsa-info-center-max-width-expanded-fs: calc(var(--jzsa-info-center-max-width-expanded) / var(--jzsa-controls-fs-scale));
     --jzsa-info-corner-max-width-fs: calc(var(--jzsa-info-corner-max-width) / var(--jzsa-controls-fs-scale));
     --jzsa-info-top-fs-offset: 9px;
     --jzsa-info-bottom-fs-offset: 20px;
@@ -688,7 +691,7 @@ body.jzsa-no-scroll {
     right: auto;
     margin: 0;
     transform: translateX(-50%);
-    max-width: var(--jzsa-info-center-max-width);
+    max-width: var(--jzsa-info-center-max-width-default);
     width: max-content;
     font-size: 12px;
     line-height: 1.5;
@@ -1150,7 +1153,15 @@ body.jzsa-no-scroll {
 .jzsa-info-bottom-right  { bottom: 9px; right: 12px; left: auto; }
 .jzsa-info-top-left      { top: 9px; left: 12px; bottom: auto; }
 .jzsa-info-top-right     { top: 9px; right: 12px; left: auto; bottom: auto; }
-.jzsa-info-top-center           { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width); }
+.jzsa-info-top-center           { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
+
+.jzsa-album[data-has-active-top-side-info="false"] .jzsa-info-top-center {
+    max-width: var(--jzsa-info-center-max-width-expanded);
+}
+
+.jzsa-album[data-has-active-bottom-side-info="false"] .swiper-pagination {
+    max-width: var(--jzsa-info-center-max-width-expanded);
+}
 
 .jzsa-album:fullscreen .jzsa-info-top-left,
 .jzsa-album:-webkit-full-screen .jzsa-info-top-left,
@@ -1171,6 +1182,20 @@ body.jzsa-no-scroll {
     transform: translateX(-50%) scale(var(--jzsa-controls-fs-scale));
     transform-origin: top center;
     max-width: var(--jzsa-info-center-max-width-fs);
+}
+
+.jzsa-album:fullscreen[data-has-active-top-side-info="false"] .jzsa-info-top-center,
+.jzsa-album:-webkit-full-screen[data-has-active-top-side-info="false"] .jzsa-info-top-center,
+.jzsa-album.jzsa-pseudo-fullscreen[data-has-active-top-side-info="false"] .jzsa-info-top-center,
+.jzsa-album.jzsa-is-fullscreen[data-has-active-top-side-info="false"] .jzsa-info-top-center {
+    max-width: var(--jzsa-info-center-max-width-expanded-fs);
+}
+
+.jzsa-album:fullscreen[data-has-active-bottom-side-info="false"] .swiper-pagination,
+.jzsa-album:-webkit-full-screen[data-has-active-bottom-side-info="false"] .swiper-pagination,
+.jzsa-album.jzsa-pseudo-fullscreen[data-has-active-bottom-side-info="false"] .swiper-pagination,
+.jzsa-album.jzsa-is-fullscreen[data-has-active-bottom-side-info="false"] .swiper-pagination {
+    max-width: var(--jzsa-info-center-max-width-expanded-fs);
 }
 
 .jzsa-album:fullscreen .jzsa-info-top-right,

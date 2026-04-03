@@ -4375,38 +4375,52 @@
                 containerBoxes.push({ $el: $box, fmt: boxFmt, fsFmt: boxFsFmt });
             }
 
-            if (containerBoxes.length) {
-                function updateAllInfoBoxes() {
-                    var isFs = $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
-                    var photoIndex = getSwiperPhotoIndex(swiper);
-                    var photo = getContainerPhoto($container, photoIndex);
-                    var photosJson = $container.attr('data-all-photos');
-                    var total = 0;
-                    if (photosJson) {
-                        try {
-                            total = JSON.parse(photosJson).length;
-                        } catch (e) {
-                            total = 0;
-                        }
-                    }
-                    var counterText = total ? buildCounterTokenText(mode, swiper, photoIndex + 1, total) : '';
-                    var albumTitle = $container.attr('data-album-title') || '';
-                    for (var j = 0; j < containerBoxes.length; j++) {
-                        var cb = containerBoxes[j];
-                        var fmt = isFs ? cb.fsFmt : cb.fmt;
-                        var text = resolveInfoTokens(fmt, photo, {
-                            counter: counterText,
-                            albumTitle: albumTitle
-                        });
-                        cb.$el.text(text).toggle(text !== '');
+            function updateAllInfoBoxes() {
+                var isFs = $container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen');
+                var photoIndex = getSwiperPhotoIndex(swiper);
+                var photo = getContainerPhoto($container, photoIndex);
+                var photosJson = $container.attr('data-all-photos');
+                var total = 0;
+                if (photosJson) {
+                    try {
+                        total = JSON.parse(photosJson).length;
+                    } catch (e) {
+                        total = 0;
                     }
                 }
+                var counterText = total ? buildCounterTokenText(mode, swiper, photoIndex + 1, total) : '';
+                var albumTitle = $container.attr('data-album-title') || '';
+                var hasTopSideInfo = false;
+                var hasBottomSideInfo = false;
+                for (var j = 0; j < containerBoxes.length; j++) {
+                    var cb = containerBoxes[j];
+                    var fmt = isFs ? cb.fsFmt : cb.fmt;
+                    var text = resolveInfoTokens(fmt, photo, {
+                        counter: counterText,
+                        albumTitle: albumTitle
+                    });
+                    cb.$el.text(text).toggle(text !== '');
+                    if (text !== '') {
+                        if (cb.$el.hasClass('jzsa-info-top-left') || cb.$el.hasClass('jzsa-info-top-right')) {
+                            hasTopSideInfo = true;
+                        }
+                        if (cb.$el.hasClass('jzsa-info-bottom-left') || cb.$el.hasClass('jzsa-info-bottom-right')) {
+                            hasBottomSideInfo = true;
+                        }
+                    }
+                }
+                $container.attr('data-has-active-top-side-info', hasTopSideInfo ? 'true' : 'false');
+                $container.attr('data-has-active-bottom-side-info', hasBottomSideInfo ? 'true' : 'false');
+            }
 
+            if (containerBoxes.length) {
                 updateAllInfoBoxes();
                 swiper.on('slideChange', updateAllInfoBoxes);
                 swiper.on('slideChangeTransitionEnd', updateAllInfoBoxes);
                 $container.on('jzsa:fullscreen-state', updateAllInfoBoxes);
                 $container.on('jzsa:exif-update', updateAllInfoBoxes);
+            } else {
+                updateAllInfoBoxes();
             }
 
             // Stop autoplay initially if inline slideshow is not 'auto' (e.g. 'manual' or 'disabled',
