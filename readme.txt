@@ -203,6 +203,12 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.0.7 =
+* New dynamic photo info overlays
+* EXIF tokens with background loading
+* Slider, carousel, gallery and fullscreen photo info
+* Editable Settings page samples
+
 = 2.0.6 =
 * Touch devices: Controls appear on tap and fade out on inactivity
 
