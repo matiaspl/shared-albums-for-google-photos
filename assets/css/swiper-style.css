@@ -23,6 +23,38 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-controls-icon-size: 20px;
     --jzsa-controls-pill-radius: 20px;
     --jzsa-controls-square-radius: 4px;
+    --jzsa-bottom-control-gap: 1px;
+    --jzsa-progress-safe-gap: 3px;
+    --jzsa-safe-stack-gap: 4px;
+    --jzsa-slideshow-progress-bottom: 4px;
+    --jzsa-slideshow-progress-height: 2px;
+    --jzsa-play-visual-size: 22px;
+    --jzsa-inline-bottom-pill-bottom: calc(
+        var(--jzsa-slideshow-progress-bottom) +
+        var(--jzsa-slideshow-progress-height) +
+        var(--jzsa-progress-safe-gap)
+    );
+    --jzsa-info-pill-height: calc(8px + (var(--jzsa-info-font-size, 12px) * 1.5));
+    --jzsa-inline-play-center-bottom-no-pill: calc(
+        var(--jzsa-slideshow-progress-bottom) +
+        var(--jzsa-slideshow-progress-height) +
+        var(--jzsa-progress-safe-gap) +
+        (var(--jzsa-play-visual-size) / 2)
+    );
+    --jzsa-inline-play-visual-bottom-no-pill: calc(
+        var(--jzsa-inline-play-center-bottom-no-pill) -
+        (var(--jzsa-play-visual-size) / 2)
+    );
+    --jzsa-inline-play-center-bottom: calc(
+        var(--jzsa-inline-bottom-pill-bottom) +
+        var(--jzsa-info-pill-height) +
+        var(--jzsa-bottom-control-gap) +
+        (var(--jzsa-play-visual-size) / 2)
+    );
+    --jzsa-inline-play-visual-bottom: calc(
+        var(--jzsa-inline-play-center-bottom) -
+        (var(--jzsa-play-visual-size) / 2)
+    );
     --jzsa-info-horizontal-inset: 12px;
     --jzsa-info-min-gap: 8px;
     --jzsa-info-center-max-width-default: 33%;
@@ -340,11 +372,11 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 /* Slideshow progress bar (only visible when slideshow is running) */
 .jzsa-album .swiper-slideshow-progress {
     position: absolute;
-    bottom: 4px;
+    bottom: var(--jzsa-slideshow-progress-bottom);
     left: 50%;
     transform: translateX(-50%);
     width: 39px;
-    height: 2px;
+    height: var(--jzsa-slideshow-progress-height);
     background: rgba(255, 255, 255, 0.2);
     background: color-mix(in srgb, var(--jzsa-controls-color, #fff) 25%, transparent);
     border-radius: 1px;
@@ -397,6 +429,13 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     box-shadow: none !important;
 }
 
+.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="true"] .swiper-button-play-pause {
+    bottom: calc(
+        var(--jzsa-inline-play-center-bottom) -
+        (var(--jzsa-controls-circle-size) / 2)
+    );
+}
+
 .jzsa-album .swiper-button-play-pause:focus,
 .jzsa-album .swiper-button-play-pause:focus-visible,
 .jzsa-album .swiper-button-play-pause:active {
@@ -409,6 +448,14 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album[data-has-active-bottom-center="false"] .swiper-button-play-pause,
 .jzsa-album[data-show-counter="false"] .swiper-button-play-pause {
     bottom: -1px;
+}
+
+.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="false"] .swiper-button-play-pause,
+.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-counter="false"] .swiper-button-play-pause {
+    bottom: calc(
+        var(--jzsa-inline-play-center-bottom-no-pill) -
+        (var(--jzsa-controls-circle-size) / 2)
+    );
 }
 
 /* Show play/pause button in fullscreen only when a slideshow is enabled
@@ -487,8 +534,8 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 26px;
-    height: 26px;
+    width: var(--jzsa-play-visual-size);
+    height: var(--jzsa-play-visual-size);
     transform: translate(-50%, -50%) rotate(-90deg);
     pointer-events: none;
     opacity: 0;
@@ -502,11 +549,11 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album .swiper-button-play-pause .jzsa-countdown-ring circle {
     fill: none;
     stroke: #ffffff;
-    stroke-width: 2;
+    stroke-width: 1.75;
     stroke-linecap: round;
-    /* circumference = 2 * PI * 11 ≈ 69.12 */
-    stroke-dasharray: 69.12;
-    stroke-dashoffset: 69.12;
+    /* circumference = 2 * PI * 9 ≈ 56.55 */
+    stroke-dasharray: 56.55;
+    stroke-dashoffset: 56.55;
     animation: jzsa-countdown 30s linear forwards;
     filter: drop-shadow(0 0 1px rgba(0, 0, 0, 0.6));
 }
@@ -701,6 +748,10 @@ body.jzsa-no-scroll {
     text-overflow: ellipsis;
     white-space: nowrap;
     opacity: var(--jzsa-controls-visible-opacity);
+}
+
+.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="true"] .swiper-pagination {
+    bottom: var(--jzsa-inline-bottom-pill-bottom);
 }
 
 .jzsa-album[data-mode="gallery"].jzsa-safe-info-layout .jzsa-gallery-item .jzsa-info-stack-top,
@@ -1209,7 +1260,63 @@ body.jzsa-no-scroll {
     bottom: 9px;
 }
 
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout[data-has-active-bottom-center="true"] .jzsa-info-stack-bottom {
+    bottom: calc(
+        var(--jzsa-inline-bottom-pill-bottom) +
+        var(--jzsa-info-pill-height) +
+        var(--jzsa-safe-stack-gap)
+    );
+}
+
+.jzsa-album.swiper.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout[data-has-active-bottom-center="true"] .jzsa-info-stack-bottom {
+    bottom: calc(
+        var(--jzsa-inline-play-visual-bottom) +
+        var(--jzsa-play-visual-size) +
+        var(--jzsa-bottom-control-gap)
+    );
+}
+
+.jzsa-album.swiper.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout[data-has-active-bottom-center="false"] .jzsa-info-stack-bottom {
+    bottom: calc(
+        var(--jzsa-inline-play-visual-bottom-no-pill) +
+        var(--jzsa-play-visual-size) +
+        var(--jzsa-bottom-control-gap)
+    );
+}
+
 .jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-box {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    max-width: calc(100% - 24px);
+}
+
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .jzsa-info-stack-top,
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .jzsa-info-stack-top,
+.jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .jzsa-info-stack-top,
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .jzsa-info-stack-top,
+.jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top {
+    top: 9px;
+}
+
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover .jzsa-info-stack-top .jzsa-info-box,
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within .jzsa-info-stack-top .jzsa-info-box,
+.jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top .jzsa-info-box {
     position: relative;
     top: auto;
     right: auto;
@@ -1299,6 +1406,33 @@ body.jzsa-no-scroll {
 }
 
 .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-box {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    max-width: calc(100% - 18px);
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:hover .jzsa-carousel-tile-info-stack-top,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:focus-within .jzsa-carousel-tile-info-stack-top,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide.jzsa-slide-touched .jzsa-carousel-tile-info-stack-top {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 11;
+    top: 9px;
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:hover .jzsa-carousel-tile-info-stack-top .jzsa-carousel-tile-info-box,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide:focus-within .jzsa-carousel-tile-info-stack-top .jzsa-carousel-tile-info-box,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide.jzsa-slide-touched .jzsa-carousel-tile-info-stack-top .jzsa-carousel-tile-info-box {
     position: relative;
     top: auto;
     right: auto;
@@ -1545,6 +1679,32 @@ body.jzsa-no-scroll {
         opacity: var(--jzsa-controls-visible-opacity);
         pointer-events: auto;
     }
+
+    .jzsa-gallery-album .jzsa-gallery-item:hover .jzsa-info-stack-top {
+        position: absolute;
+        left: 0;
+        right: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        pointer-events: none;
+        z-index: 10;
+    }
+
+    .jzsa-gallery-album .jzsa-gallery-item:hover .jzsa-info-stack-top {
+        top: 4px;
+    }
+
+    .jzsa-gallery-album .jzsa-gallery-item:hover .jzsa-info-stack-top .jzsa-info-box {
+        position: relative;
+        top: auto;
+        right: auto;
+        bottom: auto;
+        left: auto;
+        transform: none;
+        max-width: calc(100% - 8px);
+    }
 }
 
 .jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-gallery-thumb-fs-btn,
@@ -1554,12 +1714,64 @@ body.jzsa-no-scroll {
     pointer-events: auto;
 }
 
+.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-info-stack-top {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-info-stack-top {
+    top: 4px;
+}
+
+.jzsa-gallery-album .jzsa-gallery-item:focus-within .jzsa-info-stack-top .jzsa-info-box {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    max-width: calc(100% - 8px);
+}
+
 /* Touch reveal via JS (covers iOS 13+ where hover:hover is reported but primary input is touch). */
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-fs-btn,
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-link-btn,
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-download-btn {
     opacity: var(--jzsa-controls-visible-opacity);
     pointer-events: auto;
+}
+
+.jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-info-stack-top {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-info-stack-top {
+    top: 4px;
+}
+
+.jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-info-stack-top .jzsa-info-box {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    max-width: calc(100% - 8px);
 }
 
 .jzsa-gallery-album.jzsa-gallery-draggable {
@@ -1769,14 +1981,6 @@ body.jzsa-no-scroll {
         pointer-events: auto;
     }
 
-    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover[data-show-link-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover[data-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within[data-show-link-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within[data-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):hover:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right,
-    .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):focus-within:not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right {
-        opacity: 0;
-    }
 }
 
 /* Touch devices (inline slider): hide all controls until tap; reveal via jzsa-touch-active class. */
@@ -1803,11 +2007,6 @@ body.jzsa-no-scroll {
         pointer-events: auto;
     }
 
-    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-link-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-download-button="true"] .jzsa-info-top-left,
-    .jzsa-album.swiper.jzsa-touch-active:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen):not([data-fullscreen-toggle="disabled"]):not([data-interaction-lock="true"]) .jzsa-info-top-right {
-        opacity: 0;
-    }
 }
 
 .jzsa-gallery-slide-stage {

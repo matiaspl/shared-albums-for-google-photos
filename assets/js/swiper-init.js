@@ -2709,11 +2709,11 @@
         var ns = 'http://www.w3.org/2000/svg';
         var svg = document.createElementNS(ns, 'svg');
         svg.setAttribute('class', 'jzsa-countdown-ring');
-        svg.setAttribute('viewBox', '0 0 26 26');
+        svg.setAttribute('viewBox', '0 0 22 22');
         var circle = document.createElementNS(ns, 'circle');
-        circle.setAttribute('cx', '13');
-        circle.setAttribute('cy', '13');
-        circle.setAttribute('r', '11');
+        circle.setAttribute('cx', '11');
+        circle.setAttribute('cy', '11');
+        circle.setAttribute('r', '9');
         circle.style.animationDuration = durationSeconds + 's';
         svg.appendChild(circle);
         $btn.append(svg);
@@ -4775,6 +4775,9 @@
             var hasBottomStackBoxes = false;
 
             function registerContainerBox(boxName) {
+                if (boxName === 'info-bottom-center') {
+                    return;
+                }
                 var boxFmt = $container.attr('data-' + boxName) || '';
                 var boxFsFmt = $container.attr('data-fullscreen-' + boxName) || boxFmt;
                 if (!boxFmt && !boxFsFmt) {
