@@ -323,8 +323,14 @@ class JZSA_Shared_Albums {
 
 		if ( ! $should_refresh && false !== $cached_data ) {
 			// Use cached data - merge with current config
-				$config['photos'] = $this->prepare_photo_urls(
+				$hydrated_cached_items = $this->hydrate_cached_photo_meta(
 					$cached_data['photos'],
+					$album_url,
+					$config['limit'],
+					$config['show-videos']
+				);
+				$config['photos'] = $this->prepare_photo_urls(
+					$hydrated_cached_items,
 					$config['fullscreen-source-width'],
 					$config['fullscreen-source-height'],
 					$config['source-width'],
@@ -361,8 +367,14 @@ class JZSA_Shared_Albums {
 		update_option( $expiry_key, $cache_duration, false );
 
 		// Prepare photos with dimensions and max count
-			$config['photos'] = $this->prepare_photo_urls(
+			$hydrated_fresh_items = $this->hydrate_cached_photo_meta(
 				$result['data']['photos'],
+				$album_url,
+				$config['limit'],
+				$config['show-videos']
+			);
+			$config['photos'] = $this->prepare_photo_urls(
+				$hydrated_fresh_items,
 				$config['fullscreen-source-width'],
 				$config['fullscreen-source-height'],
 				$config['source-width'],
@@ -496,6 +508,7 @@ class JZSA_Shared_Albums {
 			// Visual style
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
+			'info-font-size'       => $this->parse_info_font_size( $atts ),
 
 			// Info boxes — format strings with {token} placeholders resolved per photo.
 			// Backward compat: show-name="true" maps to info-bottom-left="{name}".
@@ -590,6 +603,28 @@ class JZSA_Shared_Albums {
 			return $default;
 		}
 		return sanitize_text_field( $atts[ $key ] );
+	}
+
+	/**
+	 * Parse info-font-size attribute in pixels.
+	 *
+	 * @param array $atts Attributes.
+	 * @return int
+	 */
+	private function parse_info_font_size( $atts ) {
+		if ( ! isset( $atts['info-font-size'] ) ) {
+			return 12;
+		}
+
+		$value = intval( $atts['info-font-size'] );
+		if ( $value < 8 ) {
+			return 8;
+		}
+		if ( $value > 48 ) {
+			return 48;
+		}
+
+		return $value;
 	}
 
 	/**
@@ -1295,6 +1330,25 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
+	 * Build an individual photo page URL from album URL and media ID.
+	 *
+	 * @param string $album_url Album share URL.
+	 * @param string $media_id  Google Photos media ID.
+	 * @return string
+	 */
+	private function build_photo_page_url( $album_url, $media_id ) {
+		if ( empty( $album_url ) || empty( $media_id ) ) {
+			return '';
+		}
+
+		if ( ! preg_match( '#/share/([^?]+)\?key=([^&]+)#', $album_url, $matches ) ) {
+			return '';
+		}
+
+		return 'https://photos.google.com/share/' . $matches[1] . '/photo/' . rawurlencode( $media_id ) . '?key=' . rawurlencode( $matches[2] );
+	}
+
+	/**
 	 * Parse a filename from a Content-Disposition header.
 	 *
 	 * @param string $content_disposition Header value.
@@ -1406,6 +1460,77 @@ class JZSA_Shared_Albums {
 
 		unset( $meta['_fetched_exif'], $meta['_fetched_filename'] );
 		return $meta;
+	}
+
+	/**
+	 * Merge cached per-photo metadata into album items before initial render.
+	 *
+	 * This lets filename/EXIF tokens render immediately on page load when we
+	 * already have them cached from previous visits, instead of waiting for the
+	 * background Wave 2 AJAX path again.
+	 *
+	 * @param array  $base_items   Album items as returned by the provider/cache.
+	 * @param string $album_url    Album share URL.
+	 * @param int    $max_entries  Maximum visible entries to hydrate.
+	 * @param bool   $show_videos  Whether videos are included in the visible list.
+	 * @return array
+	 */
+	private function hydrate_cached_photo_meta( $base_items, $album_url, $max_entries = self::DEFAULT_MAX_PHOTOS_PER_ALBUM, $show_videos = true ) {
+		if ( empty( $album_url ) || empty( $base_items ) || ! is_array( $base_items ) ) {
+			return $base_items;
+		}
+
+		$limit = intval( $max_entries );
+		if ( $limit <= 0 ) {
+			$limit = self::DEFAULT_MAX_PHOTOS_PER_ALBUM;
+		}
+		if ( $limit > self::MAX_PHOTOS ) {
+			$limit = self::MAX_PHOTOS;
+		}
+
+		$visible_count = 0;
+		foreach ( $base_items as $index => $item ) {
+			if ( ! is_array( $item ) ) {
+				$visible_count++;
+				if ( $visible_count >= $limit ) {
+					break;
+				}
+				continue;
+			}
+
+			$type = isset( $item['type'] ) ? $item['type'] : 'image';
+			if ( ! $show_videos && 'video' === $type ) {
+				continue;
+			}
+
+			if ( empty( $item['id'] ) ) {
+				$visible_count++;
+				if ( $visible_count >= $limit ) {
+					break;
+				}
+				continue;
+			}
+
+			$photo_url = $this->build_photo_page_url( $album_url, $item['id'] );
+			if ( $photo_url ) {
+				$cached_meta = get_transient( $this->get_photo_meta_cache_key( $photo_url ) );
+				$cached_meta = $this->filter_public_photo_meta( $cached_meta );
+				if ( ! empty( $cached_meta ) ) {
+					foreach ( array( 'filename', 'camera', 'exif', 'aperture', 'shutter', 'focal', 'iso' ) as $meta_key ) {
+						if ( isset( $cached_meta[ $meta_key ] ) && '' !== $cached_meta[ $meta_key ] ) {
+							$base_items[ $index ][ $meta_key ] = $cached_meta[ $meta_key ];
+						}
+					}
+				}
+			}
+
+			$visible_count++;
+			if ( $visible_count >= $limit ) {
+				break;
+			}
+		}
+
+		return $base_items;
 	}
 
 	/**
@@ -1678,8 +1803,14 @@ class JZSA_Shared_Albums {
 		);
 
 		// Prepare URLs with standard dimensions.
-		$photos = $this->prepare_photo_urls(
+		$hydrated_items = $this->hydrate_cached_photo_meta(
 			$result['data']['photos'],
+			$album_url,
+			self::DEFAULT_MAX_PHOTOS_PER_ALBUM,
+			true
+		);
+		$photos = $this->prepare_photo_urls(
+			$hydrated_items,
 			self::DEFAULT_FULLSCREEN_SOURCE_WIDTH,
 			self::DEFAULT_FULLSCREEN_SOURCE_HEIGHT,
 			self::DEFAULT_SOURCE_WIDTH,

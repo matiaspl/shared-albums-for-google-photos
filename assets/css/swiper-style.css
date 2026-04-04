@@ -693,7 +693,7 @@ body.jzsa-no-scroll {
     transform: translateX(-50%);
     max-width: var(--jzsa-info-center-max-width-default);
     width: max-content;
-    font-size: 12px;
+    font-size: var(--jzsa-info-font-size, 12px);
     line-height: 1.5;
     text-align: center;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -701,6 +701,16 @@ body.jzsa-no-scroll {
     text-overflow: ellipsis;
     white-space: nowrap;
     opacity: var(--jzsa-controls-visible-opacity);
+}
+
+.jzsa-album[data-mode="gallery"].jzsa-safe-info-layout .jzsa-gallery-item .jzsa-info-stack-top,
+.jzsa-album[data-mode="gallery"].jzsa-safe-info-layout .jzsa-gallery-item-video .jzsa-info-stack-top {
+    top: 4px;
+}
+
+.jzsa-album[data-mode="gallery"].jzsa-safe-info-layout .jzsa-gallery-item .jzsa-info-stack-bottom,
+.jzsa-album[data-mode="gallery"].jzsa-safe-info-layout .jzsa-gallery-item-video .jzsa-info-stack-bottom {
+    bottom: 4px;
 }
 
 /* Move pagination up in fullscreen to make room for progress bar below */
@@ -847,7 +857,8 @@ body.jzsa-no-scroll {
 }
 
 .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) > .swiper-pagination,
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) > .jzsa-info-box {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) > .jzsa-info-box,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) > .jzsa-info-stack {
     display: none !important;
 }
 
@@ -1140,7 +1151,7 @@ body.jzsa-no-scroll {
     padding: 4px 12px;
     box-sizing: border-box;
     border-radius: var(--jzsa-controls-pill-radius);
-    font-size: 12px;
+    font-size: var(--jzsa-info-font-size, 12px);
     line-height: 1.5;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     pointer-events: none;
@@ -1151,6 +1162,10 @@ body.jzsa-no-scroll {
     white-space: nowrap;
     opacity: var(--jzsa-controls-visible-opacity);
     transition: opacity var(--jzsa-info-fade-duration) linear;
+}
+
+.jzsa-info-stack {
+    position: static;
 }
 
 /* Box positions */
@@ -1171,6 +1186,37 @@ body.jzsa-no-scroll {
 
 .jzsa-album[data-has-active-bottom-side-info="false"] .jzsa-info-bottom-center {
     max-width: var(--jzsa-info-center-max-width-expanded);
+}
+
+.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-stack-top,
+.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-stack-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-stack-top {
+    top: 9px;
+}
+
+.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-stack-bottom {
+    bottom: 9px;
+}
+
+.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-box {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    max-width: calc(100% - 24px);
 }
 
 .jzsa-album:fullscreen .jzsa-info-top-left,
@@ -1210,19 +1256,56 @@ body.jzsa-no-scroll {
 
 .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-box {
     z-index: 11;
-    max-width: 66%;
-    font-size: 10px;
-    padding: 2px 6px;
+    max-width: calc(100% - 18px);
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-top-center {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-left,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-right,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-bottom-left,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-bottom-right {
+    max-width: calc(50% - 18px);
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-center {
     top: 9px;
+    max-width: 66%;
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-bottom-center {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-bottom-center {
     bottom: 9px;
     left: 50%;
     transform: translateX(-50%);
+    max-width: 66%;
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 11;
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack-top {
+    top: 9px;
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack-bottom {
+    bottom: 9px;
+}
+
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-box {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    max-width: calc(100% - 18px);
 }
 
 .jzsa-album[data-mode="carousel"].jzsa-is-fullscreen .swiper-slide .jzsa-carousel-tile-info-box,
@@ -1288,10 +1371,8 @@ body.jzsa-no-scroll {
     right: var(--jzsa-info-top-right-fs-offset);
 }
 
-/* Compact variant for gallery thumbnails */
+/* Gallery thumbnail-specific info box constraints */
 .jzsa-gallery-item .jzsa-info-box {
-    font-size: 10px;
-    padding: 2px 6px;
     max-width: 85%;
 }
 .jzsa-gallery-item .jzsa-info-bottom-left  { bottom: 4px; left: 4px; }
