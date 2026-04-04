@@ -1461,22 +1461,18 @@
     // Info box system — resolve {token} format strings per photo
     // ========================================================================
 
-    // Clockwise from bottom-center (excluding bottom-center which is the pagination pill).
+    // info-top-1/2 stack top-to-bottom; info-bottom is the Swiper pagination pill.
     var INFO_BOX_NAMES = [
-        'info-bottom-left',
-        'info-top-center',
-        'info-top-center-2',
-        'info-bottom-right'
+        'info-top-1',
+        'info-top-2',
+        'info-bottom'
     ];
     var SAFE_INFO_TOP_ORDER = [
-        'info-top-center',
-        'info-top-center-2'
+        'info-top-1',
+        'info-top-2'
     ];
-    var SAFE_INFO_BOTTOM_ORDER = [
-        'info-bottom-right',
-        'info-bottom-left',
-        'info-bottom-center'
-    ];
+    // info-bottom is the Swiper pagination pill — handled separately outside the stack.
+    var SAFE_INFO_BOTTOM_ORDER = [];
     var infoMeasureCanvas = null;
 
     /**
@@ -1563,7 +1559,7 @@
      * Read info box format strings from a container's data attributes.
      *
      * @param {jQuery} $container Gallery container element.
-     * @return {Object} { inline: { 'info-bottom-left': '...', ... }, fullscreen: { ... } }
+     * @return {Object} { inline: { 'info-top-1': '...', ... }, fullscreen: { ... } }
      */
     function readInfoZoneFormats($container) {
         var inline = {};
@@ -1573,25 +1569,12 @@
             inline[zone] = $container.attr('data-' + zone) || '';
             fullscreen[zone] = $container.attr('data-fullscreen-' + zone) || inline[zone];
         }
-        var bottomCenterInline = $container.attr('data-info-bottom-center') || '';
-        return {
-            inline: inline,
-            fullscreen: fullscreen,
-            bottomCenter: {
-                inline: bottomCenterInline,
-                fullscreen: $container.attr('data-fullscreen-info-bottom-center') || bottomCenterInline
-            }
-        };
+        return { inline: inline, fullscreen: fullscreen };
     }
 
     function getInfoZoneFormat(zoneFormats, zone, fullscreen) {
         if (!zoneFormats) {
             return '';
-        }
-        if (zone === 'info-bottom-center') {
-            return fullscreen
-                ? ((zoneFormats.bottomCenter && zoneFormats.bottomCenter.fullscreen) || (zoneFormats.bottomCenter && zoneFormats.bottomCenter.inline) || '')
-                : ((zoneFormats.bottomCenter && zoneFormats.bottomCenter.inline) || '');
         }
         return fullscreen
             ? ((zoneFormats.fullscreen && zoneFormats.fullscreen[zone]) || (zoneFormats.inline && zoneFormats.inline[zone]) || '')
@@ -1632,17 +1615,18 @@
      * @param {Object} fsFormats   Fullscreen zone formats.
      * @return {string} HTML string with grouped zone divs.
      */
-    function buildInfoZoneHtml(photo, zoneFormats, fsFormats, context) {
+    // In gallery thumbnails info-bottom renders as a regular info box (no Swiper pill).
+    var GALLERY_INFO_BOTTOM_ORDER = ['info-bottom'];
+
+    function buildInfoZoneHtml(photo, zoneFormats, fsFormats, context, options) {
+        var opts = options || {};
+        var bottomOrder = opts.bottomOrder || SAFE_INFO_BOTTOM_ORDER;
         var mergedZoneFormats = {
             inline: zoneFormats || {},
-            fullscreen: fsFormats || {},
-            bottomCenter: {
-                inline: '',
-                fullscreen: ''
-            }
+            fullscreen: fsFormats || {}
         };
         var topHtml = buildInfoStackHtml(SAFE_INFO_TOP_ORDER, mergedZoneFormats, context, photo);
-        var bottomHtml = buildInfoStackHtml(SAFE_INFO_BOTTOM_ORDER, mergedZoneFormats, context, photo);
+        var bottomHtml = buildInfoStackHtml(bottomOrder, mergedZoneFormats, context, photo);
         return (topHtml ? '<div class="jzsa-info-stack jzsa-info-stack-top">' + topHtml + '</div>' : '') +
             (bottomHtml ? '<div class="jzsa-info-stack jzsa-info-stack-bottom">' + bottomHtml + '</div>' : '');
     }
@@ -1672,89 +1656,6 @@
         return 12;
     }
 
-    function getSafeInfoLayoutWidth($container, mode, swiper) {
-        if (mode === 'gallery') {
-            var $item = $container.find('.jzsa-gallery-item:visible, .jzsa-gallery-item-video:visible').first();
-            return $item.length ? $item.outerWidth() : $container.innerWidth();
-        }
-
-        if (mode === 'carousel') {
-            var $slide = $container.find('.swiper-slide:not(.swiper-slide-duplicate)').first();
-            if ($slide.length && $slide.outerWidth()) {
-                return $slide.outerWidth();
-            }
-            if (swiper && swiper.params) {
-                var slidesPerView = parseInt(swiper.params.slidesPerView, 10) || 1;
-                return $container.innerWidth() / Math.max(1, slidesPerView);
-            }
-        }
-
-        return $container.innerWidth();
-    }
-
-    function shouldUseSafeInfoLayout($container, zoneFormats, photos, total, albumTitle, mode, swiper) {
-        if (!$container || !$container.length || !zoneFormats || !photos || !photos.length) {
-            return false;
-        }
-        if ($container.hasClass('jzsa-is-fullscreen') || $container.hasClass('jzsa-pseudo-fullscreen')) {
-            return false;
-        }
-
-        var availableWidth = getSafeInfoLayoutWidth($container, mode, swiper);
-        if (!(availableWidth > 0)) {
-            return false;
-        }
-
-        var fontSizePx = getInfoFontSizePx($container);
-        var gap = 8;
-        var horizontalPadding = 24;
-        var earlySwitchReserve = Math.max(20, Math.ceil(fontSizePx * 2));
-        var rowOrders = [ SAFE_INFO_TOP_ORDER, SAFE_INFO_BOTTOM_ORDER ];
-
-        for (var photoIndex = 0; photoIndex < photos.length; photoIndex++) {
-            var photo = photos[photoIndex] || {};
-            var context = {
-                counter: buildSinglePhotoCounterText(photoIndex, total),
-                albumTitle: albumTitle
-            };
-
-            for (var rowIndex = 0; rowIndex < rowOrders.length; rowIndex++) {
-                var row = rowOrders[rowIndex];
-                var widths = [];
-                for (var zoneIndex = 0; zoneIndex < row.length; zoneIndex++) {
-                    var zone = row[zoneIndex];
-                    var format = getInfoZoneFormat(zoneFormats, zone, false);
-                    var text = resolveInfoTokens(format, photo, context);
-                    if (text) {
-                        widths.push(estimateInfoBoxWidth(text, fontSizePx));
-                    }
-                }
-                if (widths.length > 1) {
-                    var rowWidth = gap * (widths.length - 1);
-                    for (var widthIndex = 0; widthIndex < widths.length; widthIndex++) {
-                        rowWidth += widths[widthIndex];
-                    }
-                    if (rowWidth > Math.max(0, availableWidth - horizontalPadding - earlySwitchReserve)) {
-                        return true;
-                    }
-                }
-            }
-        }
-
-        return false;
-    }
-
-    function updateSafeInfoLayout($container, zoneFormats, photos, total, albumTitle, mode, swiper) {
-        if (!$container || !$container.length) {
-            return;
-        }
-
-        $container.toggleClass(
-            'jzsa-safe-info-layout',
-            shouldUseSafeInfoLayout($container, zoneFormats, photos || [], total || 0, albumTitle || '', mode || ($container.attr('data-mode') || ''), swiper || null)
-        );
-    }
-
     // ========================================================================
     // Wave 2: Background photo metadata prefetch via AJAX
     // ========================================================================
@@ -1779,7 +1680,6 @@
         }
         var all = zoneFormats.inline || {};
         var fs  = zoneFormats.fullscreen || {};
-        var bottomCenter = zoneFormats.bottomCenter || {};
         var needs = {
             exif: false,
             filename: false
@@ -1789,8 +1689,6 @@
             needs.exif = needs.exif || EXIF_TOKEN_RE.test(all[zone] || '') || EXIF_TOKEN_RE.test(fs[zone] || '');
             needs.filename = needs.filename || FILENAME_TOKEN_RE.test(all[zone] || '') || FILENAME_TOKEN_RE.test(fs[zone] || '');
         }
-        needs.exif = needs.exif || EXIF_TOKEN_RE.test(bottomCenter.inline || '') || EXIF_TOKEN_RE.test(bottomCenter.fullscreen || '');
-        needs.filename = needs.filename || FILENAME_TOKEN_RE.test(bottomCenter.inline || '') || FILENAME_TOKEN_RE.test(bottomCenter.fullscreen || '');
         return needs;
     }
 
@@ -2083,6 +1981,7 @@
         for (var j = 0; j < SAFE_INFO_BOTTOM_ORDER.length; j++) {
             info[SAFE_INFO_BOTTOM_ORDER[j]] = resolveInfoTokens(getInfoZoneFormat(zoneFormats, SAFE_INFO_BOTTOM_ORDER[j], false), photo, context);
         }
+        info['info-bottom'] = resolveInfoTokens(getInfoZoneFormat(zoneFormats, 'info-bottom', false), photo, context);
         return info;
     }
 
@@ -2113,19 +2012,16 @@
             html += '<div class="jzsa-info-stack jzsa-info-stack-top jzsa-carousel-tile-info-stack">' + topHtml + '</div>';
         }
 
-        // info-bottom-center is emitted as a standalone element so it can stay
-        // pinned at the tile bottom independently of the side-info stack, which
-        // must move up when a slideshow play button is visible.
+        // info-bottom is emitted as a standalone element so it can stay
+        // pinned at the tile bottom independently of the  stack.
         var bottomSideHtml = '';
         for (var j = 0; j < SAFE_INFO_BOTTOM_ORDER.length; j++) {
-            if (SAFE_INFO_BOTTOM_ORDER[j] !== 'info-bottom-center') {
-                bottomSideHtml += buildZoneBox(SAFE_INFO_BOTTOM_ORDER[j]);
-            }
+            bottomSideHtml += buildZoneBox(SAFE_INFO_BOTTOM_ORDER[j]);
         }
         if (bottomSideHtml) {
             html += '<div class="jzsa-info-stack jzsa-info-stack-bottom jzsa-carousel-tile-info-stack">' + bottomSideHtml + '</div>';
         }
-        html += buildZoneBox('info-bottom-center');
+        html += buildZoneBox('info-bottom');
 
         return html;
     }
@@ -2264,7 +2160,6 @@
             });
         });
 
-        updateSafeInfoLayout($container, zoneFormats, photos, total, albumTitle, 'carousel', swiper);
     }
 
     function updateGalleryThumbnailInfoBoxes($container) {
@@ -2284,7 +2179,7 @@
             }
         }
         var albumTitle = $container.attr('data-album-title') || '';
-        var allInfoZones = SAFE_INFO_TOP_ORDER.concat(SAFE_INFO_BOTTOM_ORDER);
+        var allInfoZones = SAFE_INFO_TOP_ORDER.concat(GALLERY_INFO_BOTTOM_ORDER);
 
         $container.find('.jzsa-gallery-item, .jzsa-gallery-item-video').each(function() {
             var $item = $(this);
@@ -2311,7 +2206,6 @@
             });
         });
 
-        updateSafeInfoLayout($container, readInfoZoneFormats($container), photos, total, albumTitle, 'gallery', null);
     }
 
     // Helper: Build loading overlay markup.
@@ -2379,15 +2273,11 @@
         var useFullscreen = !!fullscreenActive;
 
         var showNavigation = useFullscreen ? params.fullscreenShowNavigation : params.showNavigation;
-        var showTitle = useFullscreen ? params.fullscreenShowTitle : params.showTitle;
-        var showCounter = useFullscreen ? params.fullscreenShowCounter : params.showCounter;
         var controlsColor = useFullscreen ? params.fullscreenControlsColor : params.controlsColor;
         var videoControlsColor = useFullscreen ? params.fullscreenVideoControlsColor : params.videoControlsColor;
         var videoControlsAutohide = useFullscreen ? params.fullscreenVideoControlsAutohide : params.videoControlsAutohide;
 
         $container.attr('data-show-navigation', showNavigation ? 'true' : 'false');
-        $container.attr('data-show-title', showTitle ? 'true' : 'false');
-        $container.attr('data-show-counter', showCounter ? 'true' : 'false');
 
         if (controlsColor) {
             containerElement.style.setProperty('--jzsa-controls-color', controlsColor);
@@ -2403,8 +2293,8 @@
         }
 
         var activeBottomCenterFormat = useFullscreen
-            ? ($container.attr('data-fullscreen-info-bottom-center') || $container.attr('data-info-bottom-center') || '')
-            : ($container.attr('data-info-bottom-center') || '');
+            ? ($container.attr('data-fullscreen-info-bottom') || $container.attr('data-info-bottom') || '')
+            : ($container.attr('data-info-bottom') || '');
         $container.attr('data-has-active-bottom-center', activeBottomCenterFormat ? 'true' : 'false');
 
         applyVideoControlsAutohideSetting($container, videoControlsAutohide);
@@ -4093,7 +3983,7 @@
                 prevEl: '#' + params.galleryId + ' .swiper-button-prev',
             },
 
-        // Pagination: driven by info-bottom-center format string.
+        // Pagination: driven by info-bottom format string.
         // Supports {counter}, {title}, and all per-photo tokens.
         pagination: (function() {
             var base = {
@@ -4105,8 +3995,8 @@
                 var $swiperEl = $(swiper.el);
                 var isFs = $swiperEl.hasClass('jzsa-is-fullscreen') || $swiperEl.hasClass('jzsa-pseudo-fullscreen');
                 var format = isFs
-                    ? ($swiperEl.attr('data-fullscreen-info-bottom-center') || $swiperEl.attr('data-info-bottom-center') || '')
-                    : ($swiperEl.attr('data-info-bottom-center') || '');
+                    ? ($swiperEl.attr('data-fullscreen-info-bottom') || $swiperEl.attr('data-info-bottom') || '')
+                    : ($swiperEl.attr('data-info-bottom') || '');
 
                 if (!format) {
                     $swiperEl.find('.swiper-pagination').hide();
@@ -4288,10 +4178,6 @@
 
         var inlineShowNavigationSetting = readBooleanDataAttr($container, 'data-show-navigation', true);
         var fullscreenShowNavigationSetting = readBooleanDataAttr($container, 'data-fullscreen-show-navigation', inlineShowNavigationSetting);
-        var inlineShowTitleSetting = readBooleanDataAttr($container, 'data-show-title', false);
-        var fullscreenShowTitleSetting = readBooleanDataAttr($container, 'data-fullscreen-show-title', inlineShowTitleSetting);
-        var inlineShowCounterSetting = readBooleanDataAttr($container, 'data-show-counter', true);
-        var fullscreenShowCounterSetting = readBooleanDataAttr($container, 'data-fullscreen-show-counter', inlineShowCounterSetting);
         var inlineControlsColorSetting = $container.attr('data-controls-color') || '';
         var fullscreenControlsColorSetting = $container.attr('data-fullscreen-controls-color') || inlineControlsColorSetting;
         var inlineVideoControlsColorSetting = $container.attr('data-video-controls-color') || '';
@@ -4329,10 +4215,6 @@
             startAt: $container.attr('data-start-at') || '1',
             showNavigation: inlineShowNavigationSetting,
             fullscreenShowNavigation: fullscreenShowNavigationSetting,
-            showTitle: inlineShowTitleSetting,
-            fullscreenShowTitle: fullscreenShowTitleSetting,
-            showCounter: inlineShowCounterSetting,
-            fullscreenShowCounter: fullscreenShowCounterSetting,
             controlsColor: inlineControlsColorSetting,
             fullscreenControlsColor: fullscreenControlsColorSetting,
             videoControlsColor: inlineVideoControlsColorSetting,
@@ -4385,10 +4267,6 @@
         var albumUrl = $container.attr('data-album-url') || '';
         var showNavigation = config.showNavigation;
         var fullscreenShowNavigation = config.fullscreenShowNavigation;
-        var showTitle = config.showTitle;
-        var fullscreenShowTitle = config.fullscreenShowTitle;
-        var showCounter = config.showCounter;
-        var fullscreenShowCounter = config.fullscreenShowCounter;
         var controlsColor = config.controlsColor;
         var fullscreenControlsColor = config.fullscreenControlsColor;
         var videoControlsColor = config.videoControlsColor;
@@ -4426,7 +4304,7 @@
             mode === 'carousel' && !interactionLock && showDownloadButton;
         $container.toggleClass('jzsa-carousel-tile-fs-enabled', showCarouselTileFullscreenButtons);
         var zoneFormats = readInfoZoneFormats($container);
-        $container.attr('data-has-active-bottom-center', zoneFormats.bottomCenter.inline ? 'true' : 'false');
+        $container.attr('data-has-active-bottom-center', (zoneFormats.inline['info-bottom'] || '') ? 'true' : 'false');
         var slidesRenderOptions = {
             mode: mode,
             showCarouselTileFullscreenButtons: showCarouselTileFullscreenButtons,
@@ -4439,10 +4317,6 @@
             lazyHints: shouldUseLazyHints,
             eagerIndex: initialSlide
         };
-
-        if (mode === 'carousel') {
-            updateSafeInfoLayout($container, zoneFormats, allPhotos, totalCount, albumTitle, mode, null);
-        }
 
         function renderSwiperBootstrapSlides() {
             if (useDeferredSingleFirstPaint) {
@@ -4716,8 +4590,6 @@
                 mode: mode,
                 galleryId: galleryId,
                 initialSlide: initialSlide,
-                showTitle: showTitle,
-                showCounter: showCounter,
                 albumTitle: albumTitle,
                 ZOOM_MAX_RATIO: ZOOM_MAX_RATIO,
                 ZOOM_MIN_RATIO: ZOOM_MIN_RATIO,
@@ -4779,8 +4651,8 @@
             var hasBottomStackBoxes = false;
 
             function registerContainerBox(boxName) {
-                if (boxName === 'info-bottom-center') {
-                    return;
+                if (boxName === 'info-bottom') {
+                    return; // Driven by Swiper pagination, not a DOM box.
                 }
                 var boxFmt = $container.attr('data-' + boxName) || '';
                 var boxFsFmt = $container.attr('data-fullscreen-' + boxName) || boxFmt;
@@ -4788,7 +4660,7 @@
                     return;
                 }
                 var $box = $('<div class="jzsa-info-box jzsa-' + boxName + '"></div>');
-                if (boxName === 'info-top-center' || boxName === 'info-top-center-2') {
+                if (boxName === 'info-top-1' || boxName === 'info-top-2') {
                     $topInfoStack.append($box);
                     hasTopStackBoxes = true;
                 } else {
@@ -4829,7 +4701,6 @@
                 }
                 var counterText = total ? buildCounterTokenText(mode, swiper, photoIndex + 1, total) : '';
                 var albumTitle = $container.attr('data-album-title') || '';
-                var hasBottomSideInfo = false;
                 for (var j = 0; j < containerBoxes.length; j++) {
                     var cb = containerBoxes[j];
                     var fmt = isFs ? cb.fsFmt : cb.fmt;
@@ -4838,14 +4709,7 @@
                         albumTitle: albumTitle
                     });
                     cb.$el.text(text).toggle(text !== '');
-                    if (text !== '') {
-                        if (cb.$el.hasClass('jzsa-info-bottom-left') || cb.$el.hasClass('jzsa-info-bottom-right')) {
-                            hasBottomSideInfo = true;
-                        }
-                    }
                 }
-                $container.attr('data-has-active-bottom-side-info', hasBottomSideInfo ? 'true' : 'false');
-                updateSafeInfoLayout($container, zoneFormats, photos, total, albumTitle, mode, swiper);
             }
 
             if (containerBoxes.length) {
@@ -4917,10 +4781,6 @@
                 fullscreenSlideshowAutoresume: fullscreenSlideshowAutoresume,
                 showNavigation: showNavigation,
                 fullscreenShowNavigation: fullscreenShowNavigation,
-                showTitle: showTitle,
-                fullscreenShowTitle: fullscreenShowTitle,
-                showCounter: showCounter,
-                fullscreenShowCounter: fullscreenShowCounter,
                 controlsColor: controlsColor,
                 fullscreenControlsColor: fullscreenControlsColor,
                 videoControlsColor: videoControlsColor,
@@ -5358,10 +5218,6 @@
             'data-interaction-lock',
             'data-show-navigation',
             'data-fullscreen-show-navigation',
-            'data-show-title',
-            'data-fullscreen-show-title',
-            'data-show-counter',
-            'data-fullscreen-show-counter',
             'data-album-title',
             'data-album-url',
             'data-image-fit',
@@ -5379,16 +5235,13 @@
             'data-fullscreen-show-download-button',
             'data-fullscreen-show-link-button',
             'data-download-size-warning',
-            'data-info-bottom-left',
-            'data-fullscreen-info-bottom-left',
-            'data-info-bottom-right',
-            'data-fullscreen-info-bottom-right',
-            'data-info-top-center-2',
-            'data-fullscreen-info-top-center-2',
-            'data-info-top',
-            'data-fullscreen-info-top',
-            'data-info-bottom-center',
-            'data-fullscreen-info-bottom-center'
+            'data-info-top-1',
+            'data-fullscreen-info-top-1',
+            'data-info-top-2',
+            'data-fullscreen-info-top-2',
+            'data-info-bottom',
+            'data-fullscreen-info-bottom',
+            'data-has-active-bottom-center'
         ];
         for (var i = 0; i < forwardAttrs.length; i++) {
             var val = $galleryContainer.attr(forwardAttrs[i]);
@@ -5552,7 +5405,7 @@
             var thumbZoneHtml = buildInfoZoneHtml(photo, thumbZoneFormats.inline, thumbZoneFormats.fullscreen, {
                 counter: (globalIndex + 1) + ' / ' + (parseInt($container.attr('data-total-count'), 10) || 0),
                 albumTitle: ''
-            });
+            }, { bottomOrder: GALLERY_INFO_BOTTOM_ORDER });
 
             html +=
                 '<div class="' + itemClass + '" data-index="' + globalIndex + '">' +
@@ -6928,7 +6781,7 @@
                     };
 
                     setupGalleryPaginationControls($container, paginationState, onJustifiedPageChange, {
-                        showCounter: $container.attr('data-show-counter') !== 'false',
+                        showCounter: true,
                         showAutoplayProgress: shouldShowGallerySlideshowProgress(),
                         showSlideshowControls: gallerySlideshowEnabled,
                         isAutoplayRunning: function() {
@@ -7126,7 +6979,7 @@
                     };
 
                     setupGalleryPaginationControls($container, paginationState, onUniformPageChange, {
-                        showCounter: $container.attr('data-show-counter') !== 'false',
+                        showCounter: true,
                         showAutoplayProgress: shouldShowGallerySlideshowProgress(),
                         showSlideshowControls: gallerySlideshowEnabled,
                         isAutoplayRunning: function() {
@@ -7200,7 +7053,6 @@
 
             watchGalleryInitialThumbLoad();
             scheduleGalleryAutoplay();
-            updateSafeInfoLayout($container, readInfoZoneFormats($container), allPhotos, allPhotos.length, $container.attr('data-album-title') || '', 'gallery', null);
         }
 
         renderCurrentGalleryPage();

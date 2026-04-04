@@ -269,10 +269,6 @@ class JZSA_Renderer {
 			'interaction-lock'        => 'data-interaction-lock',
 			'show-navigation'         => 'data-show-navigation',
 			'fullscreen-show-navigation' => 'data-fullscreen-show-navigation',
-			'show-title'              => 'data-show-title',
-			'fullscreen-show-title'   => 'data-fullscreen-show-title',
-			'show-counter'            => 'data-show-counter',
-			'fullscreen-show-counter' => 'data-fullscreen-show-counter',
 			'show-link-button'        => 'data-show-link-button',
 			'show-download-button'    => 'data-show-download-button',
 			'fullscreen-show-link-button'     => 'data-fullscreen-show-link-button',
@@ -288,13 +284,15 @@ class JZSA_Renderer {
 			}
 		}
 
+		// PHP-emits data-has-active-bottom-center so CSS can position the play button
+		// correctly before JavaScript runs (JS will update it on fullscreen toggle).
+		$attrs[] = sprintf( 'data-has-active-bottom-center="%s"', ! empty( $config['info-bottom'] ) ? 'true' : 'false' );
+
 		// Info box format strings (only emit non-empty).
 		$info_boxes = array(
-			'info-bottom-center',   'fullscreen-info-bottom-center',
-			'info-bottom-left',     'fullscreen-info-bottom-left',
-			'info-bottom-right',    'fullscreen-info-bottom-right',
-			'info-top-center',      'fullscreen-info-top-center',
-			'info-top-center-2',    'fullscreen-info-top-center-2',
+			'info-bottom',  'fullscreen-info-bottom',
+			'info-top-1',     'fullscreen-info-top-1',
+			'info-top-2',     'fullscreen-info-top-2',
 		);
 		foreach ( $info_boxes as $box_key ) {
 			if ( ! empty( $config[ $box_key ] ) ) {
@@ -475,10 +473,6 @@ class JZSA_Renderer {
 			'interaction-lock'        => 'data-interaction-lock',
 			'show-navigation'         => 'data-show-navigation',
 			'fullscreen-show-navigation' => 'data-fullscreen-show-navigation',
-			'show-title'              => 'data-show-title',
-			'fullscreen-show-title'   => 'data-fullscreen-show-title',
-			'show-counter'            => 'data-show-counter',
-			'fullscreen-show-counter' => 'data-fullscreen-show-counter',
 			'show-link-button'        => 'data-show-link-button',
 			'show-download-button'    => 'data-show-download-button',
 			'fullscreen-show-link-button'     => 'data-fullscreen-show-link-button',
@@ -492,13 +486,15 @@ class JZSA_Renderer {
 			}
 		}
 
+		// PHP-emits data-has-active-bottom-center so CSS can position the play button
+		// correctly before JavaScript runs (JS will update it on fullscreen toggle).
+		$attrs[] = sprintf( 'data-has-active-bottom-center="%s"', ! empty( $config['info-bottom'] ) ? 'true' : 'false' );
+
 		// Info box format strings (only emit non-empty).
 		$gallery_info_boxes = array(
-			'info-bottom-center',   'fullscreen-info-bottom-center',
-			'info-bottom-left',     'fullscreen-info-bottom-left',
-			'info-bottom-right',    'fullscreen-info-bottom-right',
-			'info-top-center',      'fullscreen-info-top-center',
-			'info-top-center-2',    'fullscreen-info-top-center-2',
+			'info-bottom',  'fullscreen-info-bottom',
+			'info-top-1',     'fullscreen-info-top-1',
+			'info-top-2',     'fullscreen-info-top-2',
 		);
 		foreach ( $gallery_info_boxes as $box_key ) {
 			if ( ! empty( $config[ $box_key ] ) ) {

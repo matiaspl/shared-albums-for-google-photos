@@ -399,8 +399,6 @@ class JZSA_Shared_Albums {
 	 */
 	private function parse_shortcode_config( $atts, $url ) {
 		$show_navigation      = $this->parse_bool( $atts, 'show-navigation', true );
-		$show_title           = $this->parse_bool( $atts, 'show-title', false );
-		$show_counter         = $this->parse_show_counter( $atts );
 		$show_link_button     = $this->parse_bool( $atts, 'show-link-button', false );
 		$show_download_button = $this->parse_bool( $atts, 'show-download-button', false );
 		$controls_color       = $this->parse_color( $atts, 'controls-color', '#ffffff' );
@@ -414,8 +412,6 @@ class JZSA_Shared_Albums {
 		// Fullscreen display controls inherit the inline (non-fullscreen) values
 		// when fullscreen-specific attributes are omitted.
 		$fullscreen_show_navigation = isset( $atts['fullscreen-show-navigation'] ) ? $this->parse_bool( $atts, 'fullscreen-show-navigation', false ) : $show_navigation;
-		$fullscreen_show_title      = isset( $atts['fullscreen-show-title'] ) ? $this->parse_bool( $atts, 'fullscreen-show-title', false ) : $show_title;
-		$fullscreen_show_counter    = isset( $atts['fullscreen-show-counter'] ) ? $this->parse_bool( $atts, 'fullscreen-show-counter', false ) : $show_counter;
 		$fullscreen_show_link_button = isset( $atts['fullscreen-show-link-button'] ) ? $this->parse_bool( $atts, 'fullscreen-show-link-button', false ) : $show_link_button;
 		$fullscreen_show_download_button = isset( $atts['fullscreen-show-download-button'] ) ? $this->parse_bool( $atts, 'fullscreen-show-download-button', false ) : $show_download_button;
 		$fullscreen_controls_color = isset( $atts['fullscreen-controls-color'] ) ? $this->parse_color( $atts, 'fullscreen-controls-color', '' ) : $controls_color;
@@ -467,10 +463,6 @@ class JZSA_Shared_Albums {
 				'interaction-lock'     => $this->parse_bool( $atts, 'interaction-lock', false ),
 				'show-navigation'      => $show_navigation,
 				'fullscreen-show-navigation' => $fullscreen_show_navigation,
-				'show-title'           => $show_title,
-				'fullscreen-show-title' => $fullscreen_show_title,
-				'show-counter'         => $show_counter,
-				'fullscreen-show-counter' => $fullscreen_show_counter,
 				'show-link-button'     => $show_link_button,
 				'show-download-button' => $show_download_button,
 				'fullscreen-show-link-button'     => $fullscreen_show_link_button,
@@ -511,7 +503,7 @@ class JZSA_Shared_Albums {
 			'info-font-size'       => $this->parse_info_font_size( $atts ),
 
 			// Info boxes — format strings with {token} placeholders resolved per photo.
-			// Backward compat: show-name="true" maps to info-bottom-left="{name}".
+			// Backward compat: show-name="true" maps to ="{name}".
 		) + $this->build_info_box_config( $atts );
 
 		return $config;
@@ -525,49 +517,30 @@ class JZSA_Shared_Albums {
 	 * @return array
 	 */
 	private function build_info_box_config( $atts ) {
-		// Backward compat defaults for info-bottom-left.
-		$show_name_compat    = $this->parse_bool( $atts, 'show-name', false );
-		$fs_show_name_compat = isset( $atts['fullscreen-show-name'] )
-			? $this->parse_bool( $atts, 'fullscreen-show-name', false )
-			: $show_name_compat;
-
-		// info-bottom-center backward compat: derive from show-counter / show-title when not set.
+		// Backward compat default for info-bottom (show-counter/show-title).
+		// info-bottom backward compat: derive from show-counter / show-title when not set.
 		$show_counter_compat = $this->parse_bool( $atts, 'show-counter', true );
 		$show_title_compat   = $this->parse_bool( $atts, 'show-title', false );
-		$bc_default     = '';
+		$b1_default     = '';
 		if ( $show_title_compat && $show_counter_compat ) {
-			$bc_default = '{album-title}: {counter}';
+			$b1_default = '{album-title}: {counter}';
 		} elseif ( $show_title_compat ) {
-			$bc_default = '{album-title}';
+			$b1_default = '{album-title}';
 		} elseif ( $show_counter_compat ) {
-			$bc_default = '{counter}';
+			$b1_default = '{counter}';
 		}
 
-		$bc = $this->parse_info_box( $atts, 'info-bottom-center', $bc_default );
-		$bl  = $this->parse_info_box( $atts, 'info-bottom-left',  $show_name_compat    ? '{name}' : '' );
-		$br  = $this->parse_info_box( $atts, 'info-bottom-right', '' );
-		$tl  = $this->parse_info_box( $atts, 'info-top-left',     '' );
-		$tr  = $this->parse_info_box( $atts, 'info-top-right',    '' );
-		$top = $this->parse_info_box( $atts, 'info-top-center',          '' );
-		$tc2 = $this->parse_info_box( $atts, 'info-top-center-2', '' );
+		$b1  = $this->parse_info_box( $atts, 'info-bottom', $b1_default );
+		$t1  = $this->parse_info_box( $atts, 'info-top-1',    '' );
+		$t2  = $this->parse_info_box( $atts, 'info-top-2',    '' );
 
 		return array(
-			'info-bottom-center'                  => $bc,
-			'fullscreen-info-bottom-center'       => $this->parse_info_box( $atts, 'fullscreen-info-bottom-center', $bc ),
-			'info-bottom-left'              => $bl,
-			'fullscreen-info-bottom-left'   => isset( $atts['fullscreen-info-bottom-left'] )
-				? $this->parse_info_box( $atts, 'fullscreen-info-bottom-left', '' )
-				: ( $fs_show_name_compat ? '{name}' : $bl ),
-			'info-bottom-right'             => $br,
-			'fullscreen-info-bottom-right'  => $this->parse_info_box( $atts, 'fullscreen-info-bottom-right', $br ),
-			'info-top-left'                 => $tl,
-			'fullscreen-info-top-left'      => $this->parse_info_box( $atts, 'fullscreen-info-top-left', $tl ),
-			'info-top-right'                => $tr,
-			'fullscreen-info-top-right'     => $this->parse_info_box( $atts, 'fullscreen-info-top-right', $tr ),
-			'info-top-center'                      => $top,
-			'fullscreen-info-top-center'           => $this->parse_info_box( $atts, 'fullscreen-info-top-center', $top ),
-			'info-top-center-2'             => $tc2,
-			'fullscreen-info-top-center-2'  => $this->parse_info_box( $atts, 'fullscreen-info-top-center-2', $tc2 ),
+			'info-bottom'              => $b1,
+			'fullscreen-info-bottom'   => $this->parse_info_box( $atts, 'fullscreen-info-bottom', $b1 ),
+			'info-top-1'                 => $t1,
+			'fullscreen-info-top-1'      => $this->parse_info_box( $atts, 'fullscreen-info-top-1', $t1 ),
+			'info-top-2'                 => $t2,
+			'fullscreen-info-top-2'      => $this->parse_info_box( $atts, 'fullscreen-info-top-2', $t2 ),
 		);
 	}
 
@@ -719,22 +692,6 @@ class JZSA_Shared_Albums {
 		return $num > 0 ? (string) $num : (string) self::DEFAULT_SLIDESHOW_INACTIVITY_TIMEOUT;
 	}
 
-
-	/**
-	 * Parse counter visibility.
-	 *
-	 * @param array $atts Shortcode attributes.
-	 * @return bool
-	 */
-	private function parse_show_counter( $atts ) {
-		// Preferred parameter: show-counter (defaults to true when omitted).
-		if ( isset( $atts['show-counter'] ) ) {
-			return $this->parse_bool( $atts, 'show-counter', true );
-		}
-
-		// Default: counter visible.
-		return true;
-	}
 
 	/**
 	 * Parse starting slide position.

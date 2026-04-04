@@ -442,13 +442,11 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 }
 
 /* When the active bottom-center info box is empty, move play/pause down near the progress bar. */
-.jzsa-album[data-has-active-bottom-center="false"] .swiper-button-play-pause,
-.jzsa-album[data-show-counter="false"] .swiper-button-play-pause {
+.jzsa-album[data-has-active-bottom-center="false"] .swiper-button-play-pause {
     bottom: -1px;
 }
 
-.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="false"] .swiper-button-play-pause,
-.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-show-counter="false"] .swiper-button-play-pause {
+.jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="false"] .swiper-button-play-pause {
     bottom: calc(
         var(--jzsa-inline-play-center-bottom-no-pill) -
         (var(--jzsa-controls-circle-size) / 2)
@@ -465,10 +463,6 @@ background-color: var(--gallery-bg-color, #FFFFFF);
     display: flex;
     bottom: 41px;
 }
-.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="auto"][data-show-counter="false"] .swiper-button-play-pause,
-.jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="manual"][data-show-counter="false"] .swiper-button-play-pause,
-.jzsa-album.jzsa-is-fullscreen[data-slideshow="auto"][data-show-counter="false"] .swiper-button-play-pause,
-.jzsa-album.jzsa-is-fullscreen[data-slideshow="manual"][data-show-counter="false"] .swiper-button-play-pause,
 .jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="auto"][data-has-active-bottom-center="false"] .swiper-button-play-pause,
 .jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="manual"][data-has-active-bottom-center="false"] .swiper-button-play-pause,
 .jzsa-album.jzsa-is-fullscreen[data-slideshow="auto"][data-has-active-bottom-center="false"] .swiper-button-play-pause,
@@ -749,16 +743,6 @@ body.jzsa-no-scroll {
 
 .jzsa-album.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="true"] .swiper-pagination {
     bottom: var(--jzsa-inline-bottom-pill-bottom);
-}
-
-.jzsa-album[data-mode="gallery"].jzsa-safe-info-layout .jzsa-gallery-item .jzsa-info-stack-top,
-.jzsa-album[data-mode="gallery"].jzsa-safe-info-layout .jzsa-gallery-item-video .jzsa-info-stack-top {
-    top: 4px;
-}
-
-.jzsa-album[data-mode="gallery"].jzsa-safe-info-layout .jzsa-gallery-item .jzsa-info-stack-bottom,
-.jzsa-album[data-mode="gallery"].jzsa-safe-info-layout .jzsa-gallery-item-video .jzsa-info-stack-bottom {
-    bottom: 4px;
 }
 
 /* Move pagination up in fullscreen to make room for progress bar below */
@@ -1216,43 +1200,12 @@ body.jzsa-no-scroll {
     position: static;
 }
 
-/* Box positions */
-.jzsa-info-bottom-left   { bottom: 9px; left: 12px; }
-.jzsa-info-bottom-center { bottom: 9px; left: 50%; transform: translateX(-50%); max-width: var(--jzsa-info-center-max-width-default); }
-.jzsa-info-bottom-right  { bottom: 9px; right: 12px; left: auto; }
-.jzsa-info-top-center           { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
-.jzsa-info-top-center-2         { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
+/* Box positions —  lives inside the flex stack; no absolute position needed here. */
+.jzsa-info-bottom { bottom: 9px; left: 50%; transform: translateX(-50%); max-width: var(--jzsa-info-center-max-width-expanded); }
+.jzsa-info-top-1    { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
+.jzsa-info-top-2    { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
 
-.jzsa-album[data-has-active-bottom-side-info="false"] .swiper-pagination {
-    max-width: var(--jzsa-info-center-max-width-expanded);
-}
-
-.jzsa-album[data-has-active-bottom-side-info="false"] .jzsa-info-bottom-center {
-    max-width: var(--jzsa-info-center-max-width-expanded);
-}
-
-.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-stack-top,
-.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-stack-bottom {
-    position: absolute;
-    left: 0;
-    right: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    pointer-events: none;
-    z-index: 10;
-}
-
-.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-stack-top {
-    top: 9px;
-}
-
-.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-stack-bottom {
-    bottom: 9px;
-}
-
-.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout[data-has-active-bottom-center="true"] .jzsa-info-stack-bottom {
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="true"] .jzsa-info-stack-bottom {
     bottom: calc(
         var(--jzsa-inline-bottom-pill-bottom) +
         var(--jzsa-info-pill-height) +
@@ -1260,7 +1213,7 @@ body.jzsa-no-scroll {
     );
 }
 
-.jzsa-album.swiper.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout[data-has-active-bottom-center="true"] .jzsa-info-stack-bottom {
+.jzsa-album.swiper.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="true"] .jzsa-info-stack-bottom {
     bottom: calc(
         var(--jzsa-inline-play-visual-bottom) +
         var(--jzsa-play-visual-size) +
@@ -1268,7 +1221,7 @@ body.jzsa-no-scroll {
     );
 }
 
-.jzsa-album.swiper.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout[data-has-active-bottom-center="false"] .jzsa-info-stack-bottom {
+.jzsa-album.swiper.jzsa-inline-slideshow-controls:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="false"] .jzsa-info-stack-bottom {
     bottom: calc(
         var(--jzsa-inline-play-visual-bottom-no-pill) +
         var(--jzsa-play-visual-size) +
@@ -1276,19 +1229,9 @@ body.jzsa-no-scroll {
     );
 }
 
-.jzsa-album:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .jzsa-info-box {
-    position: relative;
-    top: auto;
-    right: auto;
-    bottom: auto;
-    left: auto;
-    transform: none;
-    max-width: calc(100% - 24px);
-}
-
 /* Top stack is always a vertical column — all top zones are centred, never side-by-side.
-   Boxes are positioned relative within the flex container, so info-top-center-2 always
-   renders below info-top-center. When info-top-center is hidden it naturally rises to top. */
+   Boxes are positioned relative within the flex container, so info-top-2 always
+   renders below info-top-1. When info-top-1 is hidden it naturally rises to top. */
 .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top {
     position: absolute;
     left: 0;
@@ -1303,6 +1246,31 @@ body.jzsa-no-scroll {
 }
 
 .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top .jzsa-info-box {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    max-width: calc(100% - 24px);
+}
+
+/* Bottom stack is always a vertical column —  is centred, stacked above the pill.
+   Positioning adjusts based on whether the pill (info-bottom) is active. */
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 9px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 10;
+}
+
+.jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-bottom .jzsa-info-box {
     position: relative;
     top: auto;
     right: auto;
@@ -1344,11 +1312,36 @@ body.jzsa-no-scroll {
     max-width: var(--jzsa-info-center-max-width-fs);
 }
 
-.jzsa-album:fullscreen[data-has-active-bottom-side-info="false"] .swiper-pagination,
-.jzsa-album:-webkit-full-screen[data-has-active-bottom-side-info="false"] .swiper-pagination,
-.jzsa-album.jzsa-pseudo-fullscreen[data-has-active-bottom-side-info="false"] .swiper-pagination,
-.jzsa-album.jzsa-is-fullscreen[data-has-active-bottom-side-info="false"] .swiper-pagination {
-    max-width: var(--jzsa-info-center-max-width-expanded-fs);
+/* Fullscreen: bottom stack is a vertical column; scale applied to the container. */
+.jzsa-album:fullscreen .jzsa-info-stack-bottom,
+.jzsa-album:-webkit-full-screen .jzsa-info-stack-bottom,
+.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-stack-bottom,
+.jzsa-album.jzsa-is-fullscreen .jzsa-info-stack-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: var(--jzsa-info-bottom-fs-offset);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 10;
+    transform: scale(var(--jzsa-controls-fs-scale));
+    transform-origin: bottom center;
+}
+
+.jzsa-album:fullscreen .jzsa-info-stack-bottom .jzsa-info-box,
+.jzsa-album:-webkit-full-screen .jzsa-info-stack-bottom .jzsa-info-box,
+.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-stack-bottom .jzsa-info-box,
+.jzsa-album.jzsa-is-fullscreen .jzsa-info-stack-bottom .jzsa-info-box {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
+    max-width: var(--jzsa-info-center-max-width-fs);
 }
 
 .jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-box {
@@ -1356,25 +1349,20 @@ body.jzsa-no-scroll {
     max-width: calc(100% - 18px);
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-bottom-left,
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-bottom-right {
-    max-width: calc(50% - 18px);
-}
-
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-center,
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-center-2 {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-1,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-2 {
     top: 9px;
     max-width: 66%;
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-bottom-center {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-bottom {
     bottom: 9px;
     left: 50%;
     transform: translateX(-50%);
     max-width: 66%;
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-stack {
     position: absolute;
     left: 0;
     right: 0;
@@ -1386,15 +1374,15 @@ body.jzsa-no-scroll {
     z-index: 11;
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-top {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-top {
     top: 9px;
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-bottom {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-bottom {
     bottom: 9px;
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-box {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-box {
     position: relative;
     top: auto;
     right: auto;
@@ -1404,9 +1392,8 @@ body.jzsa-no-scroll {
     max-width: calc(100% - 18px);
 }
 
-/* The standalone info-bottom-center (counter) is emitted outside the stack and must remain
-   absolutely positioned at the tile bottom even when safe-info-layout is active. */
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-safe-info-layout .swiper-slide .jzsa-carousel-tile-info-box.jzsa-info-bottom-center {
+/* The standalone info-bottom (counter) is absolutely positioned at the tile bottom. */
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-carousel-tile-info-box.jzsa-info-bottom {
     position: absolute;
     bottom: 9px;
     left: 50%;
@@ -1416,23 +1403,12 @@ body.jzsa-no-scroll {
     max-width: 66%;
 }
 
-/* Carousel + inline slideshow: push side-info (left/right) above the play button.
-   info-bottom-center (counter) is a standalone element and stays pinned at the tile bottom. */
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls:not(.jzsa-safe-info-layout)[data-has-active-bottom-center="true"] .swiper-slide .jzsa-info-bottom-left,
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls:not(.jzsa-safe-info-layout)[data-has-active-bottom-center="true"] .swiper-slide .jzsa-info-bottom-right {
+/* Carousel + inline slideshow: push bottom stack above the play button. */
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls[data-has-active-bottom-center="true"] .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-bottom {
     bottom: calc(var(--jzsa-inline-play-visual-bottom) + var(--jzsa-play-visual-size) + var(--jzsa-bottom-control-gap));
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls:not(.jzsa-safe-info-layout)[data-has-active-bottom-center="false"] .swiper-slide .jzsa-info-bottom-left,
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls:not(.jzsa-safe-info-layout)[data-has-active-bottom-center="false"] .swiper-slide .jzsa-info-bottom-right {
-    bottom: calc(var(--jzsa-inline-play-visual-bottom-no-pill) + var(--jzsa-play-visual-size) + var(--jzsa-bottom-control-gap));
-}
-
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls.jzsa-safe-info-layout[data-has-active-bottom-center="true"] .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-bottom {
-    bottom: calc(var(--jzsa-inline-play-visual-bottom) + var(--jzsa-play-visual-size) + var(--jzsa-bottom-control-gap));
-}
-
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls.jzsa-safe-info-layout[data-has-active-bottom-center="false"] .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-bottom {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen).jzsa-inline-slideshow-controls[data-has-active-bottom-center="false"] .swiper-slide .jzsa-carousel-tile-info-stack.jzsa-info-stack-bottom {
     bottom: calc(var(--jzsa-inline-play-visual-bottom-no-pill) + var(--jzsa-play-visual-size) + var(--jzsa-bottom-control-gap));
 }
 
@@ -1443,34 +1419,30 @@ body.jzsa-no-scroll {
     display: none !important;
 }
 
-.jzsa-album:fullscreen .jzsa-info-bottom-left,
-.jzsa-album:-webkit-full-screen .jzsa-info-bottom-left,
-.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-bottom-left,
-.jzsa-album.jzsa-is-fullscreen .jzsa-info-bottom-left {
-    bottom: var(--jzsa-info-bottom-fs-offset);
-    transform: scale(var(--jzsa-controls-fs-scale));
-    transform-origin: bottom left;
-    max-width: var(--jzsa-info-corner-max-width-fs);
-}
-
-.jzsa-album:fullscreen .jzsa-info-bottom-right,
-.jzsa-album:-webkit-full-screen .jzsa-info-bottom-right,
-.jzsa-album.jzsa-pseudo-fullscreen .jzsa-info-bottom-right,
-.jzsa-album.jzsa-is-fullscreen .jzsa-info-bottom-right {
-    bottom: var(--jzsa-info-bottom-fs-offset);
-    transform: scale(var(--jzsa-controls-fs-scale));
-    transform-origin: bottom right;
-    max-width: var(--jzsa-info-corner-max-width-fs);
-}
-
 /* Gallery thumbnail-specific info box constraints */
+.jzsa-gallery-item .jzsa-info-stack-top,
+.jzsa-gallery-item .jzsa-info-stack-bottom {
+    position: absolute;
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    pointer-events: none;
+    z-index: 10;
+}
+.jzsa-gallery-item .jzsa-info-stack-top    { top: 4px; }
+.jzsa-gallery-item .jzsa-info-stack-bottom { bottom: 4px; }
 .jzsa-gallery-item .jzsa-info-box {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    left: auto;
+    transform: none;
     max-width: 85%;
 }
-.jzsa-gallery-item .jzsa-info-bottom-left  { bottom: 4px; left: 4px; }
-.jzsa-gallery-item .jzsa-info-bottom-right { bottom: 4px; right: 4px; }
-.jzsa-gallery-item .jzsa-info-top-center   { top: 4px; }
-.jzsa-gallery-item .jzsa-info-top-center-2 { top: 4px; }
 
 /* Global download status toast used for "preparing/download started" feedback. */
 .jzsa-download-status {
