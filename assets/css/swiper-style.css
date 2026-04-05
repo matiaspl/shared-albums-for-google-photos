@@ -1420,6 +1420,7 @@ body.jzsa-no-scroll {
 }
 
 /* Gallery thumbnail-specific info box constraints */
+/* z-index: 12 so info stacks sit above .jzsa-video-wrapper (z-index: 11) for video tiles */
 .jzsa-gallery-item .jzsa-info-stack-top,
 .jzsa-gallery-item .jzsa-info-stack-bottom {
     position: absolute;
@@ -1430,7 +1431,7 @@ body.jzsa-no-scroll {
     align-items: center;
     gap: 4px;
     pointer-events: none;
-    z-index: 10;
+    z-index: 12;
 }
 .jzsa-gallery-item .jzsa-info-stack-top    { top: 4px; }
 .jzsa-gallery-item .jzsa-info-stack-bottom { bottom: 4px; }
