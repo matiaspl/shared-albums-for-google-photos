@@ -1202,8 +1202,8 @@ body.jzsa-no-scroll {
 
 /* Box positions —  lives inside the flex stack; no absolute position needed here. */
 .jzsa-info-bottom { bottom: 9px; left: 50%; transform: translateX(-50%); max-width: var(--jzsa-info-center-max-width-expanded); }
-.jzsa-info-top-1    { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
-.jzsa-info-top-2    { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
+.jzsa-info-top { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
+.jzsa-info-top-secondary { top: 9px; left: 50%; transform: translateX(-50%); bottom: auto; max-width: var(--jzsa-info-center-max-width-default); }
 
 .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen)[data-has-active-bottom-center="true"] .jzsa-info-stack-bottom {
     bottom: calc(
@@ -1229,9 +1229,9 @@ body.jzsa-no-scroll {
     );
 }
 
-/* Top stack is always a vertical column — all top zones are centred, never side-by-side.
-   Boxes are positioned relative within the flex container, so info-top-2 always
-   renders below info-top-1. When info-top-1 is hidden it naturally rises to top. */
+/* Top stack is always a vertical column - all top zones are centred, never side-by-side.
+   Boxes are positioned relative within the flex container, so info-top-secondary always
+   renders below info-top. When info-top is hidden it naturally rises to top. */
 .jzsa-album.swiper:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .jzsa-info-stack-top {
     position: absolute;
     left: 0;
@@ -1349,8 +1349,8 @@ body.jzsa-no-scroll {
     max-width: calc(100% - 18px);
 }
 
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-1,
-.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-2 {
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top,
+.jzsa-album[data-mode="carousel"]:not(.jzsa-is-fullscreen):not(.jzsa-pseudo-fullscreen) .swiper-slide .jzsa-info-top-secondary {
     top: 9px;
     max-width: 66%;
 }

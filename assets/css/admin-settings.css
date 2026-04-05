@@ -283,8 +283,8 @@
     box-shadow: inset 0 0 0 2px rgba(34, 113, 177, 0.3);
 }
 
-/* Token highlighting inside editable code blocks */
-.jzsa-editable-code .jzsa-token {
+/* Placeholder highlighting inside editable code blocks */
+.jzsa-editable-code .jzsa-code-placeholder {
     color: #d63638;
 }
 

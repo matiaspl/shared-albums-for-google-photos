@@ -1458,37 +1458,37 @@
     }
 
     // ========================================================================
-    // Info box system — resolve {token} format strings per photo
+    // Info box system - resolve placeholder format strings per photo
     // ========================================================================
 
-    // info-top-1/2 stack top-to-bottom; info-bottom is the Swiper pagination pill.
+    // info-top/info-top-secondary stack top-to-bottom; info-bottom is the Swiper pagination pill.
     var INFO_BOX_NAMES = [
-        'info-top-1',
-        'info-top-2',
+        'info-top',
+        'info-top-secondary',
         'info-bottom'
     ];
     var SAFE_INFO_TOP_ORDER = [
-        'info-top-1',
-        'info-top-2'
+        'info-top',
+        'info-top-secondary'
     ];
     // info-bottom is the Swiper pagination pill — handled separately outside the stack.
     var SAFE_INFO_BOTTOM_ORDER = [];
     var infoMeasureCanvas = null;
 
     /**
-     * Resolve a format string by replacing {token} placeholders with photo data.
-     * Tokens that resolve to empty are removed along with adjacent separators.
+     * Resolve a format string by replacing placeholders like {date} with photo data.
+     * Placeholders that resolve to empty are removed along with adjacent separators.
      *
      * @param {string} format  Format string (e.g. "{name} · {date}").
      * @param {Object} photo   Photo data object.
-     * @param {Object} context Optional extra token context.
-     * @return {string} Resolved string, or empty if all tokens resolved to nothing.
+     * @param {Object} context Optional extra placeholder context.
+     * @return {string} Resolved string, or empty if all placeholders resolved to nothing.
      */
-    function resolveInfoTokens(format, photo, context) {
+    function resolveInfoPlaceholders(format, photo, context) {
         if (!format || !photo) {
             return '';
         }
-        var tokenContext = context || {};
+        var placeholderContext = context || {};
 
         var name = photo.filename
             ? photo.filename.replace(/\.[^.]+$/, '')
@@ -1519,13 +1519,13 @@
             }
         }
 
-        var tokens = {
-            '{item}': tokenContext.item || '',
-            '{items}': tokenContext.items || '',
-            '{page}': tokenContext.page || '',
-            '{pages}': tokenContext.pages || '',
-            '{album-title}': tokenContext.albumTitle || '',
-            '{album-name}': tokenContext.albumTitle || '',
+        var placeholders = {
+            '{item}': placeholderContext.item || '',
+            '{items}': placeholderContext.items || '',
+            '{page}': placeholderContext.page || '',
+            '{pages}': placeholderContext.pages || '',
+            '{album-title}': placeholderContext.albumTitle || '',
+            '{album-name}': placeholderContext.albumTitle || '',
             '{name}': name || '',
             '{filename}': photo.filename || '',
             '{date}': photo.timestamp ? formatPhotoDate(photo.timestamp) : '',
@@ -1541,13 +1541,13 @@
         };
 
         var result = format;
-        for (var token in tokens) {
-            if (tokens.hasOwnProperty(token)) {
-                result = result.replace(new RegExp(token.replace(/[{}]/g, '\\$&'), 'g'), tokens[token]);
+        for (var placeholder in placeholders) {
+            if (placeholders.hasOwnProperty(placeholder)) {
+                result = result.replace(new RegExp(placeholder.replace(/[{}]/g, '\\$&'), 'g'), placeholders[placeholder]);
             }
         }
 
-        // Clean up separators around removed tokens: collapse runs of
+        // Clean up separators around removed placeholders: collapse runs of
         // whitespace + separator + whitespace into nothing when adjacent
         // to the start/end or another separator.
         result = result.replace(/^[\s·•|—–-]+/, '').replace(/[\s·•|—–-]+$/, '');
@@ -1562,7 +1562,7 @@
      * Read info box format strings from a container's data attributes.
      *
      * @param {jQuery} $container Gallery container element.
-     * @return {Object} { inline: { 'info-top-1': '...', ... }, fullscreen: { ... } }
+     * @return {Object} { inline: { 'info-top': '...', ... }, fullscreen: { ... } }
      */
     function readInfoZoneFormats($container) {
         var inline = {};
@@ -1603,8 +1603,8 @@
             }
             html += buildInfoBoxHtml(
                 zone,
-                resolveInfoTokens(inlineFormat, photo, context),
-                resolveInfoTokens(fullscreenFormat, photo, context)
+                resolveInfoPlaceholders(inlineFormat, photo, context),
+                resolveInfoPlaceholders(fullscreenFormat, photo, context)
             );
         }
         return html;
@@ -1663,8 +1663,8 @@
     // Wave 2: Background photo metadata prefetch via AJAX
     // ========================================================================
 
-    var EXIF_TOKEN_RE = /\{(?:camera|aperture|shutter|focal|iso)\}/;
-    var FILENAME_TOKEN_RE = /\{(?:filename|name)\}/;
+    var EXIF_PLACEHOLDER_RE = /\{(?:camera|aperture|shutter|focal|iso)\}/;
+    var FILENAME_PLACEHOLDER_RE = /\{(?:filename|name)\}/;
     var EXIF_PREFETCH_WORKERS = 3;
     var exifCache = {};          // mediaId -> { camera, aperture, shutter, focal, iso, filename }
     var exifQueue = [];          // { mediaId, photoUrl }
@@ -1675,7 +1675,7 @@
     var exifPrefetchScheduled = false;
 
     /**
-     * Check whether any zone format string references Wave 2 metadata tokens.
+     * Check whether any zone format string references Wave 2 metadata placeholders.
      */
     function getPhotoMetaNeeds(zoneFormats) {
         if (!zoneFormats) {
@@ -1689,8 +1689,8 @@
         };
         for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
             var zone = INFO_BOX_NAMES[i];
-            needs.exif = needs.exif || EXIF_TOKEN_RE.test(all[zone] || '') || EXIF_TOKEN_RE.test(fs[zone] || '');
-            needs.filename = needs.filename || FILENAME_TOKEN_RE.test(all[zone] || '') || FILENAME_TOKEN_RE.test(fs[zone] || '');
+            needs.exif = needs.exif || EXIF_PLACEHOLDER_RE.test(all[zone] || '') || EXIF_PLACEHOLDER_RE.test(fs[zone] || '');
+            needs.filename = needs.filename || FILENAME_PLACEHOLDER_RE.test(all[zone] || '') || FILENAME_PLACEHOLDER_RE.test(fs[zone] || '');
         }
         return needs;
     }
@@ -1824,7 +1824,7 @@
 
     /**
      * Schedule Wave 2 metadata prefetch for all photos in a container.
-     * Only runs if zone format strings reference filename/name or EXIF tokens.
+     * Only runs if zone format strings reference filename/name or EXIF placeholders.
      *
      * @param {jQuery} $container Gallery/album container.
      * @param {Object} zoneFormats  { inline: {...}, fullscreen: {...} }
@@ -1945,7 +1945,7 @@
 
     // Returns {item, items} strings for the container-level pagination pill.
     // In carousel mode, {item} may be a range like "16-17" when multiple slides are visible.
-    function buildItemTokens(mode, swiper, current, total) {
+    function buildItemPlaceholders(mode, swiper, current, total) {
         if (mode === 'carousel') {
             var slidesPerView = swiper.params.slidesPerView || 1;
             var realIndex = getSwiperPhotoIndex(swiper);
@@ -1970,7 +1970,7 @@
     }
 
     // Returns {item, items} strings for a single photo at a 0-based index.
-    function buildSinglePhotoItemTokens(index, total) {
+    function buildSinglePhotoItemPlaceholders(index, total) {
         var safeIndex = typeof index === 'number' && index >= 0 ? index + 1 : 1;
         return { item: String(safeIndex), items: String(total) };
     }
@@ -1982,12 +1982,12 @@
 
         var info = {};
         for (var i = 0; i < SAFE_INFO_TOP_ORDER.length; i++) {
-            info[SAFE_INFO_TOP_ORDER[i]] = resolveInfoTokens(getInfoZoneFormat(zoneFormats, SAFE_INFO_TOP_ORDER[i], false), photo, context);
+            info[SAFE_INFO_TOP_ORDER[i]] = resolveInfoPlaceholders(getInfoZoneFormat(zoneFormats, SAFE_INFO_TOP_ORDER[i], false), photo, context);
         }
         for (var j = 0; j < SAFE_INFO_BOTTOM_ORDER.length; j++) {
-            info[SAFE_INFO_BOTTOM_ORDER[j]] = resolveInfoTokens(getInfoZoneFormat(zoneFormats, SAFE_INFO_BOTTOM_ORDER[j], false), photo, context);
+            info[SAFE_INFO_BOTTOM_ORDER[j]] = resolveInfoPlaceholders(getInfoZoneFormat(zoneFormats, SAFE_INFO_BOTTOM_ORDER[j], false), photo, context);
         }
-        info['info-bottom'] = resolveInfoTokens(getInfoZoneFormat(zoneFormats, 'info-bottom', false), photo, context);
+        info['info-bottom'] = resolveInfoPlaceholders(getInfoZoneFormat(zoneFormats, 'info-bottom', false), photo, context);
         return info;
     }
 
@@ -2072,7 +2072,7 @@
                 }
 
                 tileInfoHtml = buildCarouselTileInfoHtml(photo, carouselZoneFormats, $.extend(
-                    buildSinglePhotoItemTokens(index, carouselTotalCount),
+                    buildSinglePhotoItemPlaceholders(index, carouselTotalCount),
                     { albumTitle: carouselAlbumTitle }
                 ));
             }
@@ -2158,8 +2158,8 @@
                 if (!zone) {
                     return;
                 }
-                var text = resolveInfoTokens(getInfoZoneFormat(zoneFormats, zone, false), photo,
-                    $.extend(buildSinglePhotoItemTokens(photoIndex, total), { albumTitle: albumTitle })
+                var text = resolveInfoPlaceholders(getInfoZoneFormat(zoneFormats, zone, false), photo,
+                    $.extend(buildSinglePhotoItemPlaceholders(photoIndex, total), { albumTitle: albumTitle })
                 );
                 $box.text(text).toggle(text !== '');
             });
@@ -2203,8 +2203,8 @@
                         break;
                     }
                 }
-                var text = resolveInfoTokens(inlineFmt, photo,
-                    $.extend(buildSinglePhotoItemTokens(photoIndex, total), { albumTitle: albumTitle })
+                var text = resolveInfoPlaceholders(inlineFmt, photo,
+                    $.extend(buildSinglePhotoItemPlaceholders(photoIndex, total), { albumTitle: albumTitle })
                 );
                 $box.text(text).toggle(text !== '');
             });
@@ -3988,7 +3988,7 @@
             },
 
         // Pagination: driven by info-bottom format string.
-        // Supports {item}, {items}, and all per-photo tokens.
+        // Supports {item}, {items}, and all per-photo placeholders.
         pagination: (function() {
             var base = {
                 el: '#' + params.galleryId + ' .swiper-pagination'
@@ -4010,8 +4010,8 @@
                 var albumTitle = $swiperEl.attr('data-album-title') || '';
                 var photoIndex = getSwiperPhotoIndex(swiper);
                 var photo = getContainerPhoto($swiperEl, photoIndex);
-                var text = resolveInfoTokens(format, photo,
-                    $.extend(buildItemTokens(params.mode, swiper, current, total), { albumTitle: albumTitle })
+                var text = resolveInfoPlaceholders(format, photo,
+                    $.extend(buildItemPlaceholders(params.mode, swiper, current, total), { albumTitle: albumTitle })
                 );
 
                 $swiperEl.find('.swiper-pagination').toggle(text !== '');
@@ -4660,7 +4660,7 @@
                     return;
                 }
                 var $box = $('<div class="jzsa-info-box jzsa-' + boxName + '"></div>');
-                if (boxName === 'info-top-1' || boxName === 'info-top-2') {
+                if (boxName === 'info-top' || boxName === 'info-top-secondary') {
                     $topInfoStack.append($box);
                     hasTopStackBoxes = true;
                 } else {
@@ -4699,13 +4699,13 @@
                         total = 0;
                     }
                 }
-                var itemTokens = total ? buildItemTokens(mode, swiper, photoIndex + 1, total) : { item: '', items: '' };
+                var itemPlaceholders = total ? buildItemPlaceholders(mode, swiper, photoIndex + 1, total) : { item: '', items: '' };
                 var albumTitle = $container.attr('data-album-title') || '';
                 for (var j = 0; j < containerBoxes.length; j++) {
                     var cb = containerBoxes[j];
                     var fmt = isFs ? cb.fsFmt : cb.fmt;
-                    var text = resolveInfoTokens(fmt, photo,
-                        $.extend(itemTokens, { albumTitle: albumTitle })
+                    var text = resolveInfoPlaceholders(fmt, photo,
+                        $.extend(itemPlaceholders, { albumTitle: albumTitle })
                     );
                     cb.$el.text(text).toggle(text !== '');
                 }
@@ -5234,10 +5234,10 @@
             'data-fullscreen-show-download-button',
             'data-fullscreen-show-link-button',
             'data-download-size-warning',
-            'data-info-top-1',
-            'data-fullscreen-info-top-1',
-            'data-info-top-2',
-            'data-fullscreen-info-top-2',
+            'data-info-top',
+            'data-fullscreen-info-top',
+            'data-info-top-secondary',
+            'data-fullscreen-info-top-secondary',
             'data-info-bottom',
             'data-fullscreen-info-bottom',
             'data-has-active-bottom-center'
@@ -5745,7 +5745,7 @@
 
         var pageBottomFmt = $container.attr('data-gallery-page-bottom');
         if (showCounter && pageBottomFmt !== undefined) {
-            // gallery-page-bottom is set — use it as a format string with {page}/{pages} tokens.
+            // gallery-page-bottom is set - use it as a format string with {page}/{pages} placeholders.
             var pageText = pageBottomFmt
                 .replace(/\{page\}/g, String(state.currentPage + 1))
                 .replace(/\{pages\}/g, String(state.totalPages));
@@ -7498,7 +7498,7 @@
         });
 
         // Wave 2: schedule background metadata prefetch if any zone uses
-        // filename/name or EXIF tokens.
+        // filename/name or EXIF placeholders.
         var galleryZoneFormats = readInfoZoneFormats($container);
         scheduleExifPrefetch($container, galleryZoneFormats);
 

@@ -45,15 +45,15 @@ function jzsaCopyToClipboard( button, text ) {
  * @param {HTMLElement} previewContainer The container to update with the rendered HTML.
  */
 /**
- * Highlight {token} placeholders in red inside an editable code element.
+ * Highlight placeholders like {date} in red inside an editable code element.
  * Preserves cursor position across innerHTML replacements.
  */
-function jzsaHighlightTokens( codeEl ) {
+function jzsaHighlightPlaceholders( codeEl ) {
 	var text = codeEl.textContent || '';
 	var escaped = text.replace( /&/g, '&amp;' ).replace( /</g, '&lt;' ).replace( />/g, '&gt;' );
-	var highlighted = escaped.replace( /(\{[a-z_-]+\})/g, '<span class="jzsa-token">$1</span>' );
+	var highlighted = escaped.replace( /(\{[a-z_-]+\})/g, '<span class="jzsa-code-placeholder">$1</span>' );
 	if ( highlighted === escaped ) {
-		return; // No tokens, skip innerHTML update.
+		return; // No placeholders, skip innerHTML update.
 	}
 
 	// Save cursor offset.
@@ -211,18 +211,18 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			return;
 		}
 
-		// Keep token highlighting live while editing.
+		// Keep placeholder highlighting live while editing.
 		codeEl.addEventListener( 'input', function () {
-			jzsaHighlightTokens( codeEl );
+			jzsaHighlightPlaceholders( codeEl );
 		} );
 
-		// Highlight tokens on initial load.
-		jzsaHighlightTokens( codeEl );
+		// Highlight placeholders on initial load.
+		jzsaHighlightPlaceholders( codeEl );
 
-		// Revert: restore original shortcode, re-highlight tokens, and re-apply the preview.
+		// Revert: restore original shortcode, re-highlight placeholders, and re-apply the preview.
 		revertBtn.addEventListener( 'click', function () {
 			codeEl.textContent = originalText;
-			jzsaHighlightTokens( codeEl );
+			jzsaHighlightPlaceholders( codeEl );
 			jzsaApplyPreview( codeEl, revertBtn, previewContainer, 'Reverted!' );
 		} );
 
@@ -338,14 +338,14 @@ document.addEventListener( 'DOMContentLoaded', function () {
 			var changed = ( pgCode.textContent || '' ) !== playgroundOriginal;
 			pgApply.disabled = ! changed;
 			pgRevert.disabled = ! changed;
-			jzsaHighlightTokens( pgCode );
+			jzsaHighlightPlaceholders( pgCode );
 		} );
 
-		jzsaHighlightTokens( pgCode );
+		jzsaHighlightPlaceholders( pgCode );
 
 		pgRevert.addEventListener( 'click', function () {
 			pgCode.textContent = playgroundOriginal;
-			jzsaHighlightTokens( pgCode );
+			jzsaHighlightPlaceholders( pgCode );
 			pgApply.disabled = true;
 			pgRevert.disabled = true;
 			if ( playgroundPreview ) {

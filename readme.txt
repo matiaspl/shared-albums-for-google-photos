@@ -205,7 +205,7 @@ The plugin provides clear feedback:
 
 = 2.0.7 =
 * New dynamic photo info overlays
-* EXIF tokens with background loading
+* EXIF placeholders with background loading
 * Slider, carousel, gallery and fullscreen photo info
 * Editable Settings page samples
 

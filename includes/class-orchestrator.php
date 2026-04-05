@@ -502,7 +502,7 @@ class JZSA_Shared_Albums {
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
 			'info-font-size'       => $this->parse_info_font_size( $atts ),
 
-			// Info boxes — format strings with {token} placeholders resolved per photo.
+			// Info boxes - format strings with placeholders like {date} resolved per photo.
 			// Backward compat: show-name="true" maps to ="{name}".
 		) + $this->build_info_box_config( $atts );
 
@@ -530,18 +530,18 @@ class JZSA_Shared_Albums {
 		}
 
 		$b1  = $this->parse_info_box( $atts, 'info-bottom', $b1_default );
-		$t1  = $this->parse_info_box( $atts, 'info-top-1',    '' );
-		$t2  = $this->parse_info_box( $atts, 'info-top-2',    '' );
+		$t1  = $this->parse_info_box( $atts, array( 'info-top', 'info-top-1' ), '' );
+		$t2  = $this->parse_info_box( $atts, array( 'info-top-secondary', 'info-top-2' ), '' );
 		$gpb = $this->parse_info_box( $atts, 'gallery-page-bottom', '' );
 
 		return array(
-			'info-bottom'              => $b1,
-			'fullscreen-info-bottom'   => $this->parse_info_box( $atts, 'fullscreen-info-bottom', $b1 ),
-			'info-top-1'               => $t1,
-			'fullscreen-info-top-1'    => $this->parse_info_box( $atts, 'fullscreen-info-top-1', $t1 ),
-			'info-top-2'               => $t2,
-			'fullscreen-info-top-2'    => $this->parse_info_box( $atts, 'fullscreen-info-top-2', $t2 ),
-			'gallery-page-bottom'      => $gpb,
+			'info-bottom'                    => $b1,
+			'fullscreen-info-bottom'         => $this->parse_info_box( $atts, 'fullscreen-info-bottom', $b1 ),
+			'info-top'                       => $t1,
+			'fullscreen-info-top'            => $this->parse_info_box( $atts, array( 'fullscreen-info-top', 'fullscreen-info-top-1' ), $t1 ),
+			'info-top-secondary'            => $t2,
+			'fullscreen-info-top-secondary' => $this->parse_info_box( $atts, array( 'fullscreen-info-top-secondary', 'fullscreen-info-top-2' ), $t2 ),
+			'gallery-page-bottom'            => $gpb,
 		);
 	}
 
@@ -567,19 +567,22 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse info box format string attribute.
+	 * Parse info box placeholder format string attribute.
 	 * Returns the sanitized format string, or $default if the attribute is absent.
 	 *
-	 * @param array  $atts    Attributes
-	 * @param string $key     Attribute key
-	 * @param string $default Default format string (empty = box hidden)
+	 * @param array        $atts    Attributes.
+	 * @param string|array $key     Attribute key or fallback keys in priority order.
+	 * @param string       $default Default format string (empty = box hidden).
 	 * @return string
 	 */
 	private function parse_info_box( $atts, $key, $default ) {
-		if ( ! isset( $atts[ $key ] ) ) {
-			return $default;
+		$keys = is_array( $key ) ? $key : array( $key );
+		foreach ( $keys as $candidate ) {
+			if ( isset( $atts[ $candidate ] ) ) {
+				return sanitize_text_field( $atts[ $candidate ] );
+			}
 		}
-		return sanitize_text_field( $atts[ $key ] );
+		return $default;
 	}
 
 	/**
@@ -1426,7 +1429,7 @@ class JZSA_Shared_Albums {
 	/**
 	 * Merge cached per-photo metadata into album items before initial render.
 	 *
-	 * This lets filename/EXIF tokens render immediately on page load when we
+	 * This lets filename/EXIF placeholders render immediately on page load when we
 	 * already have them cached from previous visits, instead of waiting for the
 	 * background Wave 2 AJAX path again.
 	 *
