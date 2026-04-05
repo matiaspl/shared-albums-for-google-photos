@@ -1034,7 +1034,7 @@ class JZSA_Settings_Page {
 					<h2><?php esc_html_e( 'All Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
 					<h3><?php esc_html_e( 'Required', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
 								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
@@ -1052,7 +1052,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Core Parameters', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -1088,7 +1088,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Gallery Mode Options (those apply only for the default "gallery" mode)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
 								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
@@ -1146,7 +1146,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Appearance', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -1189,7 +1189,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Slideshow Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -1222,7 +1222,7 @@ class JZSA_Settings_Page {
 					</table>
 
 						<h3><?php esc_html_e( 'Display Options', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<table class="jzsa-settings-table">
+						<table class="jzsa-settings-table jzsa-settings-table--params">
 							<thead>
 								<tr>
 								<th>Parameter</th>
@@ -1251,7 +1251,7 @@ class JZSA_Settings_Page {
 
 						<h3><?php esc_html_e( 'Info Boxes (Inline)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Per-photo metadata overlays. Each zone accepts a format string with placeholders like {date}. Leave empty (default) to hide a zone. See the Photo Info Overlay section below for available placeholders and examples.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-						<table class="jzsa-settings-table">
+						<table class="jzsa-settings-table jzsa-settings-table--params">
 							<thead>
 								<tr>
 									<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
@@ -1265,10 +1265,11 @@ class JZSA_Settings_Page {
 								<tr><td><code>info-top-secondary</code></td><td><?php esc_html_e( 'Top center (second line, below info-top)', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 								<tr><td><code>gallery-page-bottom</code></td><td><?php esc_html_e( 'Gallery mode only - text shown in the page navigation bar when paginated gallery rows are enabled. Supports {page} and {pages} placeholders. Hidden by default; set to "{page} / {pages}" to enable.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><em><?php esc_html_e( 'empty (off)', 'janzeman-shared-albums-for-google-photos' ); ?></em></td></tr>
 								<tr><td><code>info-font-size</code></td><td><?php esc_html_e( 'Font size for all info boxes, including info-bottom (pixels)', 'janzeman-shared-albums-for-google-photos' ); ?></td><td>12</td></tr>
+								<tr><td><code>info-font-family</code></td><td><?php echo wp_kses_post( __( '<strong>Recommended: use a font family stack, not a single font.</strong> Applies to all info boxes, including info-bottom. Use normal CSS <code>font-family</code> syntax with comma-separated fallbacks, for example <code>system-ui, sans-serif</code>, <code>Georgia, serif</code>, or <code>ui-monospace, SFMono-Regular, Consolas, monospace</code>. The font must already exist on the visitor device or be loaded by the theme/site. The plugin does not load web fonts; the browser falls back to the next family in the stack.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><code>system-ui, sans-serif</code></td></tr>
 						</table>
 
 						<h3><?php esc_html_e( 'Fullscreen Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<table class="jzsa-settings-table">
+						<table class="jzsa-settings-table jzsa-settings-table--params">
 							<thead>
 								<tr>
 									<th>Parameter</th>
@@ -1350,11 +1351,13 @@ class JZSA_Settings_Page {
 								<tr><td><code>fullscreen-info-bottom</code></td><td><?php esc_html_e( 'Pagination pill in fullscreen. Inherits from info-bottom when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-bottom', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 								<tr><td><code>fullscreen-info-top</code></td><td><?php esc_html_e( 'Info box: top center first line in fullscreen. Inherits from info-top when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 								<tr><td><code>fullscreen-info-top-secondary</code></td><td><?php esc_html_e( 'Info box: top center second line in fullscreen. Inherits from info-top-secondary when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-top-secondary', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-font-size</code></td><td><?php esc_html_e( 'Font size for all info boxes in fullscreen, including fullscreen-info-bottom (pixels). Defaults to info-font-size when omitted.', 'janzeman-shared-albums-for-google-photos' ); ?></td><td><?php esc_html_e( 'inherits info-font-size', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
+								<tr><td><code>fullscreen-info-font-family</code></td><td><?php echo wp_kses_post( __( 'Fullscreen override for the info box font family stack, including fullscreen-info-bottom. Uses the same comma-separated CSS <code>font-family</code> syntax as <code>info-font-family</code> and defaults to <code>info-font-family</code> when omitted.', 'janzeman-shared-albums-for-google-photos' ) ); ?></td><td><?php esc_html_e( 'inherits info-font-family', 'janzeman-shared-albums-for-google-photos' ); ?></td></tr>
 						</table>
 
 					<h3><?php esc_html_e( 'Mosaic Thumbnail Strip', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<p><?php esc_html_e( 'Display a strip of thumbnail previews alongside the main slider or carousel. Works with mode="slider" and mode="carousel". The strip is synchronized with the main swiper - clicking a thumbnail jumps to that photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-					<table class="jzsa-settings-table">
+					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
 								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
@@ -1398,7 +1401,7 @@ class JZSA_Settings_Page {
 
 					<h3><?php esc_html_e( 'Video Support (Experimental)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 					<p><?php echo wp_kses( __( 'Albums containing videos will attempt to detect and play them using the built-in HTML5 video element with Plyr-based controls. Please notice: <strong>This is an experimental feature. The video playback experience might not be perfect under all conditions.</strong>', 'janzeman-shared-albums-for-google-photos' ), array( 'strong' => array() ) ); ?></p>
-					<table class="jzsa-settings-table">
+					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
 								<th><?php esc_html_e( 'Parameter', 'janzeman-shared-albums-for-google-photos' ); ?></th>
@@ -1426,7 +1429,7 @@ class JZSA_Settings_Page {
 					</table>
 
 					<h3><?php esc_html_e( 'Other Settings', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-					<table class="jzsa-settings-table">
+					<table class="jzsa-settings-table jzsa-settings-table--params">
 						<thead>
 							<tr>
 								<th>Parameter</th>
@@ -1653,19 +1656,19 @@ class JZSA_Settings_Page {
 
 					<div class="jzsa-example">
 						<h3><?php esc_html_e( 'EXIF Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
-						<p><?php esc_html_e( 'Demonstrates photo EXIF information in slider mode. EXIF values appear with a brief delay the first time and then load immediately from cache.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<p><?php esc_html_e( 'Demonstrates photo EXIF information in slider mode with a larger custom monospace font. EXIF values appear with a brief delay the first time and then load immediately from cache.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<p style="margin: 8px 0 0 0; display: flex; align-items: flex-start; gap: 8px;">
 							<span class="dashicons dashicons-warning" style="font-size: 20px; width: 20px; height: 20px; line-height: 20px; color: #dba617; flex-shrink: 0;"></span>
 							<span><?php esc_html_e( 'EXIF output depends heavily on how complete and clean the metadata is across the photos in your shared album.', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 						</p>
 						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="16" info-bottom="{item} / {items}" info-top="{camera}" info-top-secondary="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}"]</code>
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="16" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-bottom="{item} / {items}" info-top="{camera}" info-top-secondary="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-exif">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="16" info-bottom="{item} / {items}" info-top="{camera}" info-top-secondary="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}"]' );
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="16" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-bottom="{item} / {items}" info-top="{camera}" info-top-secondary="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}"]' );
 							?>
 						</div>
 					</div>

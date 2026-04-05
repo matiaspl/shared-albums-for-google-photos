@@ -404,6 +404,8 @@ class JZSA_Shared_Albums {
 		$controls_color       = $this->parse_color( $atts, 'controls-color', '#ffffff' );
 		$video_controls_color = $this->parse_color( $atts, 'video-controls-color', '#00b2ff' );
 		$video_controls_autohide = $this->parse_bool( $atts, 'video-controls-autohide', false );
+		$info_font_size       = $this->parse_info_font_size( $atts, 'info-font-size', 12 );
+		$info_font_family     = $this->parse_info_font_family( $atts, 'info-font-family', '' );
 		$slideshow_autoresume = $this->parse_slideshow_autoresume(
 			$atts,
 			array( 'slideshow-autoresume', 'slideshow-autoresume-timeout', 'slideshow-inactivity-timeout' )
@@ -417,6 +419,8 @@ class JZSA_Shared_Albums {
 		$fullscreen_controls_color = isset( $atts['fullscreen-controls-color'] ) ? $this->parse_color( $atts, 'fullscreen-controls-color', '' ) : $controls_color;
 		$fullscreen_video_controls_color = isset( $atts['fullscreen-video-controls-color'] ) ? $this->parse_color( $atts, 'fullscreen-video-controls-color', '' ) : $video_controls_color;
 		$fullscreen_video_controls_autohide = isset( $atts['fullscreen-video-controls-autohide'] ) ? $this->parse_bool( $atts, 'fullscreen-video-controls-autohide', false ) : $video_controls_autohide;
+		$fullscreen_info_font_size = isset( $atts['fullscreen-info-font-size'] ) ? $this->parse_info_font_size( $atts, 'fullscreen-info-font-size', $info_font_size ) : $info_font_size;
+		$fullscreen_info_font_family = isset( $atts['fullscreen-info-font-family'] ) ? $this->parse_info_font_family( $atts, 'fullscreen-info-font-family', $info_font_family ) : $info_font_family;
 		$fullscreen_slideshow_autoresume = isset( $atts['fullscreen-slideshow-autoresume'] ) ? $this->parse_slideshow_autoresume( $atts, array( 'fullscreen-slideshow-autoresume' ) ) : $slideshow_autoresume;
 
 		$config = array(
@@ -500,7 +504,10 @@ class JZSA_Shared_Albums {
 			// Visual style
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
-			'info-font-size'       => $this->parse_info_font_size( $atts ),
+			'info-font-size'       => $info_font_size,
+			'fullscreen-info-font-size' => $fullscreen_info_font_size,
+			'info-font-family'     => $info_font_family,
+			'fullscreen-info-font-family' => $fullscreen_info_font_family,
 
 			// Info boxes - format strings with placeholders like {date} resolved per photo.
 			// Backward compat: show-name="true" maps to ="{name}".
@@ -588,15 +595,17 @@ class JZSA_Shared_Albums {
 	/**
 	 * Parse info-font-size attribute in pixels.
 	 *
-	 * @param array $atts Attributes.
+	 * @param array  $atts    Attributes.
+	 * @param string $key     Attribute key.
+	 * @param int    $default Default value.
 	 * @return int
 	 */
-	private function parse_info_font_size( $atts ) {
-		if ( ! isset( $atts['info-font-size'] ) ) {
-			return 12;
+	private function parse_info_font_size( $atts, $key = 'info-font-size', $default = 12 ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return $default;
 		}
 
-		$value = intval( $atts['info-font-size'] );
+		$value = intval( $atts[ $key ] );
 		if ( $value < 8 ) {
 			return 8;
 		}
@@ -605,6 +614,31 @@ class JZSA_Shared_Albums {
 		}
 
 		return $value;
+	}
+
+	/**
+	 * Parse info-font-family attribute for info boxes.
+	 *
+	 * Accepts a CSS font-family stack and strips characters that could break
+	 * out of the CSS value when echoed into an inline custom property.
+	 *
+	 * @param array  $atts    Attributes.
+	 * @param string $key     Attribute key.
+	 * @param string $default Default value.
+	 * @return string
+	 */
+	private function parse_info_font_family( $atts, $key = 'info-font-family', $default = '' ) {
+		if ( ! isset( $atts[ $key ] ) ) {
+			return $default;
+		}
+
+		$value = sanitize_text_field( $atts[ $key ] );
+		$value = preg_replace( "/[^A-Za-z0-9\\s,\\-_\"'().+&]/", '', $value );
+		$value = preg_replace( '/\s+/', ' ', $value );
+		$value = preg_replace( '/\s*,\s*/', ', ', $value );
+		$value = trim( $value, " \t\n\r\0\x0B," );
+
+		return '' !== $value ? $value : $default;
 	}
 
 	/**

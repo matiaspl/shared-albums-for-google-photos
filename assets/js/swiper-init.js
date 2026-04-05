@@ -1474,6 +1474,7 @@
     // info-bottom is the Swiper pagination pill — handled separately outside the stack.
     var SAFE_INFO_BOTTOM_ORDER = [];
     var infoMeasureCanvas = null;
+    var DEFAULT_INFO_FONT_FAMILY = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
 
     /**
      * Resolve a format string by replacing placeholders like {date} with photo data.
@@ -1634,29 +1635,37 @@
             (bottomHtml ? '<div class="jzsa-info-stack jzsa-info-stack-bottom">' + bottomHtml + '</div>' : '');
     }
 
-    function getInfoMeasureContext(fontSizePx) {
+    function getInfoMeasureContext(fontSizePx, fontFamily) {
         if (!infoMeasureCanvas) {
             infoMeasureCanvas = document.createElement('canvas');
         }
         var ctx = infoMeasureCanvas.getContext('2d');
-        ctx.font = fontSizePx + 'px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif';
+        ctx.font = fontSizePx + 'px ' + (fontFamily || DEFAULT_INFO_FONT_FAMILY);
         return ctx;
     }
 
-    function estimateInfoBoxWidth(text, fontSizePx) {
+    function estimateInfoBoxWidth(text, fontSizePx, fontFamily) {
         if (!text) {
             return 0;
         }
-        var ctx = getInfoMeasureContext(fontSizePx);
+        var ctx = getInfoMeasureContext(fontSizePx, fontFamily);
         return Math.ceil(ctx.measureText(text).width) + 24;
     }
 
-    function getInfoFontSizePx($container) {
-        var attrValue = parseInt($container.attr('data-info-font-size'), 10);
+    function getInfoFontSizePx($container, attrName, fallbackPx) {
+        var attrValue = parseInt($container.attr(attrName || 'data-info-font-size'), 10);
         if (!isNaN(attrValue) && attrValue > 0) {
             return attrValue;
         }
-        return 12;
+        return (typeof fallbackPx === 'number' && fallbackPx > 0) ? fallbackPx : 12;
+    }
+
+    function getInfoFontFamily($container, attrName, fallbackFamily) {
+        var attrValue = ($container.attr(attrName || 'data-info-font-family') || '').trim();
+        if (attrValue) {
+            return attrValue;
+        }
+        return (typeof fallbackFamily === 'string') ? fallbackFamily : '';
     }
 
     // ========================================================================
@@ -2280,6 +2289,8 @@
         var controlsColor = useFullscreen ? params.fullscreenControlsColor : params.controlsColor;
         var videoControlsColor = useFullscreen ? params.fullscreenVideoControlsColor : params.videoControlsColor;
         var videoControlsAutohide = useFullscreen ? params.fullscreenVideoControlsAutohide : params.videoControlsAutohide;
+        var infoFontSize = useFullscreen ? params.fullscreenInfoFontSize : params.infoFontSize;
+        var infoFontFamily = useFullscreen ? params.fullscreenInfoFontFamily : params.infoFontFamily;
 
         $container.attr('data-show-navigation', showNavigation ? 'true' : 'false');
 
@@ -2294,6 +2305,18 @@
             containerElement.style.setProperty('--jzsa-video-controls-color', videoControlsColor);
         } else {
             containerElement.style.removeProperty('--jzsa-video-controls-color');
+        }
+
+        if (infoFontSize > 0) {
+            containerElement.style.setProperty('--jzsa-info-font-size', infoFontSize + 'px');
+        } else {
+            containerElement.style.removeProperty('--jzsa-info-font-size');
+        }
+
+        if (infoFontFamily) {
+            containerElement.style.setProperty('--jzsa-info-font-family', infoFontFamily);
+        } else {
+            containerElement.style.removeProperty('--jzsa-info-font-family');
         }
 
         var activeBottomCenterFormat = useFullscreen
@@ -4182,6 +4205,10 @@
         var fullscreenControlsColorSetting = $container.attr('data-fullscreen-controls-color') || inlineControlsColorSetting;
         var inlineVideoControlsColorSetting = $container.attr('data-video-controls-color') || '';
         var fullscreenVideoControlsColorSetting = $container.attr('data-fullscreen-video-controls-color') || inlineVideoControlsColorSetting;
+        var inlineInfoFontSizeSetting = getInfoFontSizePx($container, 'data-info-font-size', 12);
+        var fullscreenInfoFontSizeSetting = getInfoFontSizePx($container, 'data-fullscreen-info-font-size', inlineInfoFontSizeSetting);
+        var inlineInfoFontFamilySetting = getInfoFontFamily($container, 'data-info-font-family', '');
+        var fullscreenInfoFontFamilySetting = getInfoFontFamily($container, 'data-fullscreen-info-font-family', inlineInfoFontFamilySetting);
         var inlineVideoControlsAutohideSetting = readBooleanDataAttr($container, 'data-video-controls-autohide', false);
         var fullscreenVideoControlsAutohideSetting = readBooleanDataAttr(
             $container,
@@ -4219,6 +4246,10 @@
             fullscreenControlsColor: fullscreenControlsColorSetting,
             videoControlsColor: inlineVideoControlsColorSetting,
             fullscreenVideoControlsColor: fullscreenVideoControlsColorSetting,
+            infoFontSize: inlineInfoFontSizeSetting,
+            fullscreenInfoFontSize: fullscreenInfoFontSizeSetting,
+            infoFontFamily: inlineInfoFontFamilySetting,
+            fullscreenInfoFontFamily: fullscreenInfoFontFamilySetting,
             videoControlsAutohide: inlineVideoControlsAutohideSetting,
             fullscreenVideoControlsAutohide: fullscreenVideoControlsAutohideSetting,
             albumTitle: $container.attr('data-album-title') || '',
@@ -4784,6 +4815,10 @@
                 fullscreenControlsColor: fullscreenControlsColor,
                 videoControlsColor: videoControlsColor,
                 fullscreenVideoControlsColor: fullscreenVideoControlsColor,
+                infoFontSize: config.infoFontSize,
+                fullscreenInfoFontSize: config.fullscreenInfoFontSize,
+                infoFontFamily: config.infoFontFamily,
+                fullscreenInfoFontFamily: config.fullscreenInfoFontFamily,
                 videoControlsAutohide: videoControlsAutohide,
                 fullscreenVideoControlsAutohide: fullscreenVideoControlsAutohide,
                 browserPrefix: null,
@@ -5234,6 +5269,10 @@
             'data-fullscreen-show-download-button',
             'data-fullscreen-show-link-button',
             'data-download-size-warning',
+            'data-info-font-size',
+            'data-fullscreen-info-font-size',
+            'data-info-font-family',
+            'data-fullscreen-info-font-family',
             'data-info-top',
             'data-fullscreen-info-top',
             'data-info-top-secondary',
@@ -5264,6 +5303,27 @@
         var videoControlsColor = $galleryContainer.attr('data-fullscreen-video-controls-color') || $galleryContainer.attr('data-video-controls-color');
         if (videoControlsColor) {
             $slideshow[0].style.setProperty('--jzsa-video-controls-color', videoControlsColor);
+        }
+        var infoFontSize = parseInt($galleryContainer.attr('data-fullscreen-info-font-size'), 10);
+        if (isNaN(infoFontSize) || infoFontSize <= 0) {
+            infoFontSize = parseInt($galleryContainer.attr('data-info-font-size'), 10);
+        }
+        if (!isNaN(infoFontSize) && infoFontSize > 0) {
+            $slideshow[0].style.setProperty('--jzsa-info-font-size', infoFontSize + 'px');
+        } else {
+            var inheritedInfoFontSize = $galleryContainer[0].style.getPropertyValue('--jzsa-info-font-size');
+            if (inheritedInfoFontSize) {
+                $slideshow[0].style.setProperty('--jzsa-info-font-size', inheritedInfoFontSize);
+            }
+        }
+        var infoFontFamily = ($galleryContainer.attr('data-fullscreen-info-font-family') || $galleryContainer.attr('data-info-font-family') || '').trim();
+        if (infoFontFamily) {
+            $slideshow[0].style.setProperty('--jzsa-info-font-family', infoFontFamily);
+        } else {
+            var inheritedInfoFontFamily = $galleryContainer[0].style.getPropertyValue('--jzsa-info-font-family');
+            if (inheritedInfoFontFamily) {
+                $slideshow[0].style.setProperty('--jzsa-info-font-family', inheritedInfoFontFamily);
+            }
         }
 
         return slideshowId;

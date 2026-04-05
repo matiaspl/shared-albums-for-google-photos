@@ -237,6 +237,9 @@ class JZSA_Renderer {
 		if ( isset( $config['info-font-size'] ) ) {
 			$styles[] = '--jzsa-info-font-size: ' . intval( $config['info-font-size'] ) . 'px';
 		}
+		if ( ! empty( $config['info-font-family'] ) ) {
+			$styles[] = '--jzsa-info-font-family: ' . $config['info-font-family'];
+		}
 
 		return implode( '; ', $styles );
 	}
@@ -386,6 +389,15 @@ class JZSA_Renderer {
 		}
 		if ( isset( $config['info-font-size'] ) ) {
 			$attrs[] = sprintf( 'data-info-font-size="%d"', intval( $config['info-font-size'] ) );
+		}
+		if ( isset( $config['fullscreen-info-font-size'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-info-font-size="%d"', intval( $config['fullscreen-info-font-size'] ) );
+		}
+		if ( ! empty( $config['info-font-family'] ) ) {
+			$attrs[] = sprintf( 'data-info-font-family="%s"', esc_attr( $config['info-font-family'] ) );
+		}
+		if ( ! empty( $config['fullscreen-info-font-family'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-info-font-family="%s"', esc_attr( $config['fullscreen-info-font-family'] ) );
 		}
 
 		return implode( ' ', $attrs );
@@ -547,6 +559,15 @@ class JZSA_Renderer {
 		if ( isset( $config['info-font-size'] ) ) {
 			$attrs[] = sprintf( 'data-info-font-size="%d"', intval( $config['info-font-size'] ) );
 		}
+		if ( isset( $config['fullscreen-info-font-size'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-info-font-size="%d"', intval( $config['fullscreen-info-font-size'] ) );
+		}
+		if ( ! empty( $config['info-font-family'] ) ) {
+			$attrs[] = sprintf( 'data-info-font-family="%s"', esc_attr( $config['info-font-family'] ) );
+		}
+		if ( ! empty( $config['fullscreen-info-font-family'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-info-font-family="%s"', esc_attr( $config['fullscreen-info-font-family'] ) );
+		}
 
 		// Gallery mode should keep responsive sizing unless width/height
 		// were explicitly provided in shortcode.
@@ -568,6 +589,9 @@ class JZSA_Renderer {
 		}
 		if ( isset( $config['info-font-size'] ) ) {
 			$styles[] = '--jzsa-info-font-size: ' . intval( $config['info-font-size'] ) . 'px';
+		}
+		if ( ! empty( $config['info-font-family'] ) ) {
+			$styles[] = '--jzsa-info-font-family: ' . $config['info-font-family'];
 		}
 		if ( ! empty( $config['width-explicit'] )&& isset( $config['width'] ) && $config['width'] !== 'auto' ) {
 			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';

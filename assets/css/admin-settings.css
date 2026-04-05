@@ -428,8 +428,12 @@
     padding: 3px 6px;
     border-radius: 3px;
     font-size: 13px;
-    color: #d63638;
+    color: #1d2327;
     font-family: Consolas, Monaco, monospace;
+}
+
+.jzsa-settings-table--params td:first-child code {
+    color: #d63638;
 }
 
 /* FAQ */

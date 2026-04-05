@@ -734,7 +734,7 @@ body.jzsa-no-scroll {
     font-size: var(--jzsa-info-font-size, 12px);
     line-height: 1.5;
     text-align: center;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--jzsa-info-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1185,7 +1185,7 @@ body.jzsa-no-scroll {
     border-radius: var(--jzsa-controls-pill-radius);
     font-size: var(--jzsa-info-font-size, 12px);
     line-height: 1.5;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--jzsa-info-font-family, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
     pointer-events: none;
     z-index: 10;
     max-width: var(--jzsa-info-corner-max-width);
