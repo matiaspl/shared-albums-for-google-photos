@@ -5404,7 +5404,7 @@
             var thumbZoneHtml = buildInfoZoneHtml(photo, thumbZoneFormats.inline, thumbZoneFormats.fullscreen, {
                 item: String(globalIndex + 1),
                 items: String(parseInt($container.attr('data-total-count'), 10) || 0),
-                albumTitle: ''
+                albumTitle: $container.attr('data-album-title') || ''
             }, { bottomOrder: GALLERY_INFO_BOTTOM_ORDER });
 
             html +=
