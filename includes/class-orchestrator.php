@@ -527,29 +527,65 @@ class JZSA_Shared_Albums {
 		// Default for info-bottom: derive from legacy show-counter / show-title attributes when not set.
 		$show_counter_compat = $this->parse_bool( $atts, 'show-counter', true );
 		$show_title_compat   = $this->parse_bool( $atts, 'show-title', false );
-		$b1_default     = '';
-		if ( $show_title_compat && $show_counter_compat ) {
-			$b1_default = '{album-title}: {item} / {items}';
-		} elseif ( $show_title_compat ) {
-			$b1_default = '{album-title}';
-		} elseif ( $show_counter_compat ) {
-			$b1_default = '{item} / {items}';
-		}
+		$b1_default          = $this->build_legacy_info_bottom_default( $show_title_compat, $show_counter_compat );
 
 		$b1  = $this->parse_info_box( $atts, 'info-bottom', $b1_default );
 		$t1  = $this->parse_info_box( $atts, array( 'info-top', 'info-top-1' ), '' );
 		$t2  = $this->parse_info_box( $atts, array( 'info-top-secondary', 'info-top-2' ), '' );
 		$gpb = $this->parse_info_box( $atts, 'gallery-page-bottom', '' );
+		$fullscreen_b1_default = $b1;
+
+		// Backward compat: accept fullscreen-show-title / fullscreen-show-counter
+		// silently for legacy shortcodes. Modern info-bottom params still win when mixed.
+		if (
+			! isset( $atts['info-bottom'] ) &&
+			! isset( $atts['fullscreen-info-bottom'] ) &&
+			( isset( $atts['fullscreen-show-title'] ) || isset( $atts['fullscreen-show-counter'] ) )
+		) {
+			$fullscreen_show_title_compat = isset( $atts['fullscreen-show-title'] )
+				? $this->parse_bool( $atts, 'fullscreen-show-title', false )
+				: $show_title_compat;
+			$fullscreen_show_counter_compat = isset( $atts['fullscreen-show-counter'] )
+				? $this->parse_bool( $atts, 'fullscreen-show-counter', false )
+				: $show_counter_compat;
+			$fullscreen_b1_default = $this->build_legacy_info_bottom_default(
+				$fullscreen_show_title_compat,
+				$fullscreen_show_counter_compat
+			);
+		}
 
 		return array(
 			'info-bottom'                    => $b1,
-			'fullscreen-info-bottom'         => $this->parse_info_box( $atts, 'fullscreen-info-bottom', $b1 ),
+			'fullscreen-info-bottom'         => $this->parse_info_box( $atts, 'fullscreen-info-bottom', $fullscreen_b1_default ),
 			'info-top'                       => $t1,
 			'fullscreen-info-top'            => $this->parse_info_box( $atts, array( 'fullscreen-info-top', 'fullscreen-info-top-1' ), $t1 ),
 			'info-top-secondary'            => $t2,
 			'fullscreen-info-top-secondary' => $this->parse_info_box( $atts, array( 'fullscreen-info-top-secondary', 'fullscreen-info-top-2' ), $t2 ),
 			'gallery-page-bottom'            => $gpb,
 		);
+	}
+
+	/**
+	 * Derive the legacy bottom-center display string from old title/counter flags.
+	 *
+	 * @param bool $show_title   Whether to show album title.
+	 * @param bool $show_counter Whether to show item counter.
+	 * @return string
+	 */
+	private function build_legacy_info_bottom_default( $show_title, $show_counter ) {
+		if ( $show_title && $show_counter ) {
+			return '{album-title}: {item} / {items}';
+		}
+
+		if ( $show_title ) {
+			return '{album-title}';
+		}
+
+		if ( $show_counter ) {
+			return '{item} / {items}';
+		}
+
+		return '';
 	}
 
 	/**
