@@ -1695,6 +1695,15 @@ body.jzsa-no-scroll {
     pointer-events: auto;
 }
 
+/* scroll-reveal="true": show all item buttons while scrolling is active.
+   pointer-events are off so buttons cannot be accidentally tapped mid-scroll. */
+.jzsa-gallery-album[data-scroll-reveal-on-mobile="true"].jzsa-scrolling .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn,
+.jzsa-gallery-album[data-scroll-reveal-on-mobile="true"].jzsa-scrolling .jzsa-gallery-item .jzsa-gallery-thumb-link-btn,
+.jzsa-gallery-album[data-scroll-reveal-on-mobile="true"].jzsa-scrolling .jzsa-gallery-item .jzsa-gallery-thumb-download-btn {
+    opacity: var(--jzsa-controls-visible-opacity);
+    pointer-events: none;
+}
+
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-info-stack-top {
     position: absolute;
     left: 0;

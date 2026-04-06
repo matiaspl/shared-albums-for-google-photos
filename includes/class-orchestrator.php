@@ -493,6 +493,7 @@ class JZSA_Shared_Albums {
 			'gallery-row-height'     => $this->parse_gallery_row_height( $atts ),
 			'gallery-rows'           => $this->parse_gallery_rows( $atts ),
 			'gallery-scrollable'     => $this->parse_bool( $atts, 'gallery-scrollable', false ),
+			'scroll-reveal-on-mobile' => $this->parse_bool( $atts, 'scroll-reveal-on-mobile', false ),
 			'gallery-gap'            => $this->parse_gallery_gap( $atts ),
 
 			// Mosaic (thumbnail strip alongside the main gallery)

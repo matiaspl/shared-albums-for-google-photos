@@ -1138,6 +1138,11 @@ class JZSA_Settings_Page {
 								<td>false</td>
 							</tr>
 							<tr>
+								<td><code>scroll-reveal-on-mobile</code></td>
+								<td><?php esc_html_e( 'When set to "true", shows all thumbnail action buttons (fullscreen, link, download) while the user is scrolling on a touch device. Buttons are not tappable during scrolling but remain visible for 800ms after scroll stops, making them easy to tap. Has no effect on desktop.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>false</td>
+							</tr>
+							<tr>
 								<td><code>gallery-gap</code></td>
 								<td><?php esc_html_e( 'Spacing between gallery thumbnails in pixels. Applies to both grid and justified layouts.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>4</td>
