@@ -7541,27 +7541,49 @@
         (function() {
             var galleryEl = $container[0];
 
-            // gallery-scroll-reveal: add jzsa-scrolling while scrolling, remove shortly after stop.
-            // Values: 'mobile' (touch devices only), 'desktop' (non-touch only), 'always' (all).
+            // gallery-scroll-reveal: show buttons during or at the start of scrolling.
+            // 'mobile'/'always'            — buttons visible for the full duration of each scroll + 300ms after stop.
+            // 'flash-mobile'/'flash-always' — buttons flash for 3000ms on the first scroll only, then never again.
             (function() {
                 var scrollReveal = $container.attr('data-gallery-scroll-reveal');
                 if (!scrollReveal) return;
                 var isTouchDevice = navigator.maxTouchPoints > 0;
-                var active = scrollReveal === 'always' ||
-                             (scrollReveal === 'mobile'  &&  isTouchDevice) ||
-                             (scrollReveal === 'desktop' && !isTouchDevice);
+                var isFlash  = scrollReveal === 'flash-mobile' || scrollReveal === 'flash-always';
+                var active   = scrollReveal === 'always'       ||
+                               scrollReveal === 'flash-always' ||
+                               ((scrollReveal === 'mobile' || scrollReveal === 'flash-mobile') && isTouchDevice);
                 if (!active) return;
-                var scrollStopTimer = null;
-                function onScroll() {
-                    $container.addClass('jzsa-scrolling');
-                    clearTimeout(scrollStopTimer);
-                    scrollStopTimer = setTimeout(function() {
-                        $container.removeClass('jzsa-scrolling');
-                    }, 800);
-                }
+
                 var scrollNs = 'scroll.jzsaScrollReveal-' + ($container.attr('id') || '');
-                $(window).off(scrollNs).on(scrollNs, onScroll);
-                galleryEl.addEventListener('scroll', onScroll, { passive: true });
+
+                if (isFlash) {
+                    // Flash mode: on first scroll, show buttons for 3000ms then never again.
+                    var flashDone = false;
+                    function onFirstScroll() {
+                        if (flashDone) return;
+                        flashDone = true;
+                        $(window).off(scrollNs);
+                        galleryEl.removeEventListener('scroll', onFirstScroll);
+                        $container.addClass('jzsa-scrolling');
+                        setTimeout(function() {
+                            $container.removeClass('jzsa-scrolling');
+                        }, 3000);
+                    }
+                    $(window).off(scrollNs).on(scrollNs, onFirstScroll);
+                    galleryEl.addEventListener('scroll', onFirstScroll, { passive: true });
+                } else {
+                    // Continuous mode: buttons visible for the full duration of each scroll.
+                    var scrollStopTimer = null;
+                    function onScroll() {
+                        $container.addClass('jzsa-scrolling');
+                        clearTimeout(scrollStopTimer);
+                        scrollStopTimer = setTimeout(function() {
+                            $container.removeClass('jzsa-scrolling');
+                        }, 300);
+                    }
+                    $(window).off(scrollNs).on(scrollNs, onScroll);
+                    galleryEl.addEventListener('scroll', onScroll, { passive: true });
+                }
             }());
 
             function closestItem(target) {

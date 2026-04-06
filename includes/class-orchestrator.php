@@ -769,7 +769,7 @@ class JZSA_Shared_Albums {
 			return 'never';
 		}
 		$value = strtolower( trim( $atts['gallery-scroll-reveal'] ) );
-		if ( in_array( $value, array( 'never', 'mobile', 'desktop', 'always' ), true ) ) {
+		if ( in_array( $value, array( 'never', 'mobile', 'always', 'flash-mobile', 'flash-always' ), true ) ) {
 			return $value;
 		}
 		return 'never';

@@ -1139,7 +1139,7 @@ class JZSA_Settings_Page {
 							</tr>
 							<tr>
 								<td><code>gallery-scroll-reveal</code></td>
-								<td><?php esc_html_e( 'Shows all thumbnail action buttons while the user is scrolling, making them easy to discover and tap. "mobile" activates on touch devices only, "desktop" on non-touch only, "always" on all devices, "never" disables the feature. Buttons are not tappable mid-scroll but remain visible for 800ms after scroll stops.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Controls button visibility during scrolling. "mobile" shows buttons throughout every scroll on touch devices (disappear 300ms after scroll stops); "always" does the same on all devices. "flash-mobile" shows buttons for 3 seconds on the very first scroll only (touch devices only) as a one-time hint; "flash-always" is the same on all devices. "never" disables the feature. Buttons are not tappable mid-scroll.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>never</td>
 							</tr>
 							<tr>
