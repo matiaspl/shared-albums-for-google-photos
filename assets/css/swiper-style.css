@@ -729,7 +729,7 @@ body.jzsa-no-scroll {
     right: auto;
     margin: 0;
     transform: translateX(-50%);
-    max-width: var(--jzsa-info-center-max-width-default);
+    max-width: calc(100% - 24px);
     width: max-content;
     font-size: var(--jzsa-info-font-size, 12px);
     line-height: 1.5;
