@@ -5,6 +5,10 @@
 (function($) {
 'use strict';
 
+	// iOS/iPadOS detection — iPad Pro reports as MacIntel with touch points > 1.
+	var IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+	    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+
 	// Debug flag for optional console logging. Disabled by default.
 	// To enable in the browser console, run: window.JZSA_DEBUG = true;
 	window.JZSA_DEBUG = window.JZSA_DEBUG || false;
@@ -5445,7 +5449,8 @@
                     ' data-index="' + globalIndex + '"' +
                     ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (globalIndex + 1) + '"' +
                     ' draggable="false"' +
-                    ' loading="lazy" decoding="sync"' + tileStyleAttr + '>';
+                    (IS_IOS ? '' : ' loading="lazy"') +
+                    ' decoding="' + (IS_IOS ? 'sync' : 'async') + '"' + tileStyleAttr + '>';
             }
 
             var thumbOverlayBtns = '';
@@ -5563,7 +5568,8 @@
                         ' data-index="' + item.index + '"' +
                         ' alt="' + mediaLabel.charAt(0).toUpperCase() + mediaLabel.slice(1) + ' ' + (item.index + 1) + '"' +
                         ' draggable="false"' +
-                        ' loading="lazy" decoding="sync"' +
+                        (IS_IOS ? '' : ' loading="lazy"') +
+                        ' decoding="' + (IS_IOS ? 'sync' : 'async') + '"' +
                         ' style="width:100%;height:100%;">';
                 }
 
