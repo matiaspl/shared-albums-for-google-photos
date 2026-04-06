@@ -240,6 +240,9 @@ class JZSA_Renderer {
 		if ( ! empty( $config['info-font-family'] ) ) {
 			$styles[] = '--jzsa-info-font-family: ' . $config['info-font-family'];
 		}
+		if ( ! empty( $config['info-font-color'] ) ) {
+			$styles[] = '--jzsa-info-font-color: ' . esc_attr( $config['info-font-color'] );
+		}
 
 		return implode( '; ', $styles );
 	}
@@ -398,6 +401,12 @@ class JZSA_Renderer {
 		}
 		if ( ! empty( $config['fullscreen-info-font-family'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-info-font-family="%s"', esc_attr( $config['fullscreen-info-font-family'] ) );
+		}
+		if ( ! empty( $config['info-font-color'] ) ) {
+			$attrs[] = sprintf( 'data-info-font-color="%s"', esc_attr( $config['info-font-color'] ) );
+		}
+		if ( ! empty( $config['fullscreen-info-font-color'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-info-font-color="%s"', esc_attr( $config['fullscreen-info-font-color'] ) );
 		}
 
 		return implode( ' ', $attrs );
@@ -568,14 +577,20 @@ class JZSA_Renderer {
 		if ( isset( $config['fullscreen-info-font-size'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-info-font-size="%d"', intval( $config['fullscreen-info-font-size'] ) );
 		}
-		if ( ! empty( $config['info-font-family'] ) ) {
-			$attrs[] = sprintf( 'data-info-font-family="%s"', esc_attr( $config['info-font-family'] ) );
-		}
-		if ( ! empty( $config['fullscreen-info-font-family'] ) ) {
-			$attrs[] = sprintf( 'data-fullscreen-info-font-family="%s"', esc_attr( $config['fullscreen-info-font-family'] ) );
-		}
+			if ( ! empty( $config['info-font-family'] ) ) {
+				$attrs[] = sprintf( 'data-info-font-family="%s"', esc_attr( $config['info-font-family'] ) );
+			}
+			if ( ! empty( $config['fullscreen-info-font-family'] ) ) {
+				$attrs[] = sprintf( 'data-fullscreen-info-font-family="%s"', esc_attr( $config['fullscreen-info-font-family'] ) );
+			}
+			if ( ! empty( $config['info-font-color'] ) ) {
+				$attrs[] = sprintf( 'data-info-font-color="%s"', esc_attr( $config['info-font-color'] ) );
+			}
+			if ( ! empty( $config['fullscreen-info-font-color'] ) ) {
+				$attrs[] = sprintf( 'data-fullscreen-info-font-color="%s"', esc_attr( $config['fullscreen-info-font-color'] ) );
+			}
 
-		// Gallery mode should keep responsive sizing unless width/height
+			// Gallery mode should keep responsive sizing unless width/height
 		// were explicitly provided in shortcode.
 		$styles = array();
 		if ( ! empty( $config['background-color'] ) ) {
@@ -598,6 +613,9 @@ class JZSA_Renderer {
 		}
 		if ( ! empty( $config['info-font-family'] ) ) {
 			$styles[] = '--jzsa-info-font-family: ' . $config['info-font-family'];
+		}
+		if ( ! empty( $config['info-font-color'] ) ) {
+			$styles[] = '--jzsa-info-font-color: ' . esc_attr( $config['info-font-color'] );
 		}
 		if ( ! empty( $config['width-explicit'] )&& isset( $config['width'] ) && $config['width'] !== 'auto' ) {
 			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';

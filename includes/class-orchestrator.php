@@ -407,6 +407,7 @@ class JZSA_Shared_Albums {
 		$video_controls_autohide = $this->parse_bool( $atts, 'video-controls-autohide', false );
 		$info_font_size       = $this->parse_info_font_size( $atts, 'info-font-size', 12 );
 		$info_font_family     = $this->parse_info_font_family( $atts, 'info-font-family', '' );
+		$info_font_color      = $this->parse_color( $atts, 'info-font-color', '' );
 		$slideshow_autoresume = $this->parse_slideshow_autoresume(
 			$atts,
 			array( 'slideshow-autoresume', 'slideshow-autoresume-timeout', 'slideshow-inactivity-timeout' )
@@ -422,6 +423,7 @@ class JZSA_Shared_Albums {
 		$fullscreen_video_controls_autohide = isset( $atts['fullscreen-video-controls-autohide'] ) ? $this->parse_bool( $atts, 'fullscreen-video-controls-autohide', false ) : $video_controls_autohide;
 		$fullscreen_info_font_size = isset( $atts['fullscreen-info-font-size'] ) ? $this->parse_info_font_size( $atts, 'fullscreen-info-font-size', $info_font_size ) : $info_font_size;
 		$fullscreen_info_font_family = isset( $atts['fullscreen-info-font-family'] ) ? $this->parse_info_font_family( $atts, 'fullscreen-info-font-family', $info_font_family ) : $info_font_family;
+		$fullscreen_info_font_color = isset( $atts['fullscreen-info-font-color'] ) ? $this->parse_color( $atts, 'fullscreen-info-font-color', '' ) : $info_font_color;
 		$fullscreen_slideshow_autoresume = isset( $atts['fullscreen-slideshow-autoresume'] ) ? $this->parse_slideshow_autoresume( $atts, array( 'fullscreen-slideshow-autoresume' ) ) : $slideshow_autoresume;
 
 		$config = array(
@@ -506,10 +508,12 @@ class JZSA_Shared_Albums {
 			// Visual style
 			'corner-radius'        => $this->parse_corner_radius( $atts ),
 			'mosaic-corner-radius' => $this->parse_mosaic_corner_radius( $atts ),
-			'info-font-size'       => $info_font_size,
-			'fullscreen-info-font-size' => $fullscreen_info_font_size,
-			'info-font-family'     => $info_font_family,
-			'fullscreen-info-font-family' => $fullscreen_info_font_family,
+				'info-font-size'       => $info_font_size,
+				'fullscreen-info-font-size' => $fullscreen_info_font_size,
+				'info-font-family'     => $info_font_family,
+				'fullscreen-info-font-family' => $fullscreen_info_font_family,
+				'info-font-color'      => $info_font_color,
+				'fullscreen-info-font-color' => $fullscreen_info_font_color,
 
 			// Info boxes - format strings with placeholders like {date} resolved per photo.
 			// Backward compat: show-name="true" maps to ="{name}".

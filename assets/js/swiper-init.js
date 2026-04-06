@@ -1672,6 +1672,14 @@
         return (typeof fallbackFamily === 'string') ? fallbackFamily : '';
     }
 
+    function getInfoFontColor($container, attrName, fallbackColor) {
+        var attrValue = ($container.attr(attrName || 'data-info-font-color') || '').trim();
+        if (attrValue) {
+            return attrValue;
+        }
+        return (typeof fallbackColor === 'string') ? fallbackColor : '';
+    }
+
     // ========================================================================
     // Wave 2: Background photo metadata prefetch via AJAX
     // ========================================================================
@@ -2295,6 +2303,7 @@
         var videoControlsAutohide = useFullscreen ? params.fullscreenVideoControlsAutohide : params.videoControlsAutohide;
         var infoFontSize = useFullscreen ? params.fullscreenInfoFontSize : params.infoFontSize;
         var infoFontFamily = useFullscreen ? params.fullscreenInfoFontFamily : params.infoFontFamily;
+        var infoFontColor = useFullscreen ? params.fullscreenInfoFontColor : params.infoFontColor;
 
         $container.attr('data-show-navigation', showNavigation ? 'true' : 'false');
 
@@ -2321,6 +2330,12 @@
             containerElement.style.setProperty('--jzsa-info-font-family', infoFontFamily);
         } else {
             containerElement.style.removeProperty('--jzsa-info-font-family');
+        }
+
+        if (infoFontColor) {
+            containerElement.style.setProperty('--jzsa-info-font-color', infoFontColor);
+        } else {
+            containerElement.style.removeProperty('--jzsa-info-font-color');
         }
 
         var activeBottomCenterFormat = useFullscreen
@@ -4216,6 +4231,8 @@
         var fullscreenInfoFontSizeSetting = getInfoFontSizePx($container, 'data-fullscreen-info-font-size', inlineInfoFontSizeSetting);
         var inlineInfoFontFamilySetting = getInfoFontFamily($container, 'data-info-font-family', '');
         var fullscreenInfoFontFamilySetting = getInfoFontFamily($container, 'data-fullscreen-info-font-family', inlineInfoFontFamilySetting);
+        var inlineInfoFontColorSetting = getInfoFontColor($container, 'data-info-font-color', '');
+        var fullscreenInfoFontColorSetting = getInfoFontColor($container, 'data-fullscreen-info-font-color', inlineInfoFontColorSetting);
         var inlineVideoControlsAutohideSetting = readBooleanDataAttr($container, 'data-video-controls-autohide', false);
         var fullscreenVideoControlsAutohideSetting = readBooleanDataAttr(
             $container,
@@ -4257,6 +4274,8 @@
             fullscreenInfoFontSize: fullscreenInfoFontSizeSetting,
             infoFontFamily: inlineInfoFontFamilySetting,
             fullscreenInfoFontFamily: fullscreenInfoFontFamilySetting,
+            infoFontColor: inlineInfoFontColorSetting,
+            fullscreenInfoFontColor: fullscreenInfoFontColorSetting,
             videoControlsAutohide: inlineVideoControlsAutohideSetting,
             fullscreenVideoControlsAutohide: fullscreenVideoControlsAutohideSetting,
             albumTitle: $container.attr('data-album-title') || '',
@@ -4826,6 +4845,8 @@
                 fullscreenInfoFontSize: config.fullscreenInfoFontSize,
                 infoFontFamily: config.infoFontFamily,
                 fullscreenInfoFontFamily: config.fullscreenInfoFontFamily,
+                infoFontColor: config.infoFontColor,
+                fullscreenInfoFontColor: config.fullscreenInfoFontColor,
                 videoControlsAutohide: videoControlsAutohide,
                 fullscreenVideoControlsAutohide: fullscreenVideoControlsAutohide,
                 browserPrefix: null,
@@ -5280,6 +5301,8 @@
             'data-fullscreen-info-font-size',
             'data-info-font-family',
             'data-fullscreen-info-font-family',
+            'data-info-font-color',
+            'data-fullscreen-info-font-color',
             'data-info-top',
             'data-fullscreen-info-top',
             'data-info-top-secondary',
@@ -5330,6 +5353,15 @@
             var inheritedInfoFontFamily = $galleryContainer[0].style.getPropertyValue('--jzsa-info-font-family');
             if (inheritedInfoFontFamily) {
                 $slideshow[0].style.setProperty('--jzsa-info-font-family', inheritedInfoFontFamily);
+            }
+        }
+        var infoFontColor = ($galleryContainer.attr('data-fullscreen-info-font-color') || $galleryContainer.attr('data-info-font-color') || '').trim();
+        if (infoFontColor) {
+            $slideshow[0].style.setProperty('--jzsa-info-font-color', infoFontColor);
+        } else {
+            var inheritedInfoFontColor = $galleryContainer[0].style.getPropertyValue('--jzsa-info-font-color');
+            if (inheritedInfoFontColor) {
+                $slideshow[0].style.setProperty('--jzsa-info-font-color', inheritedInfoFontColor);
             }
         }
 
@@ -5763,6 +5795,12 @@
             $controls[0].style.setProperty('--jzsa-info-font-family', infoFontFamily);
         } else {
             $controls[0].style.removeProperty('--jzsa-info-font-family');
+        }
+        var infoFontColor = getInfoFontColor($container, 'data-info-font-color', '');
+        if (infoFontColor) {
+            $controls[0].style.setProperty('--jzsa-info-font-color', infoFontColor);
+        } else {
+            $controls[0].style.removeProperty('--jzsa-info-font-color');
         }
 
         function isActivationKey(e) {
