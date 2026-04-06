@@ -1937,6 +1937,12 @@ body.jzsa-no-scroll {
 
 }
 
+/* Keep play/pause visible while the autoresume countdown ring is actually shown. */
+.jzsa-album.jzsa-countdown-ring-visible .swiper-button-play-pause {
+    opacity: var(--jzsa-controls-visible-opacity) !important;
+    pointer-events: auto !important;
+}
+
 .jzsa-gallery-slide-stage {
     position: absolute;
     top: 0;

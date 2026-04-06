@@ -2630,6 +2630,7 @@
         $btn.find('.jzsa-countdown-ring').remove();
         clearTimeout($el.data('jzsa-countdown-show-timer'));
         $el.addClass('jzsa-slideshow-interrupted');
+        $el.removeClass('jzsa-countdown-ring-visible');
 
         var ns = 'http://www.w3.org/2000/svg';
         var svg = document.createElementNS(ns, 'svg');
@@ -2645,6 +2646,7 @@
 
         // Fade in after delay
         var showTimer = setTimeout(function() {
+            $el.addClass('jzsa-countdown-ring-visible');
             $(svg).addClass('jzsa-visible');
         }, COUNTDOWN_RING_DELAY_MS);
         $el.data('jzsa-countdown-show-timer', showTimer);
@@ -2654,6 +2656,7 @@
     function clearCountdownRing($el) {
         clearTimeout($el.data('jzsa-countdown-show-timer'));
         $el.removeClass('jzsa-slideshow-interrupted');
+        $el.removeClass('jzsa-countdown-ring-visible');
         $el.find('.swiper-button-play-pause .jzsa-countdown-ring').remove();
     }
 
