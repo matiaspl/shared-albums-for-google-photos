@@ -1153,9 +1153,9 @@ class JZSA_Settings_Page {
 								<td>false</td>
 							</tr>
 							<tr>
-								<td><code>gallery-scroll-reveal</code></td>
-								<td><?php esc_html_e( 'Controls button visibility during scrolling. "mobile" shows buttons throughout every scroll on touch devices (disappear 300ms after scroll stops); "always" does the same on all devices. "flash-mobile" shows buttons for 3 seconds on the very first scroll only (touch devices only) as a one-time hint; "flash-always" is the same on all devices. "never" disables the feature. Buttons are not tappable mid-scroll.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>never</td>
+								<td><code>gallery-buttons-on-mobile</code></td>
+								<td><?php esc_html_e( 'Controls when the action buttons (fullscreen, link, download) are visible on touch devices. Desktop always uses hover. "on-tap" (default): buttons appear after a short tap or long-press on a thumbnail, and flash briefly on the first scroll as a discoverability hint. "always": buttons are permanently visible on touch devices.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>on-tap</td>
 							</tr>
 							<tr>
 								<td><code>gallery-gap</code></td>

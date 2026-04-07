@@ -1696,12 +1696,28 @@ body.jzsa-no-scroll {
     pointer-events: auto;
 }
 
-/* gallery-scroll-reveal: show all item buttons while scrolling is active.
-   pointer-events are off so buttons cannot be accidentally tapped mid-scroll. */
-.jzsa-gallery-album[data-gallery-scroll-reveal].jzsa-scrolling .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn,
-.jzsa-gallery-album[data-gallery-scroll-reveal].jzsa-scrolling .jzsa-gallery-item .jzsa-gallery-thumb-link-btn,
-.jzsa-gallery-album[data-gallery-scroll-reveal].jzsa-scrolling .jzsa-gallery-item .jzsa-gallery-thumb-download-btn {
+/* gallery-buttons-on-mobile="always": permanently visible on touch devices (jzsa-touch-device class added by JS). */
+.jzsa-gallery-album.jzsa-touch-device .jzsa-gallery-item .jzsa-gallery-thumb-fs-btn,
+.jzsa-gallery-album.jzsa-touch-device .jzsa-gallery-item .jzsa-gallery-thumb-link-btn,
+.jzsa-gallery-album.jzsa-touch-device .jzsa-gallery-item .jzsa-gallery-thumb-download-btn {
     opacity: var(--jzsa-controls-visible-opacity);
+    pointer-events: auto;
+}
+
+/* gallery-buttons-on-mobile="on-tap": wink 3 times on one item as a discoverability hint. */
+@keyframes jzsa-wink {
+    0%        { opacity: 0; }
+    10%       { opacity: var(--jzsa-controls-visible-opacity); }
+    24%       { opacity: 0; }
+    34%       { opacity: var(--jzsa-controls-visible-opacity); }
+    48%       { opacity: 0; }
+    58%       { opacity: var(--jzsa-controls-visible-opacity); }
+    72%, 100% { opacity: 0; }
+}
+.jzsa-gallery-item.jzsa-item-wink .jzsa-gallery-thumb-fs-btn,
+.jzsa-gallery-item.jzsa-item-wink .jzsa-gallery-thumb-link-btn,
+.jzsa-gallery-item.jzsa-item-wink .jzsa-gallery-thumb-download-btn {
+    animation: jzsa-wink 2s ease-in-out forwards;
     pointer-events: none;
 }
 

@@ -436,7 +436,7 @@ class JZSA_Renderer {
 		$gallery_row_height   = isset( $config['gallery-row-height'] ) ? intval( $config['gallery-row-height'] ) : 200;
 		$gallery_rows         = isset( $config['gallery-rows'] ) ? intval( $config['gallery-rows'] ) : 0;
 		$gallery_scrollable   = ! empty( $config['gallery-scrollable'] );
-		$scroll_reveal        = isset( $config['gallery-scroll-reveal'] ) ? $config['gallery-scroll-reveal'] : 'never';
+		$buttons_on_mobile    = isset( $config['gallery-buttons-on-mobile'] ) ? $config['gallery-buttons-on-mobile'] : 'on-tap';
 
 		$attrs[] = 'data-mode="gallery"';
 
@@ -449,9 +449,7 @@ class JZSA_Renderer {
 		$attrs[] = sprintf( 'data-gallery-row-height="%d"', $gallery_row_height );
 		$attrs[] = sprintf( 'data-gallery-rows="%d"', $gallery_rows );
 		$attrs[] = sprintf( 'data-gallery-scrollable="%s"', $gallery_scrollable ? 'true' : 'false' );
-		if ( 'never' !== $scroll_reveal ) {
-			$attrs[] = sprintf( 'data-gallery-scroll-reveal="%s"', esc_attr( $scroll_reveal ) );
-		}
+		$attrs[] = sprintf( 'data-gallery-buttons-on-mobile="%s"', esc_attr( $buttons_on_mobile ) );
 		if ( isset( $config['gallery-gap'] ) ) {
 			$attrs[] = sprintf( 'data-gallery-gap="%d"', intval( $config['gallery-gap'] ) );
 		}

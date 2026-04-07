@@ -7574,66 +7574,113 @@
             });
         }
 
-        // GALLERY TOUCH REVEAL: show per-item buttons on tap; ignore scroll gestures.
+        // GALLERY TOUCH REVEAL: show per-item buttons on tap/long-press; ignore scroll gestures.
         // Passive listeners so iOS never has to wait for JS before committing a scroll frame.
         (function() {
             var galleryEl = $container[0];
+            var buttonsMode  = $container.attr('data-gallery-buttons-on-mobile') || 'on-tap';
+            var isTouchDevice = navigator.maxTouchPoints > 0;
 
-            // gallery-scroll-reveal: show buttons during or at the start of scrolling.
-            // 'mobile'/'always'            — buttons visible for the full duration of each scroll + 300ms after stop.
-            // 'flash-mobile'/'flash-always' — buttons flash for 3000ms on the first scroll only, then never again.
-            (function() {
-                var scrollReveal = $container.attr('data-gallery-scroll-reveal');
-                if (!scrollReveal) return;
-                var isTouchDevice = navigator.maxTouchPoints > 0;
-                var isFlash  = scrollReveal === 'flash-mobile' || scrollReveal === 'flash-always';
-                var active   = scrollReveal === 'always'       ||
-                               scrollReveal === 'flash-always' ||
-                               ((scrollReveal === 'mobile' || scrollReveal === 'flash-mobile') && isTouchDevice);
-                if (!active) return;
-
-                var scrollNs = 'scroll.jzsaScrollReveal-' + ($container.attr('id') || '');
-
-                if (isFlash) {
-                    // Flash mode: on first scroll, show buttons for 3000ms then never again.
-                    var flashDone = false;
-                    function onFirstScroll() {
-                        if (flashDone) return;
-                        flashDone = true;
-                        $(window).off(scrollNs);
-                        galleryEl.removeEventListener('scroll', onFirstScroll);
-                        $container.addClass('jzsa-scrolling');
-                        setTimeout(function() {
-                            $container.removeClass('jzsa-scrolling');
-                        }, 3000);
-                    }
-                    $(window).off(scrollNs).on(scrollNs, onFirstScroll);
-                    galleryEl.addEventListener('scroll', onFirstScroll, { passive: true });
-                } else {
-                    // Continuous mode: buttons visible for the full duration of each scroll.
-                    var scrollStopTimer = null;
-                    function onScroll() {
-                        $container.addClass('jzsa-scrolling');
-                        clearTimeout(scrollStopTimer);
-                        scrollStopTimer = setTimeout(function() {
-                            $container.removeClass('jzsa-scrolling');
-                        }, 300);
-                    }
-                    $(window).off(scrollNs).on(scrollNs, onScroll);
-                    galleryEl.addEventListener('scroll', onScroll, { passive: true });
+            // gallery-buttons-on-mobile="always": mark container so CSS keeps buttons permanently visible.
+            if (buttonsMode === 'always') {
+                if (isTouchDevice) {
+                    $container.addClass('jzsa-touch-device');
                 }
-            }());
+                return; // No tap/flash handling needed.
+            }
+
+            // gallery-buttons-on-mobile="on-tap" (default): flash buttons on first scroll as a
+            // discoverability hint, then reveal per-item on tap or long-press.
+            var lastTouchX = null, lastTouchY = null;
+
+            if (isTouchDevice) {
+                var scrollNs  = 'scroll.jzsaMobileButtons-' + ($container.attr('id') || '');
+                var flashDone = false;
+                function onFirstScroll() {
+                    if (flashDone) return;
+                    flashDone = true;
+                    $(window).off(scrollNs);
+                    galleryEl.removeEventListener('scroll', onFirstScroll);
+                    // Prefer item under/near the finger; fall back to first 50%-visible item.
+                    var target = null;
+                    if (lastTouchX !== null && lastTouchY !== null) {
+                        var el = document.elementFromPoint(lastTouchX, lastTouchY);
+                        target = el && el.closest ? el.closest('.jzsa-gallery-item') : null;
+                    }
+                    if (!target) {
+                        var vh = window.innerHeight;
+                        $container.find('.jzsa-gallery-item').each(function() {
+                            var r = this.getBoundingClientRect();
+                            if (Math.min(r.bottom, vh) - Math.max(r.top, 0) >= r.height * 0.5) {
+                                target = this;
+                                return false;
+                            }
+                        });
+                    }
+                    if (!target) return;
+                    var $target = $(target);
+                    $target.addClass('jzsa-item-wink');
+                    setTimeout(function() { $target.removeClass('jzsa-item-wink'); }, 2000);
+                }
+                $(window).off(scrollNs).on(scrollNs, onFirstScroll);
+                galleryEl.addEventListener('scroll', onFirstScroll, { passive: true });
+            }
 
             function closestItem(target) {
                 return target && target.closest ? target.closest('.jzsa-gallery-item') : null;
             }
+
+            // Hide buttons when item scrolls out of view (IntersectionObserver) or when another item is revealed.
+            var touchObserver = typeof IntersectionObserver !== 'undefined'
+                ? new IntersectionObserver(function(entries) {
+                    entries.forEach(function(entry) {
+                        if (!entry.isIntersecting) {
+                            touchObserver.unobserve(entry.target);
+                            $(entry.target).removeClass('jzsa-item-touched');
+                        }
+                    });
+                }, { threshold: 0.1 })
+                : null;
+
+            function revealItem($item) {
+                $container.find('.jzsa-item-touched').not($item).each(function() {
+                    if (touchObserver) { touchObserver.unobserve(this); }
+                    $(this).removeClass('jzsa-item-touched');
+                });
+                $item.addClass('jzsa-item-touched');
+                if (touchObserver) { touchObserver.observe($item[0]); }
+            }
+
+            var longPressTimer = null;
+
             galleryEl.addEventListener('touchstart', function(e) {
                 var item = closestItem(e.target);
                 if (!item) return;
+                var $item = $(item);
                 var t = e.touches[0];
-                $(item).data('jzsaRevealTouchX', t.clientX).data('jzsaRevealTouchY', t.clientY);
+                lastTouchX = t.clientX; lastTouchY = t.clientY;
+                $item.data('jzsaRevealTouchX', t.clientX).data('jzsaRevealTouchY', t.clientY);
+                clearTimeout(longPressTimer);
+                longPressTimer = setTimeout(function() {
+                    longPressTimer = null;
+                    revealItem($item);
+                }, 500);
             }, { passive: true });
+
+            galleryEl.addEventListener('touchmove', function(e) {
+                var t = e.touches[0];
+                lastTouchX = t.clientX; lastTouchY = t.clientY;
+                if (longPressTimer) {
+                    clearTimeout(longPressTimer);
+                    longPressTimer = null;
+                }
+                var item = closestItem(e.target);
+                if (item) { $(item).removeData('jzsaRevealTouchX jzsaRevealTouchY'); }
+            }, { passive: true });
+
             galleryEl.addEventListener('touchend', function(e) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
                 var item = closestItem(e.target);
                 if (!item) return;
                 var $item = $(item);
@@ -7643,20 +7690,14 @@
                 if (startX == null) return;
                 var t = e.changedTouches[0];
                 if (Math.abs(t.clientX - startX) > 8 || Math.abs(t.clientY - startY) > 8) return;
-                $container.find('.jzsa-item-touched').not($item).each(function() {
-                    clearTimeout($(this).data('jzsaItemTouchTimer'));
-                    $(this).removeData('jzsaItemTouchTimer').removeClass('jzsa-item-touched');
-                });
-                $item.addClass('jzsa-item-touched');
-                clearTimeout($item.data('jzsaItemTouchTimer'));
-                $item.data('jzsaItemTouchTimer', setTimeout(function() {
-                    $item.removeData('jzsaItemTouchTimer').removeClass('jzsa-item-touched');
-                }, 3000));
+                revealItem($item);
             }, { passive: true });
+
             galleryEl.addEventListener('touchcancel', function(e) {
+                clearTimeout(longPressTimer);
+                longPressTimer = null;
                 var item = closestItem(e.target);
-                if (!item) return;
-                $(item).removeData('jzsaRevealTouchX jzsaRevealTouchY');
+                if (item) { $(item).removeData('jzsaRevealTouchX jzsaRevealTouchY'); }
             }, { passive: true });
         }());
 

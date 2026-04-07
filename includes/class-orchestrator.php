@@ -495,7 +495,7 @@ class JZSA_Shared_Albums {
 			'gallery-row-height'     => $this->parse_gallery_row_height( $atts ),
 			'gallery-rows'           => $this->parse_gallery_rows( $atts ),
 			'gallery-scrollable'     => $this->parse_bool( $atts, 'gallery-scrollable', false ),
-			'gallery-scroll-reveal'   => $this->parse_gallery_scroll_reveal( $atts ),
+			'gallery-buttons-on-mobile' => $this->parse_gallery_buttons_on_mobile( $atts ),
 			'gallery-gap'            => $this->parse_gallery_gap( $atts ),
 
 			// Mosaic (thumbnail strip alongside the main gallery)
@@ -768,15 +768,15 @@ class JZSA_Shared_Albums {
 	 * @param string $key  Attribute key.
 	 * @return string 'auto', 'manual', or 'disabled'.
 	 */
-	private function parse_gallery_scroll_reveal( $atts ) {
-		if ( ! isset( $atts['gallery-scroll-reveal'] ) ) {
-			return 'never';
+	private function parse_gallery_buttons_on_mobile( $atts ) {
+		if ( ! isset( $atts['gallery-buttons-on-mobile'] ) ) {
+			return 'on-tap';
 		}
-		$value = strtolower( trim( $atts['gallery-scroll-reveal'] ) );
-		if ( in_array( $value, array( 'never', 'mobile', 'always', 'flash-mobile', 'flash-always' ), true ) ) {
+		$value = strtolower( trim( $atts['gallery-buttons-on-mobile'] ) );
+		if ( in_array( $value, array( 'on-tap', 'always' ), true ) ) {
 			return $value;
 		}
-		return 'never';
+		return 'on-tap';
 	}
 
 	private function parse_slideshow_mode( $atts, $key ) {
