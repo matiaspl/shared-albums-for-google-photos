@@ -675,6 +675,7 @@ class JZSA_Renderer {
 		}
 		if ( ! empty( $config['width-explicit'] ) && isset( $config['width'] ) && $config['width'] !== 'auto' ) {
 			$styles[] = 'width: ' . intval( $config['width'] ) . 'px';
+			$styles[] = 'max-width: 100%';
 		}
 		if ( ! empty( $config['height-explicit'] ) && isset( $config['height'] ) && $config['height'] !== 'auto' ) {
 			$styles[] = 'height: ' . intval( $config['height'] ) . 'px';

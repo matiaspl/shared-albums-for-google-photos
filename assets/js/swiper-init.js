@@ -5750,15 +5750,33 @@
         var explicitWidthPx = parseInt(readGalleryAttr($container, 'explicit-width'), 10);
         var explicitHeightPx = parseInt(readGalleryAttr($container, 'explicit-height'), 10);
 
-        var explicitWidth = (!isNaN(explicitWidthPx) && explicitWidthPx > 0)
+        var hasExplicitWidth  = !isNaN(explicitWidthPx) && explicitWidthPx > 0;
+        var hasExplicitHeight = !isNaN(explicitHeightPx) && explicitHeightPx > 0;
+
+        var explicitWidth = hasExplicitWidth
             ? explicitWidthPx + 'px'
             : (($container[0] && $container[0].style) ? $container[0].style.width : '');
-        var explicitHeight = (!isNaN(explicitHeightPx) && explicitHeightPx > 0)
+        var explicitHeight = hasExplicitHeight
             ? explicitHeightPx + 'px'
             : (($container[0] && $container[0].style) ? $container[0].style.height : '');
 
         $shell.css('width', explicitWidth || '');
-        $shell.css('height', explicitHeight || '');
+        // Allow the shell to shrink on narrow screens when a width was explicitly set.
+        $shell.css('max-width', explicitWidth ? '100%' : '');
+
+        // When both dimensions are explicit, swap fixed height for aspect-ratio on
+        // modern browsers so the height scales proportionally as the width shrinks.
+        // Fall back to the original fixed-height behaviour on browsers that don't
+        // support aspect-ratio (mainly iOS ≤ 14).
+        if (hasExplicitWidth && hasExplicitHeight &&
+                typeof CSS !== 'undefined' && CSS.supports && CSS.supports('aspect-ratio', '1')) {
+            $shell.css('height', '');
+            $shell.css('aspect-ratio', explicitWidthPx + ' / ' + explicitHeightPx);
+        } else {
+            $shell.css('aspect-ratio', '');
+            $shell.css('height', explicitHeight || '');
+        }
+
         $shell.toggleClass('jzsa-gallery-shell-bounded', !!(explicitWidth || explicitHeight));
 
         // When shell is explicitly bounded, keep gallery content inside that box.
