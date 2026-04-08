@@ -140,7 +140,7 @@ The plugin provides clear feedback:
 * New `fullscreen-display-max-width` and `fullscreen-display-max-height`
 * New `info-wrap` and info text alignment parameters
 * New `gallery-buttons-on-mobile` behavior for touch devices
-* Responsive design improvements
+* Responsive layout improvements
 
 = 2.0.8 =
 * File name bug fix
