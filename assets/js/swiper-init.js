@@ -994,7 +994,6 @@
                 return;
             }
 
-            var activeIndex = swiper.activeIndex;
             var slideMarkupList = mergedPhotos.map(function(photo) {
                 return buildSlidesHtml([photo], {
                     mode: 'slider',
@@ -1005,9 +1004,12 @@
 
             if (direction === 'before') {
                 syncLoadedPhotos(mergedPhotos.concat(loadedPhotos));
-                swiper.prependSlide(slideMarkupList);
-                swiper.update();
-                swiper.slideTo(activeIndex + mergedPhotos.length, 0, false);
+                // Swiper's prependSlide prepends each array element individually via
+                // DOM prepend(), which reverses the order. Reversing the list first
+                // cancels the reversal so the lowest globalIndex lands at position 0.
+                // Swiper also calls slideTo(activeIndex + count) and update() internally,
+                // so no explicit compensation is needed here.
+                swiper.prependSlide(slideMarkupList.slice().reverse());
             } else {
                 syncLoadedPhotos(loadedPhotos.concat(mergedPhotos));
                 swiper.appendSlide(slideMarkupList);
