@@ -1000,6 +1000,13 @@ body.jzsa-no-scroll {
     pointer-events: none !important;
 }
 
+/* Slides are never text content — prevent selection in all modes to avoid
+   the macOS blue-gray selection-highlight overlay on click/drag. */
+.jzsa-album .swiper-slide {
+    -webkit-touch-callout: none;
+    user-select: none;
+}
+
 .jzsa-album:fullscreen .swiper-slide,
 .jzsa-album:-webkit-full-screen .swiper-slide,
 .jzsa-album.jzsa-pseudo-fullscreen .swiper-slide {
