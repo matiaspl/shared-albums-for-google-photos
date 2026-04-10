@@ -1016,6 +1016,14 @@
                 swiper.update();
             }
 
+            // Swiper's appendSlide/prependSlide both call update() internally,
+            // which calls slideTo(activeIndex, 0) and emits 'beforeTransitionStart'.
+            // The autoplay module handles this by pausing and waiting for a CSS
+            // transitionend that never fires (speed is 0). Resume it immediately.
+            if (swiper.autoplay && swiper.autoplay.running && swiper.autoplay.paused) {
+                swiper.autoplay.resume();
+            }
+
             scheduleDurationPrefetch($container);
             if (zoneFormats) {
                 scheduleExifPrefetch($container, zoneFormats);
