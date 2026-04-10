@@ -136,6 +136,9 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.0.12 =
+* We support Google Photo description field on the individual photos by now :-)
+
 = 2.0.11 =
 * Swiper loop navigation
 

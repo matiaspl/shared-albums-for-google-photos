@@ -1873,6 +1873,8 @@
             }
         }
 
+        var derivedCamera = buildCameraDisplayName(photo.camera_make, photo.camera_model) || photo.camera || '';
+
         var placeholders = {
             '{item}': placeholderContext.item || '',
             '{items}': placeholderContext.items || '',
@@ -1885,7 +1887,7 @@
             '{description}': photo.description || '',
             '{date}': photo.timestamp ? formatPhotoDate(photo.timestamp) : '',
             '{author}': '',
-            '{camera}': photo.camera || '',
+            '{camera}': derivedCamera,
             '{camera-make}': photo.camera_make || '',
             '{camera-model}': photo.camera_model || '',
             '{aperture}': photo.aperture || '',
@@ -1913,6 +1915,115 @@
         result = result.replace(/\s{2,}/g, ' ').trim();
 
         return result;
+    }
+
+    function normalizeCameraMakeForDisplay(make) {
+        make = (make || '').trim();
+        if (!make) {
+            return '';
+        }
+
+        var parts = make.split(/(\s+)/);
+        for (var i = 0; i < parts.length; i++) {
+            var part = parts[i];
+            if (!part || !part.trim()) {
+                continue;
+            }
+            if (part.toUpperCase() === part) {
+                continue;
+            }
+            parts[i] = part.replace(/[A-Za-z]+/g, function(word) {
+                var lower = word.toLowerCase();
+                return lower.charAt(0).toUpperCase() + lower.slice(1);
+            });
+        }
+        return parts.join('');
+    }
+
+    function buildCameraDisplayName(make, model) {
+        make = normalizeCameraMakeForDisplay(make);
+        model = (model || '').trim();
+
+        if (!model) {
+            return make;
+        }
+        if (!make) {
+            return model;
+        }
+
+        var cleanMake = make.replace(/\b(?:corporation|corp\.?|company|co\.?|inc\.?|incorporated|limited|ltd\.?|llc|plc|gmbh|ag|sa|bv|oy|ab|aps)\b/ig, '');
+        cleanMake = cleanMake.replace(/\s+/g, ' ').trim();
+        if (!cleanMake) {
+            cleanMake = make;
+        }
+
+        var makeCompare = cleanMake.replace(/[^a-z0-9]+/ig, '').toLowerCase();
+        var modelCompare = model.replace(/[^a-z0-9]+/ig, '').toLowerCase();
+        if (makeCompare && modelCompare.indexOf(makeCompare) !== -1) {
+            return model;
+        }
+
+        return (cleanMake + ' ' + model).trim();
+    }
+
+    function isPhotoMetaPending(mediaId) {
+        return !!(mediaId && (exifQueued[mediaId] || exifInFlight[mediaId]));
+    }
+
+    function hasDelayedPlaceholder(format) {
+        return !!(format && (DESCRIPTION_PLACEHOLDER_RE.test(format) || EXIF_PLACEHOLDER_RE.test(format) || FILENAME_PLACEHOLDER_RE.test(format)));
+    }
+
+    function hasMissingDelayedData(format, photo) {
+        if (!format || !photo) {
+            return false;
+        }
+        var derivedCamera = buildCameraDisplayName(photo.camera_make, photo.camera_model) || photo.camera || '';
+        if (/\{description\}/.test(format) && !photo.description) {
+            return true;
+        }
+        if (/\{camera\}/.test(format) && !derivedCamera) {
+            return true;
+        }
+        if (/\{camera-make\}/.test(format) && !photo.camera_make) {
+            return true;
+        }
+        if (/\{camera-model\}/.test(format) && !photo.camera_model) {
+            return true;
+        }
+        if (/\{aperture\}/.test(format) && !photo.aperture) {
+            return true;
+        }
+        if (/\{shutter\}/.test(format) && !photo.shutter) {
+            return true;
+        }
+        if (/\{focal\}/.test(format) && !photo.focal) {
+            return true;
+        }
+        if (/\{iso\}/.test(format) && !photo.iso) {
+            return true;
+        }
+        if ((/\{filename\}/.test(format) || /\{name\}/.test(format)) && !photo.filename) {
+            return true;
+        }
+        return false;
+    }
+
+    function shouldShowPhotoMetaLoading(format, photo) {
+        if (!format || !photo || !photo.id) {
+            return false;
+        }
+        if (!isPhotoMetaPending(photo.id)) {
+            return false;
+        }
+        if (!hasDelayedPlaceholder(format)) {
+            return false;
+        }
+        return hasMissingDelayedData(format, photo);
+    }
+
+    function getPhotoMetaLoadingText() {
+        return 'Loading...';
     }
 
     /**
@@ -2041,11 +2152,13 @@
     var EXIF_PLACEHOLDER_RE = /\{(?:camera|camera-make|camera-model|aperture|shutter|focal|iso)\}/;
     var FILENAME_PLACEHOLDER_RE = /\{(?:filename|name)\}/;
     var EXIF_PREFETCH_WORKERS = 3;
+    var PHOTO_META_LOADING_DELAY_MS = 250;
     var exifCache = {};          // mediaId -> cached photo-page metadata
     var exifQueue = [];          // { mediaId, photoUrl }
     var exifQueued = {};         // mediaId -> true
     var exifInFlight = {};       // mediaId -> true
     var exifWaiters = {};        // mediaId -> [ { $container, zoneFormats, photoIndex } ]
+    var exifLoadingTimers = {};  // mediaId -> timeout id
     var exifPrefetchActive = 0;
     var exifPrefetchScheduled = false;
 
@@ -2092,7 +2205,7 @@
      * After EXIF arrives for a photo, merge into the allPhotos array and
      * trigger a container-level info box refresh.
      */
-    function applyExifToPhoto(mediaId, exifData, $container, zoneFormats, photoIndex) {
+    function applyExifToPhoto(mediaId, exifData, $container, photoIndex) {
         if (!exifData) {
             return;
         }
@@ -2109,6 +2222,11 @@
                     changed = true;
                 }
             }
+            var derivedCamera = buildCameraDisplayName(p.camera_make, p.camera_model);
+            if (derivedCamera && p.camera !== derivedCamera) {
+                p.camera = derivedCamera;
+                changed = true;
+            }
             if (changed) {
                 replaceContainerPhotoByGlobalIndex($container, photoIndex, p);
                 // Trigger container-level info box refresh.
@@ -2119,7 +2237,7 @@
         }
     }
 
-    function addExifWaiter(mediaId, $container, zoneFormats, photoIndex) {
+    function addExifWaiter(mediaId, $container, photoIndex) {
         if (!mediaId || !$container || !$container.length) {
             return;
         }
@@ -2130,21 +2248,37 @@
 
         exifWaiters[mediaId].push({
             $container: $container,
-            zoneFormats: zoneFormats,
             photoIndex: photoIndex
         });
+
+        if (!exifLoadingTimers[mediaId]) {
+            exifLoadingTimers[mediaId] = window.setTimeout(function() {
+                delete exifLoadingTimers[mediaId];
+                if (!isPhotoMetaPending(mediaId)) {
+                    return;
+                }
+                var waiters = exifWaiters[mediaId] || [];
+                for (var i = 0; i < waiters.length; i++) {
+                    waiters[i].$container.trigger('jzsa:exif-update');
+                }
+            }, PHOTO_META_LOADING_DELAY_MS);
+        }
     }
 
     function flushExifWaiters(mediaId, exifData) {
         var waiters = exifWaiters[mediaId] || [];
         delete exifWaiters[mediaId];
 
-        if (!exifData) {
-            return;
+        if (exifLoadingTimers[mediaId]) {
+            clearTimeout(exifLoadingTimers[mediaId]);
+            delete exifLoadingTimers[mediaId];
         }
 
         for (var i = 0; i < waiters.length; i++) {
-            applyExifToPhoto(mediaId, exifData, waiters[i].$container, waiters[i].zoneFormats, waiters[i].photoIndex);
+            if (exifData) {
+                applyExifToPhoto(mediaId, exifData, waiters[i].$container, waiters[i].photoIndex);
+            }
+            waiters[i].$container.trigger('jzsa:exif-update');
         }
     }
 
@@ -2183,6 +2317,15 @@
                 }).done(function(response) {
                     if (response && response.success && response.data) {
                         exifCache[queueItem.mediaId] = $.extend({}, exifCache[queueItem.mediaId] || {}, response.data);
+                        if (exifCache[queueItem.mediaId]) {
+                            var derivedCamera = buildCameraDisplayName(
+                                exifCache[queueItem.mediaId].camera_make,
+                                exifCache[queueItem.mediaId].camera_model
+                            );
+                            if (derivedCamera) {
+                                exifCache[queueItem.mediaId].camera = derivedCamera;
+                            }
+                        }
                         flushExifWaiters(queueItem.mediaId, response.data);
                     }
                 }).always(function() {
@@ -2229,7 +2372,15 @@
                 var p = photos[i];
                 var photoGlobalIndex = getPhotoGlobalIndex(p, i);
                 var cachedMeta = exifCache[p.id] || {};
-                var needsExifForPhoto = metaNeeds.exif && !p.camera && !cachedMeta.camera;
+                var needsExifForPhoto = metaNeeds.exif && (
+                    (!p.camera && !cachedMeta.camera) ||
+                    (!p.camera_make && !cachedMeta.camera_make) ||
+                    (!p.camera_model && !cachedMeta.camera_model) ||
+                    (!p.aperture && !cachedMeta.aperture) ||
+                    (!p.shutter && !cachedMeta.shutter) ||
+                    (!p.focal && !cachedMeta.focal) ||
+                    (!p.iso && !cachedMeta.iso)
+                );
                 var needsRawCameraForPhoto = metaNeeds.rawCamera && (
                     (!p.camera_make && !cachedMeta.camera_make) ||
                     (!p.camera_model && !cachedMeta.camera_model)
@@ -2238,18 +2389,18 @@
                 var needsFilenameForPhoto = metaNeeds.filename && !p.filename && !cachedMeta.filename;
 
                 if (exifCache[p.id]) {
-                    (function(mediaId, cachedMeta, containerEl, formats, photoIndex) {
+                    (function(mediaId, cachedMeta, containerEl, photoIndex) {
                         window.setTimeout(function() {
-                            applyExifToPhoto(mediaId, cachedMeta, containerEl, formats, photoIndex);
+                            applyExifToPhoto(mediaId, cachedMeta, containerEl, photoIndex);
                         }, 0);
-                    })(p.id, exifCache[p.id], $container, zoneFormats, photoGlobalIndex);
+                    })(p.id, exifCache[p.id], $container, photoGlobalIndex);
                 }
 
                 if (!p.id || (!needsExifForPhoto && !needsRawCameraForPhoto && !needsDescriptionForPhoto && !needsFilenameForPhoto)) {
                     continue;
                 }
 
-                addExifWaiter(p.id, $container, zoneFormats, photoGlobalIndex);
+                addExifWaiter(p.id, $container, photoGlobalIndex);
 
                 if (exifQueued[p.id] || exifInFlight[p.id]) {
                     continue;
@@ -2353,6 +2504,25 @@
     function buildSinglePhotoItemPlaceholders(index, total) {
         var safeIndex = typeof index === 'number' && index >= 0 ? index + 1 : 1;
         return { item: String(safeIndex), items: String(total) };
+    }
+
+    function renderInfoFormat(format, photo, context) {
+        if (shouldShowPhotoMetaLoading(format, photo)) {
+            return getPhotoMetaLoadingText();
+        }
+        return resolveInfoPlaceholders(format, photo, context);
+    }
+
+    function refreshSwiperInfoBottom(swiper) {
+        if (!swiper || swiper.destroyed || !swiper.pagination) {
+            return;
+        }
+        if (typeof swiper.pagination.render === 'function') {
+            swiper.pagination.render();
+        }
+        if (typeof swiper.pagination.update === 'function') {
+            swiper.pagination.update();
+        }
     }
 
     function resolveCarouselTileInfo(photo, zoneFormats, context) {
@@ -2536,9 +2706,12 @@
                 if (!zone) {
                     return;
                 }
-                var text = resolveInfoPlaceholders(getInfoZoneFormat(zoneFormats, zone, false), photo,
-                    $.extend(buildSinglePhotoItemPlaceholders(photoIndex, total), { albumTitle: albumTitle })
-                );
+                var fmt = getInfoZoneFormat(zoneFormats, zone, false);
+                var text = shouldShowPhotoMetaLoading(fmt, photo)
+                    ? getPhotoMetaLoadingText()
+                    : resolveInfoPlaceholders(fmt, photo,
+                        $.extend(buildSinglePhotoItemPlaceholders(photoIndex, total), { albumTitle: albumTitle })
+                    );
                 $box.text(text).toggle(text !== '');
             });
         });
@@ -2578,9 +2751,11 @@
                         break;
                     }
                 }
-                var text = resolveInfoPlaceholders(inlineFmt, photo,
-                    $.extend(buildSinglePhotoItemPlaceholders(photoIndex, total), { albumTitle: albumTitle })
-                );
+                var text = shouldShowPhotoMetaLoading(inlineFmt, photo)
+                    ? getPhotoMetaLoadingText()
+                    : resolveInfoPlaceholders(inlineFmt, photo,
+                        $.extend(buildSinglePhotoItemPlaceholders(photoIndex, total), { albumTitle: albumTitle })
+                    );
                 $box.text(text).toggle(text !== '');
             });
         });
@@ -4425,7 +4600,7 @@
                 var photoIndex = getSwiperPhotoIndex(swiper);
                 var photo = getContainerPhoto($swiperEl, photoIndex);
                 var totalCount = getContainerTotalCount($swiperEl);
-                var text = resolveInfoPlaceholders(format, photo,
+                var text = renderInfoFormat(format, photo,
                     $.extend(buildItemPlaceholders(params.mode, swiper, photoIndex + 1, totalCount), { albumTitle: albumTitle })
                 );
 
@@ -5148,7 +5323,7 @@
                 for (var j = 0; j < containerBoxes.length; j++) {
                     var cb = containerBoxes[j];
                     var fmt = isFs ? cb.fsFmt : cb.fmt;
-                    var text = resolveInfoPlaceholders(fmt, photo,
+                    var text = renderInfoFormat(fmt, photo,
                         $.extend(itemPlaceholders, { albumTitle: albumTitle })
                     );
                     cb.$el.text(text).toggle(text !== '');
@@ -5165,6 +5340,23 @@
             } else {
                 updateAllInfoBoxes();
             }
+
+            refreshSwiperInfoBottom(swiper);
+            swiper.on('slideChange', function() {
+                refreshSwiperInfoBottom(swiper);
+            });
+            swiper.on('slideChangeTransitionEnd', function() {
+                refreshSwiperInfoBottom(swiper);
+            });
+            swiper.on('resize', function() {
+                refreshSwiperInfoBottom(swiper);
+            });
+            $container.on('jzsa:fullscreen-state', function() {
+                refreshSwiperInfoBottom(swiper);
+            });
+            $container.on('jzsa:exif-update', function() {
+                refreshSwiperInfoBottom(swiper);
+            });
 
             if (mode === 'carousel') {
                 updateCarouselTileInfoBoxes($container, swiper, zoneFormats);

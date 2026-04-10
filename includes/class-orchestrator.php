@@ -2105,6 +2105,33 @@ class JZSA_Shared_Albums {
 			// Compatibility: older EXIF cache entries stored only the combined
 			// camera string, so refetch once to populate raw make/model fields.
 			$need_exif_fetch = true;
+		} elseif (
+			$need_exif &&
+			$has_cached_exif_state &&
+			(
+				(
+					( ! empty( $cached_meta['camera_make'] ) || ! empty( $cached_meta['camera_model'] ) ) &&
+					(
+						! array_key_exists( 'aperture', $cached_meta ) ||
+						! array_key_exists( 'shutter', $cached_meta ) ||
+						! array_key_exists( 'focal', $cached_meta ) ||
+						! array_key_exists( 'iso', $cached_meta )
+					)
+				) ||
+				(
+					! empty( $cached_meta['camera'] ) &&
+					(
+						! array_key_exists( 'aperture', $cached_meta ) ||
+						! array_key_exists( 'shutter', $cached_meta ) ||
+						! array_key_exists( 'focal', $cached_meta ) ||
+						! array_key_exists( 'iso', $cached_meta )
+					)
+				)
+			)
+		) {
+			// Compatibility: refetch partial EXIF cache entries so the full
+			// EXIF bundle (camera/aperture/shutter/focal/iso) is restored.
+			$need_exif_fetch = true;
 		} elseif ( $need_exif && ! $has_cached_exif_state && (
 			! empty( $cached_meta['description'] ) ||
 			! empty( $cached_meta['camera'] ) ||
