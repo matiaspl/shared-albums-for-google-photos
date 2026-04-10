@@ -1395,7 +1395,7 @@ class JZSA_Shared_Albums {
 
 			// Pass through metadata fields extracted from album HTML.
 			if ( is_array( $item ) ) {
-				foreach ( array( 'id', 'filename', 'timestamp', 'width', 'height', 'filesize', 'camera', 'exif', 'aperture', 'shutter', 'focal', 'iso' ) as $meta_key ) {
+				foreach ( array( 'id', 'filename', 'timestamp', 'width', 'height', 'filesize', 'description', 'camera', 'camera_make', 'camera_model', 'exif', 'aperture', 'shutter', 'focal', 'iso' ) as $meta_key ) {
 					// Note: 'id' is the AF1Qip… media ID, needed by Wave 2 JS for individual photo page fetching.
 						if ( isset( $item[ $meta_key ] ) ) {
 							$photo[ $meta_key ] = $item[ $meta_key ];
@@ -1796,7 +1796,20 @@ class JZSA_Shared_Albums {
 			return array();
 		}
 
-		unset( $meta['_fetched_exif'], $meta['_fetched_filename'] );
+		unset( $meta['_fetched_exif'], $meta['_fetched_description'], $meta['_fetched_filename'] );
+
+		if (
+			( isset( $meta['camera_make'] ) || isset( $meta['camera_model'] ) ) &&
+			isset( $this->provider ) &&
+			is_object( $this->provider ) &&
+			method_exists( $this->provider, 'format_camera_display_name' )
+		) {
+			$meta['camera'] = $this->provider->format_camera_display_name(
+				$meta['camera_make'] ?? '',
+				$meta['camera_model'] ?? ''
+			);
+		}
+
 		return $meta;
 	}
 
@@ -1854,7 +1867,7 @@ class JZSA_Shared_Albums {
 				$cached_meta = get_transient( $this->get_photo_meta_cache_key( $photo_url ) );
 				$cached_meta = $this->filter_public_photo_meta( $cached_meta );
 				if ( ! empty( $cached_meta ) ) {
-					foreach ( array( 'filename', 'camera', 'exif', 'aperture', 'shutter', 'focal', 'iso' ) as $meta_key ) {
+					foreach ( array( 'filename', 'description', 'camera', 'camera_make', 'camera_model', 'exif', 'aperture', 'shutter', 'focal', 'iso' ) as $meta_key ) {
 						if ( isset( $cached_meta[ $meta_key ] ) && '' !== $cached_meta[ $meta_key ] ) {
 							$base_items[ $index ][ $meta_key ] = $cached_meta[ $meta_key ];
 						}
@@ -1999,6 +2012,7 @@ class JZSA_Shared_Albums {
 		$media_url = isset( $_POST['media_url'] ) ? esc_url_raw( wp_unslash( $_POST['media_url'] ) ) : '';
 		$media_type = isset( $_POST['media_type'] ) ? sanitize_key( wp_unslash( $_POST['media_type'] ) ) : 'photo';
 		$need_exif = isset( $_POST['need_exif'] ) ? filter_var( wp_unslash( $_POST['need_exif'] ), FILTER_VALIDATE_BOOLEAN ) : true;
+		$need_description = isset( $_POST['need_description'] ) ? filter_var( wp_unslash( $_POST['need_description'] ), FILTER_VALIDATE_BOOLEAN ) : false;
 		$need_filename = isset( $_POST['need_filename'] ) ? filter_var( wp_unslash( $_POST['need_filename'] ), FILTER_VALIDATE_BOOLEAN ) : true;
 		if ( empty( $photo_url ) ) {
 			wp_send_json_error( 'Missing photo URL' );
@@ -2018,15 +2032,30 @@ class JZSA_Shared_Albums {
 		}
 
 		$has_cached_exif_state = array_key_exists( '_fetched_exif', $cached_meta );
+		$has_cached_description_state = array_key_exists( '_fetched_description', $cached_meta );
 		$has_cached_filename_state = array_key_exists( '_fetched_filename', $cached_meta );
 		$need_exif_fetch = $need_exif && ! $has_cached_exif_state;
+		$need_description_fetch = $need_description && ! $has_cached_description_state;
 		$need_filename_fetch = $need_filename && ! $has_cached_filename_state;
 
 		// Backward compatibility with older cache entries that stored fields but no state flags.
 		if ( $need_exif && ! $need_exif_fetch && empty( $cached_meta['_fetched_exif'] ) ) {
 			$need_exif_fetch = false;
+		} elseif (
+			$need_exif &&
+			$has_cached_exif_state &&
+			! empty( $cached_meta['camera'] ) &&
+			! array_key_exists( 'camera_make', $cached_meta ) &&
+			! array_key_exists( 'camera_model', $cached_meta )
+		) {
+			// Compatibility: older EXIF cache entries stored only the combined
+			// camera string, so refetch once to populate raw make/model fields.
+			$need_exif_fetch = true;
 		} elseif ( $need_exif && ! $has_cached_exif_state && (
+			! empty( $cached_meta['description'] ) ||
 			! empty( $cached_meta['camera'] ) ||
+			! empty( $cached_meta['camera_make'] ) ||
+			! empty( $cached_meta['camera_model'] ) ||
 			! empty( $cached_meta['aperture'] ) ||
 			! empty( $cached_meta['shutter'] ) ||
 			! empty( $cached_meta['focal'] ) ||
@@ -2034,11 +2063,14 @@ class JZSA_Shared_Albums {
 		) ) {
 			$need_exif_fetch = false;
 		}
+		if ( $need_description && ! $has_cached_description_state && ! empty( $cached_meta['description'] ) ) {
+			$need_description_fetch = false;
+		}
 		if ( $need_filename && ! $has_cached_filename_state && ! empty( $cached_meta['filename'] ) ) {
 			$need_filename_fetch = false;
 		}
 
-		if ( ! $need_exif_fetch && ! $need_filename_fetch ) {
+		if ( ! $need_exif_fetch && ! $need_description_fetch && ! $need_filename_fetch ) {
 			wp_send_json_success( $this->filter_public_photo_meta( $cached_meta ) );
 			return;
 		}
@@ -2046,7 +2078,7 @@ class JZSA_Shared_Albums {
 		$meta = $cached_meta;
 		$html = '';
 
-		if ( $need_exif_fetch || ( $need_filename_fetch && ( 'video' === $media_type || empty( $media_url ) ) ) ) {
+		if ( $need_exif_fetch || $need_description_fetch || ( $need_filename_fetch && ( 'video' === $media_type || empty( $media_url ) ) ) ) {
 			$response = wp_remote_get(
 				$photo_url,
 				array(
@@ -2067,8 +2099,9 @@ class JZSA_Shared_Albums {
 			}
 		}
 
-		if ( $need_exif_fetch ) {
+		if ( $need_exif_fetch || $need_description_fetch ) {
 			$meta['_fetched_exif'] = true;
+			$meta['_fetched_description'] = true;
 			$exif_meta = ! empty( $html ) ? $this->provider->extract_individual_photo_meta( $html ) : array();
 			if ( ! empty( $exif_meta ) ) {
 				$meta = array_merge( $meta, $exif_meta );

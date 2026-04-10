@@ -1882,9 +1882,12 @@
             '{album-name}': placeholderContext.albumTitle || '',
             '{name}': name || '',
             '{filename}': photo.filename || '',
+            '{description}': photo.description || '',
             '{date}': photo.timestamp ? formatPhotoDate(photo.timestamp) : '',
             '{author}': '',
             '{camera}': photo.camera || '',
+            '{camera-make}': photo.camera_make || '',
+            '{camera-model}': photo.camera_model || '',
             '{aperture}': photo.aperture || '',
             '{shutter}': photo.shutter || '',
             '{focal}': photo.focal || '',
@@ -2033,10 +2036,12 @@
     // Wave 2: Background photo metadata prefetch via AJAX
     // ========================================================================
 
-    var EXIF_PLACEHOLDER_RE = /\{(?:camera|aperture|shutter|focal|iso)\}/;
+    var DESCRIPTION_PLACEHOLDER_RE = /\{description\}/;
+    var RAW_CAMERA_PLACEHOLDER_RE = /\{(?:camera-make|camera-model)\}/;
+    var EXIF_PLACEHOLDER_RE = /\{(?:camera|camera-make|camera-model|aperture|shutter|focal|iso)\}/;
     var FILENAME_PLACEHOLDER_RE = /\{(?:filename|name)\}/;
     var EXIF_PREFETCH_WORKERS = 3;
-    var exifCache = {};          // mediaId -> { camera, aperture, shutter, focal, iso, filename }
+    var exifCache = {};          // mediaId -> cached photo-page metadata
     var exifQueue = [];          // { mediaId, photoUrl }
     var exifQueued = {};         // mediaId -> true
     var exifInFlight = {};       // mediaId -> true
@@ -2049,16 +2054,20 @@
      */
     function getPhotoMetaNeeds(zoneFormats) {
         if (!zoneFormats) {
-            return { exif: false, filename: false };
+            return { description: false, rawCamera: false, exif: false, filename: false };
         }
         var all = zoneFormats.inline || {};
         var fs  = zoneFormats.fullscreen || {};
         var needs = {
+            description: false,
+            rawCamera: false,
             exif: false,
             filename: false
         };
         for (var i = 0; i < INFO_BOX_NAMES.length; i++) {
             var zone = INFO_BOX_NAMES[i];
+            needs.description = needs.description || DESCRIPTION_PLACEHOLDER_RE.test(all[zone] || '') || DESCRIPTION_PLACEHOLDER_RE.test(fs[zone] || '');
+            needs.rawCamera = needs.rawCamera || RAW_CAMERA_PLACEHOLDER_RE.test(all[zone] || '') || RAW_CAMERA_PLACEHOLDER_RE.test(fs[zone] || '');
             needs.exif = needs.exif || EXIF_PLACEHOLDER_RE.test(all[zone] || '') || EXIF_PLACEHOLDER_RE.test(fs[zone] || '');
             needs.filename = needs.filename || FILENAME_PLACEHOLDER_RE.test(all[zone] || '') || FILENAME_PLACEHOLDER_RE.test(fs[zone] || '');
         }
@@ -2093,7 +2102,7 @@
         if (localIndex >= 0) {
             var p = photos[localIndex];
             var changed = false;
-            var fields = ['camera', 'aperture', 'shutter', 'focal', 'iso', 'filename'];
+            var fields = ['description', 'camera', 'camera_make', 'camera_model', 'aperture', 'shutter', 'focal', 'iso', 'filename'];
             for (var f = 0; f < fields.length; f++) {
                 if (exifData[fields[f]]) {
                     p[fields[f]] = exifData[fields[f]];
@@ -2167,6 +2176,7 @@
                         photo_url: queueItem.photoUrl,
                         media_url: queueItem.mediaUrl,
                         media_type: queueItem.mediaType,
+                        need_description: queueItem.needDescription ? 'true' : 'false',
                         need_exif: queueItem.needExif ? 'true' : 'false',
                         need_filename: queueItem.needFilename ? 'true' : 'false'
                     }
@@ -2189,14 +2199,14 @@
 
     /**
      * Schedule Wave 2 metadata prefetch for all photos in a container.
-     * Only runs if zone format strings reference filename/name or EXIF placeholders.
+     * Only runs if zone format strings reference delayed photo-page placeholders.
      *
      * @param {jQuery} $container Gallery/album container.
      * @param {Object} zoneFormats  { inline: {...}, fullscreen: {...} }
      */
     function scheduleExifPrefetch($container, zoneFormats) {
         var metaNeeds = getPhotoMetaNeeds(zoneFormats);
-        if (!metaNeeds.exif && !metaNeeds.filename) {
+        if (!metaNeeds.description && !metaNeeds.exif && !metaNeeds.filename) {
             return;
         }
         if (typeof jzsaAjax === 'undefined' || !jzsaAjax.photoMetaNonce) {
@@ -2220,6 +2230,11 @@
                 var photoGlobalIndex = getPhotoGlobalIndex(p, i);
                 var cachedMeta = exifCache[p.id] || {};
                 var needsExifForPhoto = metaNeeds.exif && !p.camera && !cachedMeta.camera;
+                var needsRawCameraForPhoto = metaNeeds.rawCamera && (
+                    (!p.camera_make && !cachedMeta.camera_make) ||
+                    (!p.camera_model && !cachedMeta.camera_model)
+                );
+                var needsDescriptionForPhoto = metaNeeds.description && !p.description && !cachedMeta.description;
                 var needsFilenameForPhoto = metaNeeds.filename && !p.filename && !cachedMeta.filename;
 
                 if (exifCache[p.id]) {
@@ -2230,7 +2245,7 @@
                     })(p.id, exifCache[p.id], $container, zoneFormats, photoGlobalIndex);
                 }
 
-                if (!p.id || (!needsExifForPhoto && !needsFilenameForPhoto)) {
+                if (!p.id || (!needsExifForPhoto && !needsRawCameraForPhoto && !needsDescriptionForPhoto && !needsFilenameForPhoto)) {
                     continue;
                 }
 
@@ -2250,7 +2265,8 @@
                     photoUrl: photoUrl,
                     mediaUrl: p.type === 'video' ? (p.video || '') : (p.full || p.preview || ''),
                     mediaType: p.type === 'video' ? 'video' : 'photo',
-                    needExif: needsExifForPhoto,
+                    needDescription: needsDescriptionForPhoto,
+                    needExif: needsExifForPhoto || needsRawCameraForPhoto || needsDescriptionForPhoto,
                     needFilename: needsFilenameForPhoto
                 });
             }

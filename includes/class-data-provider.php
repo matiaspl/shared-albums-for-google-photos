@@ -606,12 +606,14 @@ class JZSA_Data_Provider {
 			: round( $shutter, 1 ) . 's';
 
 		return array(
-			'camera'   => trim( $make . ' ' . $model ),
-			'exif'     => sprintf( "\xC6\x92/%s \xC2\xB7 %s \xC2\xB7 %smm \xC2\xB7 ISO%d", $aperture, $shutter_display, $focal, $iso ),
-			'aperture' => "\xC6\x92/" . $aperture,
-			'shutter'  => $shutter_display,
-			'focal'    => $focal . 'mm',
-			'iso'      => 'ISO' . $iso,
+			'camera'       => $this->build_camera_display_name( $make, $model ),
+			'camera_make'  => trim( $make ),
+			'camera_model' => trim( $model ),
+			'exif'         => sprintf( "\xC6\x92/%s \xC2\xB7 %s \xC2\xB7 %smm \xC2\xB7 ISO%d", $aperture, $shutter_display, $focal, $iso ),
+			'aperture'     => "\xC6\x92/" . $aperture,
+			'shutter'      => $shutter_display,
+			'focal'        => $focal . 'mm',
+			'iso'          => 'ISO' . $iso,
 		);
 	}
 
@@ -621,12 +623,21 @@ class JZSA_Data_Provider {
 	 * Individual photo pages embed EXIF in a simpler structure than album pages:
 	 * [width, height, 1, null, ["make", "model", "lens", focal, aperture, iso, shutter, null, N]]
 	 *
+	 * Shared photo pages also expose the Google Photos description/caption when
+	 * present, under protobuf key 396644657.
+	 *
 	 * @param string $html HTML content of an individual photo page.
-	 * @return array Associative array with EXIF fields, or empty array if not found.
+	 * @return array Associative array with photo meta fields, or empty array if not found.
 	 */
 	public function extract_individual_photo_meta( $html ) {
 		if ( empty( $html ) ) {
 			return array();
+		}
+
+		$meta        = array();
+		$description = $this->extract_protobuf_string_field( $html, '396644657' );
+		if ( '' !== $description ) {
+			$meta['description'] = $description;
 		}
 
 		// Match the EXIF block: [w, h, 1, null, ["make", "model", ...]]
@@ -635,7 +646,7 @@ class JZSA_Data_Provider {
 			$html,
 			$m
 		) ) {
-			return array();
+			return $meta;
 		}
 
 		$make     = $m[3];
@@ -649,13 +660,142 @@ class JZSA_Data_Provider {
 			? '1/' . round( 1 / $shutter )
 			: round( $shutter, 1 ) . 's';
 
-		return array(
-			'camera'   => trim( $make . ' ' . $model ),
-			'aperture' => "\xC6\x92/" . $aperture,
-			'shutter'  => $shutter_display,
-			'focal'    => $focal . 'mm',
-			'iso'      => 'ISO' . $iso,
+		$meta = array_merge(
+			$meta,
+			array(
+				'camera'       => $this->build_camera_display_name( $make, $model ),
+				'camera_make'  => trim( $make ),
+				'camera_model' => trim( $model ),
+				'aperture'     => "\xC6\x92/" . $aperture,
+				'shutter'      => $shutter_display,
+				'focal'        => $focal . 'mm',
+				'iso'          => 'ISO' . $iso,
+			)
 		);
+
+		return $meta;
+	}
+
+	/**
+	 * Format a display-oriented camera string from EXIF make/model.
+	 *
+	 * Raw EXIF values remain available separately; this is only for the derived
+	 * {camera} placeholder.
+	 *
+	 * @param string $make  EXIF make.
+	 * @param string $model EXIF model.
+	 * @return string
+	 */
+	public function format_camera_display_name( $make, $model ) {
+		return $this->build_camera_display_name( $make, $model );
+	}
+
+	/**
+	 * Build a clean display string for camera make/model.
+	 *
+	 * Some cameras store the brand twice across EXIF make + model
+	 * (for example "NIKON CORPORATION" + "NIKON D90"). When the model already
+	 * contains the brand, prefer the model-only string.
+	 *
+	 * @param string $make  EXIF make.
+	 * @param string $model EXIF model.
+	 * @return string
+	 */
+	private function build_camera_display_name( $make, $model ) {
+		$make  = trim( (string) $make );
+		$model = trim( (string) $model );
+		$make  = $this->normalize_camera_make_for_display( $make );
+
+		if ( '' === $model ) {
+			return $make;
+		}
+		if ( '' === $make ) {
+			return $model;
+		}
+
+		$clean_make = preg_replace(
+			'/\b(?:corporation|corp\.?|company|co\.?|inc\.?|incorporated|limited|ltd\.?|llc|plc|gmbh|ag|sa|bv|oy|ab|aps)\b/iu',
+			'',
+			$make
+		);
+		$clean_make = preg_replace( '/\s+/u', ' ', trim( (string) $clean_make ) );
+		if ( '' === $clean_make ) {
+			$clean_make = $make;
+		}
+
+		$make_compare  = preg_replace( '/[^a-z0-9]+/i', '', $clean_make );
+		$model_compare = preg_replace( '/[^a-z0-9]+/i', '', $model );
+		if ( '' !== $make_compare && false !== stripos( $model_compare, $make_compare ) ) {
+			return $model;
+		}
+
+		return trim( $clean_make . ' ' . $model );
+	}
+
+	/**
+	 * Normalize EXIF camera make for display in the derived {camera} placeholder.
+	 *
+	 * Lowercase or mixed-case words are title-cased ("samsung" → "Samsung",
+	 * "inc." → "Inc."). Already-uppercase words stay unchanged ("COMPANY").
+	 * Raw placeholders such as {camera-make} are not modified.
+	 *
+	 * @param string $make Raw EXIF make.
+	 * @return string
+	 */
+	private function normalize_camera_make_for_display( $make ) {
+		$make = trim( (string) $make );
+		if ( '' === $make ) {
+			return '';
+		}
+
+		$parts = preg_split( '/(\s+)/u', $make, -1, PREG_SPLIT_DELIM_CAPTURE );
+		if ( ! is_array( $parts ) ) {
+			return $make;
+		}
+
+		foreach ( $parts as $index => $part ) {
+			if ( '' === trim( $part ) ) {
+				continue;
+			}
+			if ( strtoupper( $part ) === $part ) {
+				continue;
+			}
+
+			$parts[ $index ] = preg_replace_callback(
+				'/\p{L}[\p{L}\p{M}]*/u',
+				static function ( $matches ) {
+					$word = mb_strtolower( $matches[0], 'UTF-8' );
+					return mb_strtoupper( mb_substr( $word, 0, 1, 'UTF-8' ), 'UTF-8' ) . mb_substr( $word, 1, null, 'UTF-8' );
+				},
+				$part
+			);
+		}
+
+		return implode( '', $parts );
+	}
+
+	/**
+	 * Extract a string value from a protobuf-like keyed array in Google Photos HTML.
+	 *
+	 * @param string $html Full HTML content.
+	 * @param string $key  Numeric protobuf key.
+	 * @return string
+	 */
+	private function extract_protobuf_string_field( $html, $key ) {
+		if ( '' === $html || '' === $key ) {
+			return '';
+		}
+
+		if ( ! preg_match( '/"' . preg_quote( $key, '/' ) . '"\s*:\s*\[\s*"((?:[^"\\\\]|\\\\.)*)"\s*\]/u', $html, $m ) ) {
+			return '';
+		}
+
+		$decoded = json_decode( '"' . $m[1] . '"', true );
+		if ( ! is_string( $decoded ) ) {
+			return '';
+		}
+
+		return trim( $decoded );
 	}
 
 	/**

@@ -1615,9 +1615,27 @@ class JZSA_Settings_Page {
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
+								<td><code>{description}</code></td>
+								<td><?php esc_html_e( 'Photo description/caption from Google Photos, when present', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>Tūī bird, New Zealand</td>
+								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
 								<td><code>{camera}</code></td>
-								<td><?php esc_html_e( 'Camera make and model', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td><?php esc_html_e( 'Best-guess display value combining EXIF make/model', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>Canon EOS 5D</td>
+								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{camera-make}</code></td>
+								<td><?php esc_html_e( 'Raw EXIF camera make as provided by Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>Canon</td>
+								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							</tr>
+							<tr>
+								<td><code>{camera-model}</code></td>
+								<td><?php esc_html_e( 'Raw EXIF camera model as provided by Google Photos', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>Canon EOS 5D Mark II</td>
 								<td>⏳ <?php esc_html_e( 'May appear with delay', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 							</tr>
 							<tr>
@@ -1648,8 +1666,8 @@ class JZSA_Settings_Page {
 					</table>
 
 					<div class="jzsa-attention-box" style="margin-top: 16px;">
-						<strong><?php esc_html_e( 'Note on EXIF placeholders', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'EXIF data (camera, aperture, shutter, focal, ISO) is not available in the album listing. When you use any EXIF placeholder, the plugin automatically fetches each photo\'s individual page from Google Photos in the background to retrieve it. This means:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<strong><?php esc_html_e( 'Note on delayed photo metadata', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'Some per-photo placeholders (description, camera, aperture, shutter, focal, ISO) are not available in the album listing. When you use any of them, the plugin automatically fetches each photo\'s individual page from Google Photos in the background to retrieve it. This means:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<ul style="margin: 10px 0 0 0; padding-left: 22px; list-style: disc;">
 							<li><?php esc_html_e( 'EXIF information is not perfectly reliable. Google decides what survives in a shared album, so availability depends a lot on the quality and origin of your album content.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'It will appear with a brief delay the first time it is fetched (not instantly like date or dimensions). After that it is cached and appears immediately.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
@@ -1714,13 +1732,28 @@ class JZSA_Settings_Page {
 							<span><?php esc_html_e( 'EXIF output depends heavily on how complete and clean the metadata is across the photos in your shared album.', 'janzeman-shared-albums-for-google-photos' ); ?></span>
 						</p>
 						<div class="jzsa-code-block">
-								<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-bottom="{item} / {items}" info-top="{camera}" info-top-secondary="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}"]</code>
+								<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-top="{description}" info-top-secondary="{camera}" info-bottom="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}" start-at="1"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container jzsa-preview-container-info-exif">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-										echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-bottom="{item} / {items}" info-top="{camera}" info-top-secondary="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}"]' );
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-top="{description}" info-top-secondary="{camera}" info-bottom="{aperture} ⸱ {shutter} ⸱ {focal} ⸱ {iso}" start-at="1"]' );
+							?>
+						</div>
+					</div>
+
+					<div class="jzsa-example">
+						<h3><?php esc_html_e( 'EXIF Camera Info', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
+						<p><?php esc_html_e( 'Shows the raw EXIF camera make and model separately, with {camera} underneath as the plugin\'s best-guess combined display value. Use the raw placeholders when you need exact source values and {camera} only when the combined output looks right for your album.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+						<div class="jzsa-code-block">
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-top="{camera-make}" info-top-secondary="{camera-model}" info-bottom="{camera}" start-at="2"]</code>
+							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
+						</div>
+						<div class="jzsa-preview-container jzsa-preview-container-info-exif">
+							<?php
+								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="512" corner-radius="16" show-link-button="true" show-download-button="true" info-font-size="18" info-font-family="ui-monospace, SFMono-Regular, Consolas, monospace" info-top="{camera-make}" info-top-secondary="{camera-model}" info-bottom="{camera}" start-at="2"]' );
 							?>
 						</div>
 					</div>
@@ -1729,13 +1762,13 @@ class JZSA_Settings_Page {
 						<h3><?php esc_html_e( 'Long Text: Truncated (Default)', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'When text is too long it is cut off with "..." by default. Notice that info-top is intentionally narrower than info-top-secondary: it shares the top corners with action buttons (such as the fullscreen toggle), so space is reserved on both sides to avoid overlap. info-top-secondary and info-bottom have no such constraint and can use the full width.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom"]</code>
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" start-at="3"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom"]' );
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" start-at="3"]' );
 							?>
 						</div>
 					</div>
@@ -1744,13 +1777,13 @@ class JZSA_Settings_Page {
 						<h3><?php esc_html_e( 'Long Text: Wrapped (info-wrap="true")', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The same shortcode with info-wrap="true" added. Long text breaks to a new line instead of being cut off; the pill expands vertically to fit all content. Consider reducing info-font-size slightly if the result feels too large.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true"]</code>
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" start-at="4"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true"]' );
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" start-at="4"]' );
 							?>
 						</div>
 					</div>
@@ -1759,13 +1792,13 @@ class JZSA_Settings_Page {
 						<h3><?php esc_html_e( 'Long Text: Wrapped with Link and Download Buttons', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'The same wrapped shortcode, but with show-link-button="true" and show-download-button="true" added. Both buttons appear in the top-left corner, so the plugin now reserves two slots on each side, making info-top noticeably shorter than in the previous example. This is intentional: without the extra reservation, info-top would overlap the buttons.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" show-link-button="true" show-download-button="true"]</code>
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" show-link-button="true" show-download-button="true" start-at="5"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" show-link-button="true" show-download-button="true"]' );
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" show-link-button="true" show-download-button="true" start-at="5"]' );
 							?>
 						</div>
 					</div>
@@ -1774,13 +1807,13 @@ class JZSA_Settings_Page {
 						<h3><?php esc_html_e( 'Per-Box Text Alignment', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 						<p><?php esc_html_e( 'Each info box can have its own alignment using info-top-text-align, info-top-secondary-text-align, and info-bottom-text-align. These override the global info-text-align for that box only. Here info-top is left-aligned, info-top-secondary is centered, and info-bottom is right-aligned.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<div class="jzsa-code-block">
-							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" info-top-text-align="left" info-top-secondary-text-align="center" info-bottom-text-align="right"]</code>
+							<code>[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" info-top-text-align="left" info-top-secondary-text-align="center" info-bottom-text-align="right" start-at="6"]</code>
 							<button class="jzsa-copy-btn" type="button"><?php esc_html_e( 'Copy', 'janzeman-shared-albums-for-google-photos' ); ?></button>
 						</div>
 						<div class="jzsa-preview-container">
 							<?php
 								// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
-								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" info-top-text-align="left" info-top-secondary-text-align="center" info-bottom-text-align="right"]' );
+								echo do_shortcode( '[jzsa-album link="https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR" mode="slider" width="384" corner-radius="16" info-font-size="14" info-top="This is a sample of a very long text placed at the top of the photo" info-top-secondary="This is the secondary top text which is also very long and gets cut off with dots" info-bottom="And this is a sample of a very long text placed at the bottom" info-wrap="true" info-top-text-align="left" info-top-secondary-text-align="center" info-bottom-text-align="right" start-at="6"]' );
 							?>
 						</div>
 					</div>
