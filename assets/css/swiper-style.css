@@ -88,6 +88,10 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album [role="button"],
 .jzsa-album a,
 .jzsa-album .swiper-slide,
+.jzsa-mosaic button,
+.jzsa-mosaic [role="button"],
+.jzsa-mosaic a,
+.jzsa-mosaic .swiper-slide,
 .jzsa-album .plyr__control,
 .jzsa-gallery-album button,
 .jzsa-gallery-album a,
@@ -2573,7 +2577,7 @@ body.jzsa-no-scroll {
 .jzsa-mosaic .swiper-slide {
     cursor: pointer;
     opacity: var(--jzsa-mosaic-opacity, 0.3);
-    transition: all 0.3s ease;
+    transition: opacity 0.3s ease, transform 0.3s ease;
     overflow: hidden;
     border-radius: var(--jzsa-mosaic-corner-radius, var(--jzsa-corner-radius, 0));
     width: 100%;
@@ -2617,8 +2621,6 @@ body.jzsa-no-scroll {
 
 .jzsa-mosaic .swiper-slide-thumb-active {
     opacity: 1;
-    outline: 3px solid var(--jzsa-controls-color, #0b57d0);
-    outline-offset: -3px;
 }
 
 /* Mosaic navigation arrows */
