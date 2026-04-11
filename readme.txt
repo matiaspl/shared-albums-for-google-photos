@@ -137,6 +137,7 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 2.1.0 =
+* Settings page moved to top-level admin menu with subpages for easier navigation and reference
 * Google Photo description can be supported after all :-)
 * Introduce a halo effect to improve text readability
 
