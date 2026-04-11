@@ -862,22 +862,20 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse slideshow mode: 'auto', 'manual', or 'disabled'.
-	 * Backward compat: 'true' → 'auto', 'false' → 'disabled'.
+	 * Parse gallery-buttons-on-mobile mode.
 	 *
-	 * @param array  $atts Shortcode attributes.
-	 * @param string $key  Attribute key.
-	 * @return string 'auto', 'manual', or 'disabled'.
+	 * @param array $atts Shortcode attributes.
+	 * @return string 'active-item' or 'always'.
 	 */
 	private function parse_gallery_buttons_on_mobile( $atts ) {
 		if ( ! isset( $atts['gallery-buttons-on-mobile'] ) ) {
-			return 'on-tap';
+			return 'active-item';
 		}
 		$value = strtolower( trim( $atts['gallery-buttons-on-mobile'] ) );
-		if ( in_array( $value, array( 'on-tap', 'always' ), true ) ) {
+		if ( in_array( $value, array( 'active-item', 'always' ), true ) ) {
 			return $value;
 		}
-		return 'on-tap';
+		return 'active-item';
 	}
 
 	private function parse_slideshow_mode( $atts, $key ) {

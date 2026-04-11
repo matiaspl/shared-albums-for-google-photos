@@ -10,7 +10,7 @@
     /* Use configurable background; fallback to black if not set */
 background-color: var(--gallery-bg-color, #FFFFFF);
     --jzsa-controls-visible-opacity: 0.8;
-    --jzsa-controls-fade-duration: 350ms;
+    --jzsa-controls-fade-duration: 100ms;
     --jzsa-controls-fade-easing: linear;
     --jzsa-info-fade-duration: 10ms;
     --jzsa-controls-bg-duration: 0.3s;
@@ -1842,7 +1842,7 @@ body.jzsa-no-scroll {
     max-width: calc(100% - 8px);
 }
 
-/* Touch reveal via JS (covers iOS 13+ where hover:hover is reported but primary input is touch). */
+/* Touch reveal via JS (used by gallery-buttons-on-mobile="active-item"). */
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-fs-btn,
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-link-btn,
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-gallery-thumb-download-btn {
@@ -1856,23 +1856,6 @@ body.jzsa-no-scroll {
 .jzsa-gallery-album.jzsa-touch-device .jzsa-gallery-item .jzsa-gallery-thumb-download-btn {
     opacity: var(--jzsa-controls-visible-opacity);
     pointer-events: auto;
-}
-
-/* gallery-buttons-on-mobile="on-tap": wink 3 times on one item as a discoverability hint. */
-@keyframes jzsa-wink {
-    0%        { opacity: 0; }
-    10%       { opacity: var(--jzsa-controls-visible-opacity); }
-    24%       { opacity: 0; }
-    34%       { opacity: var(--jzsa-controls-visible-opacity); }
-    48%       { opacity: 0; }
-    58%       { opacity: var(--jzsa-controls-visible-opacity); }
-    72%, 100% { opacity: 0; }
-}
-.jzsa-gallery-item.jzsa-item-wink .jzsa-gallery-thumb-fs-btn,
-.jzsa-gallery-item.jzsa-item-wink .jzsa-gallery-thumb-link-btn,
-.jzsa-gallery-item.jzsa-item-wink .jzsa-gallery-thumb-download-btn {
-    animation: jzsa-wink 2s ease-in-out forwards;
-    pointer-events: none;
 }
 
 .jzsa-gallery-album .jzsa-gallery-item.jzsa-item-touched .jzsa-info-stack-top {

@@ -104,8 +104,8 @@
 							</tr>
 							<tr>
 								<td><code>gallery-buttons-on-mobile</code></td>
-								<td><?php esc_html_e( 'Controls when the action buttons (fullscreen, link, download) are visible on touch devices. Desktop always uses hover. "on-tap" (default): buttons appear after a short tap or long-press on a thumbnail, and flash briefly on the first scroll as a discoverability hint. "always": buttons are permanently visible on touch devices.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
-								<td>on-tap</td>
+								<td><?php esc_html_e( 'Controls when the action buttons (fullscreen, link, download) are visible on touch devices. Desktop always uses hover. "active-item" (default): scrolling on a thumbnail activates that item, keeps its buttons visible until another item becomes active or the item leaves the viewport, and restores the same item after returning from fullscreen. "always": buttons are permanently visible on touch devices.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+								<td>active-item</td>
 							</tr>
 							<tr>
 								<td><code>gallery-gap</code></td>
