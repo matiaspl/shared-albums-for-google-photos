@@ -1077,10 +1077,29 @@ body.jzsa-no-scroll {
     visibility: hidden;
 }
 
-/* Dashed border shows immediately so the user knows where to expect the gallery. */
+/* Dashed border appears after a short delay — fast loads skip it entirely.
+   outline starts transparent via the keyframe 'from', then snaps to visible
+   after 100ms (animation-delay). animation-fill-mode: both holds both the
+   initial (transparent) and final states so there is no layout jump. */
+@keyframes jzsa-outline-appear {
+    from { outline-color: transparent; }
+    to   { outline-color: rgba(128, 128, 128, 0.4); }
+}
+
 .jzsa-album.jzsa-loader-pending {
-    outline: 2px dashed rgba(128, 128, 128, 0.4);
+    outline: 2px dashed transparent;
     outline-offset: -2px;
+    animation-name: jzsa-outline-appear;
+    animation-duration: 10ms;
+    animation-delay: 300ms; /* wait before showing the dashed border */
+    animation-fill-mode: both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .jzsa-album.jzsa-loader-pending {
+        animation: none;
+        outline-color: rgba(128, 128, 128, 0.4);
+    }
 }
 
 .jzsa-album.jzsa-loaded {
