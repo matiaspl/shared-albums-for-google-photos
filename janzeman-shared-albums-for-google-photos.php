@@ -33,7 +33,7 @@ define( 'JZSA_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 require_once JZSA_PLUGIN_DIR . 'includes/class-data-provider.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-renderer.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-orchestrator.php';
-require_once JZSA_PLUGIN_DIR . 'includes/class-settings-page.php';
+require_once JZSA_PLUGIN_DIR . 'includes/class-admin-pages.php';
 
 /**
  * Clear all plugin-managed caches.
@@ -78,9 +78,9 @@ function jzsa_init_plugin() {
 	// Initialize the main orchestrator with plugin file path
 	new JZSA_Shared_Albums( JZSA_PLUGIN_FILE );
 
-	// Initialize settings page (admin only)
+	// Initialize admin pages (admin only).
 	if ( is_admin() ) {
-		new JZSA_Settings_Page();
+		new JZSA_Admin_Pages();
 	}
 }
 add_action( 'init', 'jzsa_init_plugin' );
@@ -92,13 +92,13 @@ function jzsa_activate() {
 	// Clear all plugin caches on activation.
 	jzsa_clear_all_plugin_caches();
 
-	// Set a transient to redirect to settings page after activation
+	// Set a transient to redirect to the Guide page after activation.
 	set_transient( 'jzsa_activation_redirect', true, 30 );
 }
 register_activation_hook( __FILE__, 'jzsa_activate' );
 
 /**
- * Redirect to settings page after activation
+ * Redirect to the Guide page after activation.
  */
 function jzsa_activation_redirect() {
 	// Only do this once after activation
@@ -112,7 +112,7 @@ function jzsa_activation_redirect() {
 		}
 
 		// Redirect to the canonical Guide page.
-		wp_safe_redirect( JZSA_Settings_Page::get_settings_page_url() );
+		wp_safe_redirect( JZSA_Admin_Pages::get_guide_page_url() );
 		exit;
 	}
 }
@@ -124,27 +124,27 @@ add_action( 'admin_init', 'jzsa_activation_redirect' );
  * @param array $links Existing plugin action links
  * @return array Modified plugin action links
  */
-function jzsa_add_settings_link( $links ) {
+function jzsa_add_plugin_action_links( $links ) {
 	$guide_link = sprintf(
 		'<a href="%s">%s</a>',
-		JZSA_Settings_Page::get_settings_page_url(),
+		JZSA_Admin_Pages::get_guide_page_url(),
 		esc_html__( 'Guide', 'janzeman-shared-albums-for-google-photos' )
 	);
 	$parameters_link = sprintf(
 		'<a href="%s">%s</a>',
-		JZSA_Settings_Page::get_shortcode_parameters_page_url(),
+		JZSA_Admin_Pages::get_shortcode_parameters_page_url(),
 		esc_html__( 'Parameters', 'janzeman-shared-albums-for-google-photos' )
 	);
 	$placeholders_link = sprintf(
 		'<a href="%s">%s</a>',
-		JZSA_Settings_Page::get_placeholders_page_url(),
+		JZSA_Admin_Pages::get_placeholders_page_url(),
 		esc_html__( 'Placeholders', 'janzeman-shared-albums-for-google-photos' )
 	);
 
 	array_unshift( $links, $guide_link, $parameters_link, $placeholders_link );
 	return $links;
 }
-add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'jzsa_add_settings_link' );
+add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'jzsa_add_plugin_action_links' );
 
 /**
  * Deactivation hook

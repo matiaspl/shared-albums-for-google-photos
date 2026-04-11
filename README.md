@@ -83,7 +83,7 @@ janzeman-shared-albums-for-google-photos/
 │   ├── class-data-provider.php    # Fetches Google Photos data
 │   ├── class-orchestrator.php     # Main plugin orchestrator
 │   ├── class-renderer.php         # HTML rendering
-│   └── class-settings-page.php    # Admin settings page
+│   └── class-admin-pages.php      # Admin guide and reference pages
 ├── LICENSE
 ├── README.md             # This file (GitHub overview)
 ├── readme.txt           # WordPress.org official documentation ⭐

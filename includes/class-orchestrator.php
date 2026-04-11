@@ -189,7 +189,7 @@ class JZSA_Shared_Albums {
 		add_action( 'wp_ajax_jzsa_fetch_album_chunk', array( $this, 'handle_fetch_album_chunk' ) );
 		add_action( 'wp_ajax_nopriv_jzsa_fetch_album_chunk', array( $this, 'handle_fetch_album_chunk' ) );
 
-		// Also load front-end gallery assets on our settings page so the sample
+		// Also load front-end gallery assets on our Guide page so the sample
 		// shortcode preview works inside the admin.
 		if ( is_admin() ) {
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_assets' ) );
@@ -197,7 +197,7 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Enqueue front-end gallery assets on the plugin's settings page in admin.
+	 * Enqueue front-end gallery assets on the plugin's Guide page in admin.
 	 *
 	 * @param string $hook Current admin page hook.
 	 */
@@ -207,7 +207,7 @@ class JZSA_Shared_Albums {
 		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- read-only admin page routing check.
 		$page = isset( $_GET['page'] ) ? sanitize_key( wp_unslash( $_GET['page'] ) ) : '';
 
-		if ( ! class_exists( 'JZSA_Settings_Page' ) || JZSA_Settings_Page::MENU_SLUG !== $page ) {
+		if ( ! class_exists( 'JZSA_Admin_Pages' ) || JZSA_Admin_Pages::MENU_SLUG !== $page ) {
 			return;
 		}
 

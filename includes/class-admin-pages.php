@@ -1,8 +1,8 @@
 <?php
 /**
- * Settings Page Class
+ * Admin Pages Class
  *
- * Provides admin settings page with tutorial and examples
+ * Provides the plugin admin guide and reference pages.
  *
  * @package JZSA_Shared_Albums
  */
@@ -13,9 +13,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Settings Page Class
+ * Admin Pages Class
  */
-class JZSA_Settings_Page {
+class JZSA_Admin_Pages {
 
 	const MENU_SLUG = 'janzeman-shared-albums-for-google-photos';
 	const SHORTCODE_PARAMETERS_SLUG = 'janzeman-shared-albums-for-google-photos-shortcode-parameters';
@@ -25,22 +25,22 @@ class JZSA_Settings_Page {
 	 * Constructor
 	 */
 	public function __construct() {
-		add_action( 'admin_menu', array( $this, 'add_settings_page' ) );
+		add_action( 'admin_menu', array( $this, 'add_admin_pages' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_menu_icon_style' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
 		add_action( 'admin_init', array( $this, 'redirect_from_settings_alias' ) );
 	}
 
 	/**
-	 * Add settings page to WordPress admin menu
+	 * Add the plugin admin pages to the WordPress admin menu.
 	 */
-	public function add_settings_page() {
+	public function add_admin_pages() {
 		add_menu_page(
 			'Shared Albums for Google Photos (by JanZeman)',
 			'Shared Albums for Google Photos',
 			'manage_options',
 			self::MENU_SLUG,
-			array( $this, 'render_settings_page' ),
+			array( $this, 'render_guide_page' ),
 			'none'
 		);
 
@@ -50,7 +50,7 @@ class JZSA_Settings_Page {
 			'Guide',
 			'manage_options',
 			self::MENU_SLUG,
-			array( $this, 'render_settings_page' )
+			array( $this, 'render_guide_page' )
 		);
 
 		add_submenu_page(
@@ -90,7 +90,7 @@ class JZSA_Settings_Page {
 	 *
 	 * @return string
 	 */
-	public static function get_settings_page_url() {
+	public static function get_guide_page_url() {
 		return admin_url( 'admin.php?page=' . self::MENU_SLUG );
 	}
 
@@ -180,7 +180,7 @@ class JZSA_Settings_Page {
 			return;
 		}
 
-		wp_safe_redirect( self::get_settings_page_url() );
+		wp_safe_redirect( self::get_guide_page_url() );
 		exit;
 	}
 
@@ -214,10 +214,10 @@ class JZSA_Settings_Page {
 	 * @param string $current_slug Current page slug.
 	 */
 	private function render_reference_navigation( $current_slug ) {
-		$pages = array(
+			$pages = array(
 			self::MENU_SLUG                 => array(
 				'label' => __( 'Guide', 'janzeman-shared-albums-for-google-photos' ),
-				'url'   => self::get_settings_page_url(),
+				'url'   => self::get_guide_page_url(),
 			),
 			self::SHORTCODE_PARAMETERS_SLUG => array(
 				'label' => __( 'Shortcode Parameters', 'janzeman-shared-albums-for-google-photos' ),
@@ -318,9 +318,9 @@ class JZSA_Settings_Page {
 	}
 
 	/**
-	 * Render settings page
+	 * Render the Guide page.
 	 */
-	public function render_settings_page() {
+	public function render_guide_page() {
 		$album_sample_link = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
 		$video_sample_link = 'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB';
 		$info_sample_link   = 'https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR';

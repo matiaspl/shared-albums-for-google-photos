@@ -277,7 +277,7 @@ REQUIRED_FILES=(
     "includes/class-data-provider.php"
     "includes/class-orchestrator.php"
     "includes/class-renderer.php"
-    "includes/class-settings-page.php"
+    "includes/class-admin-pages.php"
     "assets/css/admin-settings.css"
     "assets/css/swiper-style.css"
     "assets/js/admin-settings.js"
