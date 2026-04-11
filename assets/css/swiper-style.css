@@ -1077,7 +1077,7 @@ body.jzsa-no-scroll {
     visibility: hidden;
 }
 
-/* Dashed border shows the placeholder area while content is loading */
+/* Dashed border shows immediately so the user knows where to expect the gallery. */
 .jzsa-album.jzsa-loader-pending {
     outline: 2px dashed rgba(128, 128, 128, 0.4);
     outline-offset: -2px;
