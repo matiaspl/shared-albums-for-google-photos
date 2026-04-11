@@ -278,6 +278,8 @@ REQUIRED_FILES=(
     "includes/class-orchestrator.php"
     "includes/class-renderer.php"
     "includes/class-admin-pages.php"
+    "includes/admin/reference-parameters.php"
+    "includes/admin/reference-placeholders.php"
     "assets/css/admin-menu-icon.css"
     "assets/css/admin-settings.css"
     "assets/css/swiper-style.css"

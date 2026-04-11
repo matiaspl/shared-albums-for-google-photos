@@ -271,7 +271,7 @@ class JZSA_Admin_Pages {
 					<a href="<?php echo esc_url( self::get_shortcode_parameters_page_url() ); ?>" target="_blank" rel="noopener"><?php esc_html_e( 'Open this reference in a separate browser tab for faster reference and navigation.', 'janzeman-shared-albums-for-google-photos' ); ?></a>
 				</p>
 			<?php endif; ?>
-			<?php require JZSA_PLUGIN_DIR . 'includes/admin/reference-shortcode-parameters.php'; ?>
+			<?php require JZSA_PLUGIN_DIR . 'includes/admin/reference-parameters.php'; ?>
 		</div>
 		<?php
 	}
