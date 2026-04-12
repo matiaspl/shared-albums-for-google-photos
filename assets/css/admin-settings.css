@@ -30,33 +30,41 @@
 
 /* Playground section stands out slightly so it's easy to find
  * when scrolling back. Light pastel background, subtle border color. */
-.jzsa-tool-row {
+.jzsa-cache-row {
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-.jzsa-tool-info p {
+.jzsa-cache-info p {
     margin: 4px 0 0 0;
 }
 
-.jzsa-tool-action {
+.jzsa-cache-action {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     gap: 12px;
 }
 
-.jzsa-tool-result {
+.jzsa-cache-actions-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px 12px;
+}
+
+.jzsa-cache-result {
     font-size: 13px;
     min-height: 1.4em;
     display: block;
 }
 
-.jzsa-tool-result--success {
+.jzsa-cache-result--success {
     color: #1a7a3a;
 }
 
-.jzsa-tool-result--error {
+.jzsa-cache-result--error {
     color: #b32d2e;
 }
 

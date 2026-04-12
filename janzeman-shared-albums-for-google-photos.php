@@ -37,6 +37,57 @@ require_once JZSA_PLUGIN_DIR . 'includes/class-orchestrator.php';
 require_once JZSA_PLUGIN_DIR . 'includes/class-admin-pages.php';
 
 /**
+ * Clear album-level plugin-managed caches.
+ *
+ * This includes:
+ * - album transients
+ * - stored album expiry options
+ *
+ * @return array<string,int>
+ */
+function jzsa_clear_album_caches() {
+	global $wpdb;
+
+	// Direct database queries are safe here as we are deleting only this plugin's own cache keys.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$deleted_album_rows = (int) $wpdb->query(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%'"
+	);
+
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$deleted_expiry_rows = (int) $wpdb->query(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE 'jzsa_expiry_%'"
+	);
+
+	return array(
+		'album_transient_rows'      => $deleted_album_rows,
+		'photo_meta_transient_rows' => 0,
+		'expiry_rows'               => $deleted_expiry_rows,
+	);
+}
+
+/**
+ * Clear per-photo metadata caches.
+ *
+ * @return array<string,int>
+ */
+function jzsa_clear_photo_meta_caches() {
+	global $wpdb;
+
+	// Direct database queries are safe here as we are deleting only this plugin's own cache keys.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
+	$deleted_photo_meta_rows = (int) $wpdb->query(
+		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_photo_meta_%' OR option_name LIKE '_transient_timeout_jzsa_photo_meta_%'"
+	);
+
+	return array(
+		'album_transient_rows'      => 0,
+		'photo_meta_transient_rows' => $deleted_photo_meta_rows,
+		'expiry_rows'               => 0,
+	);
+}
+
+/**
  * Clear all plugin-managed caches.
  *
  * This includes:
@@ -47,28 +98,13 @@ require_once JZSA_PLUGIN_DIR . 'includes/class-admin-pages.php';
  * @return array<string,int>
  */
 function jzsa_clear_all_plugin_caches() {
-	global $wpdb;
-
-	// Direct database queries are safe here as we are deleting only this plugin's own cache keys.
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$deleted_album_rows = (int) $wpdb->query(
-		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_album_%' OR option_name LIKE '_transient_timeout_jzsa_album_%'"
-	);
-
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$deleted_photo_meta_rows = (int) $wpdb->query(
-		"DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_jzsa_photo_meta_%' OR option_name LIKE '_transient_timeout_jzsa_photo_meta_%'"
-	);
-
-	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
-	$deleted_expiry_rows = (int) $wpdb->query(
-		"DELETE FROM {$wpdb->options} WHERE option_name LIKE 'jzsa_expiry_%'"
-	);
+	$album_result = jzsa_clear_album_caches();
+	$photo_result = jzsa_clear_photo_meta_caches();
 
 	return array(
-		'album_transient_rows'      => $deleted_album_rows,
-		'photo_meta_transient_rows' => $deleted_photo_meta_rows,
-		'expiry_rows'               => $deleted_expiry_rows,
+		'album_transient_rows'      => (int) $album_result['album_transient_rows'],
+		'photo_meta_transient_rows' => (int) $photo_result['photo_meta_transient_rows'],
+		'expiry_rows'               => (int) $album_result['expiry_rows'],
 	);
 }
 

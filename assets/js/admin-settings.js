@@ -232,50 +232,59 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 	} );
 
-	// Wire the Clear Cache button.
-	var clearCacheBtn = document.getElementById( 'jzsa-clear-cache-btn' );
+	// Wire the Clear Cache buttons.
+	var clearCacheBtns = document.querySelectorAll( '[data-jzsa-clear-cache-scope]' );
 	var clearCacheResult = document.getElementById( 'jzsa-clear-cache-result' );
 
-	if ( clearCacheBtn ) {
-		clearCacheBtn.addEventListener( 'click', function () {
-			if ( typeof jzsaAdminAjax === 'undefined' || ! jzsaAdminAjax.ajaxUrl ) {
-				return;
-			}
+	if ( clearCacheBtns.length ) {
+		clearCacheBtns.forEach( function ( clearCacheBtn ) {
+			clearCacheBtn.addEventListener( 'click', function () {
+				if ( typeof jzsaAdminAjax === 'undefined' || ! jzsaAdminAjax.ajaxUrl ) {
+					return;
+				}
 
-			clearCacheBtn.disabled = true;
+			clearCacheBtns.forEach( function ( button ) {
+				button.disabled = true;
+			} );
 			clearCacheBtn.textContent = 'Clearing…';
 			if ( clearCacheResult ) {
 				clearCacheResult.textContent = '';
-				clearCacheResult.className = 'jzsa-tool-result';
+				clearCacheResult.className = 'jzsa-cache-result';
 			}
 
-			var params = new URLSearchParams();
-			params.append( 'action', 'jzsa_clear_cache' );
-			params.append( 'nonce', jzsaAdminAjax.clearCacheNonce );
+				var params = new URLSearchParams();
+				params.append( 'action', 'jzsa_clear_cache' );
+				params.append( 'nonce', jzsaAdminAjax.clearCacheNonce );
+				params.append( 'scope', clearCacheBtn.getAttribute( 'data-jzsa-clear-cache-scope' ) || 'all' );
 
-			window.fetch( jzsaAdminAjax.ajaxUrl, {
-				method: 'POST',
-				credentials: 'same-origin',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
-				body: params.toString(),
-			} )
-				.then( function ( response ) { return response.json(); } )
-				.then( function ( data ) {
-					clearCacheBtn.disabled = false;
-					clearCacheBtn.textContent = 'Clear Cache';
-					if ( clearCacheResult ) {
-						clearCacheResult.textContent = data.success ? data.data.message : ( data.data || 'Error clearing cache.' );
-						clearCacheResult.className = 'jzsa-tool-result ' + ( data.success ? 'jzsa-tool-result--success' : 'jzsa-tool-result--error' );
-					}
+				window.fetch( jzsaAdminAjax.ajaxUrl, {
+					method: 'POST',
+					credentials: 'same-origin',
+					headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+					body: params.toString(),
 				} )
-				.catch( function () {
-					clearCacheBtn.disabled = false;
-					clearCacheBtn.textContent = 'Clear Cache';
-					if ( clearCacheResult ) {
-						clearCacheResult.textContent = 'Request failed.';
-						clearCacheResult.className = 'jzsa-tool-result jzsa-tool-result--error';
-					}
-				} );
+					.then( function ( response ) { return response.json(); } )
+					.then( function ( data ) {
+						clearCacheBtns.forEach( function ( button ) {
+							button.disabled = false;
+							button.textContent = button.getAttribute( 'data-jzsa-idle-label' ) || button.textContent;
+						} );
+						if ( clearCacheResult ) {
+							clearCacheResult.textContent = data.success ? data.data.message : ( data.data || 'Error clearing cache.' );
+							clearCacheResult.className = 'jzsa-cache-result ' + ( data.success ? 'jzsa-cache-result--success' : 'jzsa-cache-result--error' );
+						}
+					} )
+					.catch( function () {
+						clearCacheBtns.forEach( function ( button ) {
+							button.disabled = false;
+							button.textContent = button.getAttribute( 'data-jzsa-idle-label' ) || button.textContent;
+						} );
+						if ( clearCacheResult ) {
+							clearCacheResult.textContent = 'Request failed.';
+							clearCacheResult.className = 'jzsa-cache-result jzsa-cache-result--error';
+						}
+					} );
+			} );
 		} );
 	}
 
@@ -310,14 +319,12 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		pgApply.type = 'button';
 		pgApply.className = 'jzsa-action-btn';
 		pgApply.textContent = 'Apply';
-		pgApply.disabled = true;
 		pgBtns.appendChild( pgApply );
 
 		var pgRevert = document.createElement( 'button' );
 		pgRevert.type = 'button';
 		pgRevert.className = 'jzsa-action-btn';
 		pgRevert.textContent = 'Revert';
-		pgRevert.disabled = true;
 		pgBtns.appendChild( pgRevert );
 
 		pgBlock.appendChild( pgBtns );
@@ -335,9 +342,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 
 		pgCode.addEventListener( 'input', function () {
-			var changed = ( pgCode.textContent || '' ) !== playgroundOriginal;
-			pgApply.disabled = ! changed;
-			pgRevert.disabled = ! changed;
 			jzsaHighlightPlaceholders( pgCode );
 		} );
 
@@ -346,8 +350,6 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		pgRevert.addEventListener( 'click', function () {
 			pgCode.textContent = playgroundOriginal;
 			jzsaHighlightPlaceholders( pgCode );
-			pgApply.disabled = true;
-			pgRevert.disabled = true;
 			if ( playgroundPreview ) {
 				jzsaApplyPreview( pgCode, pgRevert, playgroundPreview, 'Reverted!' );
 			}

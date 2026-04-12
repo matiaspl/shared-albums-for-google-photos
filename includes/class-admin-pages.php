@@ -508,22 +508,29 @@ class JZSA_Admin_Pages {
 					</div>
 				</div>
 
-			<!-- Tools Section -->
-			<div class="jzsa-section jzsa-tools-section">
-				<h2><?php esc_html_e( 'Tools', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
+				<!-- Plugin Cache Section -->
+				<div class="jzsa-section jzsa-cache-section">
+					<h2><?php esc_html_e( 'Plugin Cache', 'janzeman-shared-albums-for-google-photos' ); ?></h2>
 
-				<div class="jzsa-tool-row">
-					<div class="jzsa-tool-info">
-						<strong><?php esc_html_e( 'Plugin Cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
-						<p class="jzsa-help-text"><?php esc_html_e( 'Album data is cached on your web server to reduce load, and per-photo metadata (such as description, camera, filename, and other EXIF-derived values) is cached separately after it is fetched. If you have modified any of your Google Photos albums and need to see the changes immediately, simply click the button below. For albums that are updated frequently (e.g. live events), use the cache-refresh shortcode parameter to automatically reduce the album cache duration.', 'janzeman-shared-albums-for-google-photos' ); ?><br><span style="display:block;margin-top:6px"></span><em><?php esc_html_e( 'This clears all plugin-managed caches, including album data and per-photo metadata. It does not clear your browser or any page cache plugin cache. If you use a page caching plugin (WP Fastest Cache, WP Super Cache, etc.), clear that separately.', 'janzeman-shared-albums-for-google-photos' ); ?></em></p>
+					<div class="jzsa-cache-row">
+							<div class="jzsa-cache-info">
+								<?php esc_html_e( 'Caching is important because it improves performance and reduces the number of requests to Google Photos. This plugin keeps two cache types:', 'janzeman-shared-albums-for-google-photos' ); ?>
+									<p><strong><?php esc_html_e( 'Album cache:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'stores the album listing and media URLs.', 'janzeman-shared-albums-for-google-photos' ); ?><br><strong><?php esc_html_e( 'Metadata cache:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'stores per-photo values such as description, camera, filename, and EXIF after the first fetch.', 'janzeman-shared-albums-for-google-photos' ); ?><br><span style="display:block;margin-top:6px"></span><?php esc_html_e( 'The heavier metadata fetching usually happens only once, to warm the cache. Later visitors are served from cache immediately. Avoid clearing caches routinely unless you actually need fresh Google Photos data. Use the cache-refresh shortcode parameter to automatically reduce the album cache duration. If you use a page caching plugin (WP Fastest Cache, WP Super Cache, etc.), clear that separately. This section refers to server-side cache only; your browser cache is separate.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
+							</div>
+							<div class="jzsa-cache-action">
+								<div class="jzsa-cache-actions-row">
+									<button type="button" id="jzsa-clear-cache-btn" class="button button-secondary" data-jzsa-clear-cache-scope="all" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear All Cache', 'janzeman-shared-albums-for-google-photos' ); ?>">
+										<?php esc_html_e( 'Clear All Cache', 'janzeman-shared-albums-for-google-photos' ); ?>
+									</button>
+								<button type="button" class="button button-link" data-jzsa-clear-cache-scope="album" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Album Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>">
+									<?php esc_html_e( 'Clear Album Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</button>
+								<button type="button" class="button button-link" data-jzsa-clear-cache-scope="photo_meta" data-jzsa-idle-label="<?php echo esc_attr__( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>">
+									<?php esc_html_e( 'Clear Metadata Cache Only', 'janzeman-shared-albums-for-google-photos' ); ?>
+								</button>
+							</div>
+						</div>
 					</div>
-					<div class="jzsa-tool-action">
-						<button type="button" id="jzsa-clear-cache-btn" class="button button-secondary">
-							<?php esc_html_e( 'Clear Cache', 'janzeman-shared-albums-for-google-photos' ); ?>
-						</button>
-						<span id="jzsa-clear-cache-result" class="jzsa-tool-result" aria-live="polite"></span>
-					</div>
-				</div>
 			</div>
 
 				<!-- Samples Section -->

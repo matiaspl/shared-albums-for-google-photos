@@ -132,8 +132,8 @@
 						<p style="margin: 8px 0 0 0;"><?php esc_html_e( 'Some per-photo placeholders (description, camera, aperture, shutter, focal, ISO) are not available in the album listing. When you use any of them, the plugin automatically fetches each photo\'s individual page from Google Photos in the background to retrieve it. This means:', 'janzeman-shared-albums-for-google-photos' ); ?></p>
 						<ul style="margin: 10px 0 0 0; padding-left: 22px; list-style: disc;">
 							<li><?php esc_html_e( 'EXIF information is not perfectly reliable. Google decides what survives in a shared album, so availability depends a lot on the quality and origin of your album content.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-							<li><?php esc_html_e( 'It will appear with a brief delay the first time it is fetched (not instantly like date or dimensions). After that it is cached and appears immediately.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
-							<li><?php esc_html_e( 'Each photo requires one background HTTP request (~1 MB). For large albums this adds significant bandwidth.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							<li><?php esc_html_e( 'It will appear with a brief delay the first time it is fetched (not instantly like date or dimensions). After that it is cached on your web server and appears immediately for later visitors.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+							<li><?php esc_html_e( 'The heavier load happens mainly during the first cache warm-up. For large albums, avoid clearing the plugin cache unless you actually need fresh Google Photos data.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'Photos that were uploaded without EXIF (e.g. screenshots, edited exports) will show nothing for these placeholders.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 							<li><?php esc_html_e( 'If you don\'t use any EXIF placeholder, no background fetching occurs - zero overhead.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 						</ul>

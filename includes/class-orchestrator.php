@@ -2055,18 +2055,71 @@ class JZSA_Shared_Albums {
 			wp_send_json_error( __( 'Invalid nonce', 'janzeman-shared-albums-for-google-photos' ) );
 		}
 
-		$result = function_exists( 'jzsa_clear_all_plugin_caches' )
-			? jzsa_clear_all_plugin_caches()
-			: array(
-				'album_transient_rows'      => 0,
-				'photo_meta_transient_rows' => 0,
-				'expiry_rows'               => 0,
-			);
+		$scope = isset( $_POST['scope'] ) ? sanitize_key( wp_unslash( $_POST['scope'] ) ) : 'all';
+		if ( ! in_array( $scope, array( 'all', 'album', 'photo_meta' ), true ) ) {
+			$scope = 'all';
+		}
+
+		if ( 'album' === $scope ) {
+			$result = function_exists( 'jzsa_clear_album_caches' )
+				? jzsa_clear_album_caches()
+				: array(
+					'album_transient_rows'      => 0,
+					'photo_meta_transient_rows' => 0,
+					'expiry_rows'               => 0,
+				);
+		} elseif ( 'photo_meta' === $scope ) {
+			$result = function_exists( 'jzsa_clear_photo_meta_caches' )
+				? jzsa_clear_photo_meta_caches()
+				: array(
+					'album_transient_rows'      => 0,
+					'photo_meta_transient_rows' => 0,
+					'expiry_rows'               => 0,
+				);
+		} else {
+			$result = function_exists( 'jzsa_clear_all_plugin_caches' )
+				? jzsa_clear_all_plugin_caches()
+				: array(
+					'album_transient_rows'      => 0,
+					'photo_meta_transient_rows' => 0,
+					'expiry_rows'               => 0,
+				);
+		}
 
 		$album_count = (int) floor( max( 0, (int) $result['album_transient_rows'] ) / 2 );
 		$photo_count = (int) floor( max( 0, (int) $result['photo_meta_transient_rows'] ) / 2 );
 
-		if ( $album_count > 0 || $photo_count > 0 ) {
+		if ( 'album' === $scope ) {
+			if ( $album_count > 0 ) {
+				$message = sprintf(
+					/* translators: %d: number of cached albums cleared */
+					_n(
+						'Cleared %d cached album.',
+						'Cleared %d cached albums.',
+						$album_count,
+						'janzeman-shared-albums-for-google-photos'
+					),
+					$album_count
+				);
+			} else {
+				$message = __( 'Album caches were already empty.', 'janzeman-shared-albums-for-google-photos' );
+			}
+		} elseif ( 'photo_meta' === $scope ) {
+			if ( $photo_count > 0 ) {
+				$message = sprintf(
+					/* translators: %d: number of cached photo metadata entries cleared */
+					_n(
+						'Cleared %d cached photo metadata entry.',
+						'Cleared %d cached photo metadata entries.',
+						$photo_count,
+						'janzeman-shared-albums-for-google-photos'
+					),
+					$photo_count
+				);
+			} else {
+				$message = __( 'Photo metadata caches were already empty.', 'janzeman-shared-albums-for-google-photos' );
+			}
+		} elseif ( $album_count > 0 || $photo_count > 0 ) {
 			$message = sprintf(
 				/* translators: 1: number of cached albums cleared, 2: number of cached photo metadata entries cleared */
 				__( 'Cleared %1$d cached albums and %2$d cached photo metadata entries.', 'janzeman-shared-albums-for-google-photos' ),
