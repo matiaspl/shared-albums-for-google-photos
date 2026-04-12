@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.0
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 2.1.1
+Stable tag: 2.1.2
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -136,7 +136,7 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
-= 2.1.1 =
+= 2.1.2 =
 * Make caching description more clear and prominent
 
 = 2.1.0 =
