@@ -488,7 +488,7 @@ class JZSA_Admin_Pages {
 						<?php esc_html_e( 'Use this area to experiment with the [jzsa-album] shortcode. You can paste your own shortcode here and adjust it before using it on a page or post.', 'janzeman-shared-albums-for-google-photos' ); ?>
 					</p>
 					<?php
-						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" corner-radius="16" mosaic="true" mosaic-count="10"]';
+						$sample_shortcode = '[jzsa-album link="' . $album_sample_link . '" mode="slider" limit="12" corner-radius="16" mosaic="true" mosaic-count="10"]';
 					?>
 
 					<div class="jzsa-code-block jzsa-playground-code-block">
