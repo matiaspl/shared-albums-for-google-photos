@@ -1068,45 +1068,21 @@ body.jzsa-no-scroll {
     color: #fff;
     z-index: 20;
     pointer-events: none;
-    opacity: 1;
+    opacity: 0;
+    visibility: hidden;
     transition: opacity 0.35s ease-in-out;
 }
 
-.jzsa-album.jzsa-loader-pending .jzsa-loader {
-    opacity: 0;
-    visibility: hidden;
-}
-
-/* Dashed border appears after a short delay — fast loads skip it entirely.
-   outline starts transparent via the keyframe 'from', then snaps to visible
-   after 100ms (animation-delay). animation-fill-mode: both holds both the
-   initial (transparent) and final states so there is no layout jump. */
-@keyframes jzsa-outline-appear {
-    from { outline-color: transparent; }
-    to   { outline-color: rgba(128, 128, 128, 0.4); }
-}
-
 .jzsa-album.jzsa-loader-pending {
-    outline: 2px dashed transparent;
+    outline: 2px dashed rgba(128, 128, 128, 0.4);
     outline-offset: -2px;
-    animation-name: jzsa-outline-appear;
-    animation-duration: 10ms;
-    animation-delay: 300ms; /* wait before showing the dashed border */
-    animation-fill-mode: both;
-}
-
-@media (prefers-reduced-motion: reduce) {
-    .jzsa-album.jzsa-loader-pending {
-        animation: none;
-        outline-color: rgba(128, 128, 128, 0.4);
-    }
 }
 
 .jzsa-album.jzsa-loaded {
     outline: none;
 }
 
-.jzsa-album.jzsa-loader-pending.jzsa-loader-visible .jzsa-loader {
+.jzsa-album.jzsa-loader-pending .jzsa-loader {
     opacity: 1;
     visibility: visible;
 }
@@ -1244,12 +1220,9 @@ body.jzsa-no-scroll {
 
 .jzsa-loader-inner {
     text-align: center;
-    opacity: 0;
-    transition: opacity 0.4s ease-in-out;
-}
-
-.jzsa-loader-visible .jzsa-loader-inner {
-    opacity: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .jzsa-loader-spinner {
@@ -1258,15 +1231,26 @@ body.jzsa-no-scroll {
     border-radius: 50%;
     border: 3px solid rgba(128, 128, 128, 0.25);
     border-top-color: rgba(128, 128, 128, 0.8);
-    margin: 0 auto 12px;
+    margin: 0 auto;
     animation: jzsa-spin 0.9s linear infinite;
 }
 
 .jzsa-loader-text {
+    max-height: 0;
+    margin-top: 0;
+    opacity: 0;
+    overflow: hidden;
     font-size: 14px;
     letter-spacing: 0.02em;
     color: rgba(128, 128, 128, 0.8);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    transition: opacity 0.25s ease-in-out, max-height 0.25s ease-in-out, margin-top 0.25s ease-in-out;
+}
+
+.jzsa-loader.jzsa-loader-text-visible .jzsa-loader-text {
+    max-height: 32px;
+    margin-top: 12px;
+    opacity: 1;
 }
 
 @keyframes jzsa-spin {

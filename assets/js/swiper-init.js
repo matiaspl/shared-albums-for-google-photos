@@ -219,8 +219,9 @@
 
     // Time conversion constant (shared by all helpers and initializers)
     var MILLISECONDS_PER_SECOND = 1000; // Conversion factor from seconds to milliseconds
-    // Loader UX: avoid flashing loader on quick responses.
-    var LOADER_SHOW_DELAY_MS = 500;
+    // Loader UX: show immediate visual feedback, then progressively reveal copy.
+    var LOADER_TEXT_SHOW_DELAY_MS = 1400;
+    var LOADER_SLOW_MESSAGE_DELAY_MS = 8000;
     var LOADER_MIN_VISIBLE_MS = 250;
 
     // Helper: Run after the next paint cycle (double RAF) to avoid synchronous
@@ -909,27 +910,14 @@
         );
 
         $container.data('jzsaProgressiveInitialGlobalIndex', initialGlobalIndex);
-        if ($container.find('.jzsa-loader').length === 0) {
-            $container.append(buildLoaderHtml('Loading content...'));
-        }
         $container
             .removeClass('jzsa-loaded')
             .addClass('jzsa-loader-pending');
-
-        // Use the same delayed-show pattern as the other init paths so fast AJAX
-        // responses skip the spinner entirely.
-        var progressiveLoaderShownAt = 0;
-        var progressiveLoaderTimer = window.setTimeout(function() {
-            if ($container.hasClass('jzsa-loaded')) {
-                return;
-            }
-            progressiveLoaderShownAt = Date.now();
-            $container.addClass('jzsa-loader-visible');
-        }, LOADER_SHOW_DELAY_MS);
+        activateLoaderState($container, 'Loading content...', 'This is taking longer than usual...');
+        var progressiveLoaderShownAt = Date.now();
 
         var bootstrapPromise = fetchAlbumChunk($container, initialOffset, settings.initialChunkSize)
             .done(function(data) {
-                window.clearTimeout(progressiveLoaderTimer);
                 setContainerPhotos($container, data.photos);
                 if (data.total_count !== undefined && data.total_count !== null) {
                     $container.attr('data-total-count', data.total_count);
@@ -943,9 +931,9 @@
                 }, minVisibleRemaining);
             })
             .fail(function() {
-                window.clearTimeout(progressiveLoaderTimer);
+                resetLoaderState($container);
                 $container
-                    .removeClass('jzsa-loader-pending jzsa-loader-visible')
+                    .removeClass('jzsa-loader-pending')
                     .addClass('jzsa-loaded');
                 $container.removeData('jzsaProgressiveBootstrap');
             });
@@ -2789,15 +2777,103 @@
     }
 
     // Helper: Build loading overlay markup.
-    function buildLoaderHtml(text) {
+    function buildLoaderHtml(text, slowText) {
         var label = text || 'Loading content...';
+        var longWaitLabel = slowText || 'This is taking longer than usual...';
         return '' +
-            '<div class="jzsa-loader">' +
+            '<div class="jzsa-loader" role="status" aria-live="polite" aria-atomic="true" aria-label="' + escapeHtml(label) + '" data-loader-default-text="' + escapeHtml(label) + '" data-loader-slow-text="' + escapeHtml(longWaitLabel) + '">' +
                 '<div class="jzsa-loader-inner">' +
                     '<div class="jzsa-loader-spinner"></div>' +
-                    '<div class="jzsa-loader-text">' + label + '</div>' +
+                    '<div class="jzsa-loader-text" aria-hidden="true">' + escapeHtml(label) + '</div>' +
                 '</div>' +
             '</div>';
+    }
+
+    function clearLoaderTimers($container) {
+        if (!$container || !$container.length) {
+            return;
+        }
+
+        var showTimer = $container.data('jzsaLoaderTextShowTimer');
+        var slowTimer = $container.data('jzsaLoaderSlowTextTimer');
+
+        if (showTimer) {
+            window.clearTimeout(showTimer);
+            $container.removeData('jzsaLoaderTextShowTimer');
+        }
+
+        if (slowTimer) {
+            window.clearTimeout(slowTimer);
+            $container.removeData('jzsaLoaderSlowTextTimer');
+        }
+    }
+
+    function resetLoaderState($container) {
+        if (!$container || !$container.length) {
+            return;
+        }
+
+        clearLoaderTimers($container);
+
+        var $loader = $container.children('.jzsa-loader').first();
+        if (!$loader.length) {
+            return;
+        }
+
+        var defaultText = $loader.attr('data-loader-default-text') || 'Loading content...';
+        $loader
+            .removeClass('jzsa-loader-text-visible jzsa-loader-text-slow')
+            .attr('aria-label', defaultText);
+        $loader.find('.jzsa-loader-text').text(defaultText);
+    }
+
+    function activateLoaderState($container, text, slowText) {
+        if (!$container || !$container.length) {
+            return;
+        }
+
+        var defaultText = text || 'Loading content...';
+        var longWaitText = slowText || 'This is taking longer than usual...';
+        var $loader = $container.children('.jzsa-loader').first();
+
+        if (!$loader.length) {
+            $container.append(buildLoaderHtml(defaultText, longWaitText));
+            $loader = $container.children('.jzsa-loader').first();
+        }
+
+        $loader
+            .attr('data-loader-default-text', defaultText)
+            .attr('data-loader-slow-text', longWaitText);
+
+        resetLoaderState($container);
+
+        var showTimer = window.setTimeout(function() {
+            var $activeLoader = $container.children('.jzsa-loader').first();
+            if (!$activeLoader.length) {
+                return;
+            }
+
+            $activeLoader
+                .removeClass('jzsa-loader-text-slow')
+                .addClass('jzsa-loader-text-visible')
+                .attr('aria-label', defaultText);
+            $activeLoader.find('.jzsa-loader-text').text(defaultText);
+        }, LOADER_TEXT_SHOW_DELAY_MS);
+
+        var slowTimer = window.setTimeout(function() {
+            var $activeLoader = $container.children('.jzsa-loader').first();
+            if (!$activeLoader.length) {
+                return;
+            }
+
+            $activeLoader
+                .addClass('jzsa-loader-text-visible jzsa-loader-text-slow')
+                .attr('aria-label', longWaitText);
+            $activeLoader.find('.jzsa-loader-text').text(longWaitText);
+        }, LOADER_SLOW_MESSAGE_DELAY_MS);
+
+        $container.data('jzsaLoaderTextShowTimer', showTimer);
+        $container.data('jzsaLoaderSlowTextTimer', slowTimer);
     }
 
     // Helper: Intro fade for gallery container so content appears progressively.
@@ -4312,11 +4388,10 @@
             }
 
             if (active) {
-                if ($container.find('.jzsa-loader').length === 0) {
-                    $container.append(buildLoaderHtml('Loading full-resolution photo...'));
-                }
                 $container.addClass('jzsa-fullscreen-waiting');
+                activateLoaderState($container, 'Loading full-resolution photo...', 'Still loading full-resolution photo...');
             } else {
+                resetLoaderState($container);
                 $container.removeClass('jzsa-fullscreen-waiting');
             }
         }
@@ -5146,26 +5221,19 @@
         // Loading overlay: show a subtle loader until the first image is ready
         // --------------------------------------------------------------------
 
-        if ($container.find('.jzsa-loader').length === 0) {
-            $container.append(buildLoaderHtml('Loading content...'));
-        }
         // Strip intro-fade so the container is visible (dashed outline) from the start.
-        // The spinner itself is delayed by LOADER_SHOW_DELAY_MS so fast photo loads
-        // skip the loader entirely and photos appear directly.
+        // Show the spinner immediately, but delay explanatory text so fast loads
+        // stay visually quiet.
         $container
-            .removeClass('jzsa-loaded jzsa-loader-visible jzsa-content-intro jzsa-content-intro-visible')
+            .removeClass('jzsa-loaded jzsa-content-intro jzsa-content-intro-visible')
             .addClass('jzsa-loader-pending');
+        activateLoaderState($container, 'Loading content...', 'This is taking longer than usual...');
 
-        var galleryLoaderShownAt = 0;
+        var galleryLoaderShownAt = Date.now();
         var jzsaHasMarkedLoaded = false;
-        var jzsaLoaderShowTimer = null;
         var jzsaLoaderFallbackTimer = null;
         var jzsaLoaderCommitTimer = null;
         function clearGalleryLoaderTimers() {
-            if (jzsaLoaderShowTimer) {
-                window.clearTimeout(jzsaLoaderShowTimer);
-                jzsaLoaderShowTimer = null;
-            }
             if (jzsaLoaderFallbackTimer) {
                 window.clearTimeout(jzsaLoaderFallbackTimer);
                 jzsaLoaderFallbackTimer = null;
@@ -5177,8 +5245,9 @@
         }
         function commitGalleryLoaded() {
             clearGalleryLoaderTimers();
+            resetLoaderState($container);
             $container
-                .removeClass('jzsa-loader-pending jzsa-loader-visible')
+                .removeClass('jzsa-loader-pending')
                 .addClass('jzsa-loaded');
         }
         function markGalleryLoaded() {
@@ -5232,14 +5301,6 @@
                 window.setTimeout(markGalleryLoaded, 800);
             });
         }
-
-        jzsaLoaderShowTimer = window.setTimeout(function() {
-            if (jzsaHasMarkedLoaded) {
-                return;
-            }
-            galleryLoaderShownAt = Date.now();
-            $container.addClass('jzsa-loader-visible');
-        }, LOADER_SHOW_DELAY_MS);
 
         watchInitialPreviewLoad();
         jzsaLoaderFallbackTimer = window.setTimeout(markGalleryLoaded, 3500);
@@ -7219,16 +7280,14 @@
         var allPhotosJson = $container.attr('data-all-photos');
         var allPhotos     = allPhotosJson ? JSON.parse(allPhotosJson) : [];
 
-        if ($container.find('.jzsa-loader').length === 0) {
-            $container.append(buildLoaderHtml('Loading content...'));
-        }
         // Strip intro-fade so the container is visible (dashed outline) from the start.
-        // The spinner itself is delayed by LOADER_SHOW_DELAY_MS so fast photo loads
-        // skip the loader entirely and photos appear directly.
+        // Show the spinner immediately, but delay explanatory text so fast loads
+        // stay visually quiet.
         $container
             .addClass('jzsa-gallery-album')
-            .removeClass('jzsa-loaded jzsa-loader-visible jzsa-content-intro jzsa-content-intro-visible')
+            .removeClass('jzsa-loaded jzsa-content-intro jzsa-content-intro-visible')
             .addClass('jzsa-loader-pending jzsa-gallery-loading');
+        activateLoaderState($container, 'Loading content...', 'This is taking longer than usual...');
 
         var requestedGalleryRows = parseInt(readGalleryAttr($container, 'rows'), 10);
         var galleryRows = (!isNaN(requestedGalleryRows) && requestedGalleryRows > 0) ? requestedGalleryRows : 0;
@@ -7262,19 +7321,14 @@
         var gallerySlideshowPausedByUser = gallerySlideshowMode === 'manual';
         var slideshowId = null;
         var $slideshow = null;
-        var galleryLoaderShownAt = 0;
+        var galleryLoaderShownAt = Date.now();
         var galleryHasMarkedLoaded = false;
-        var galleryLoaderShowTimer = null;
         var galleryLoaderCommitTimer = null;
         var galleryLoaderFallbackTimer = window.setTimeout(function() {
             markGalleryLoaded();
         }, 3500);
 
         function clearGalleryLoaderTimers() {
-            if (galleryLoaderShowTimer) {
-                window.clearTimeout(galleryLoaderShowTimer);
-                galleryLoaderShowTimer = null;
-            }
             if (galleryLoaderFallbackTimer) {
                 window.clearTimeout(galleryLoaderFallbackTimer);
                 galleryLoaderFallbackTimer = null;
@@ -7287,9 +7341,10 @@
 
         function commitGalleryLoaded() {
             clearGalleryLoaderTimers();
+            resetLoaderState($container);
             $container.find('.jzsa-gallery-thumb').off('.jzsaGalleryLoader');
             $container
-                .removeClass('jzsa-loader-pending jzsa-loader-visible jzsa-gallery-loading')
+                .removeClass('jzsa-loader-pending jzsa-gallery-loading')
                 .addClass('jzsa-loaded');
         }
 
@@ -7340,14 +7395,6 @@
                 window.setTimeout(markGalleryLoaded, 500);
             });
         }
-
-        galleryLoaderShowTimer = window.setTimeout(function() {
-            if (galleryHasMarkedLoaded) {
-                return;
-            }
-            galleryLoaderShownAt = Date.now();
-            $container.addClass('jzsa-loader-visible');
-        }, LOADER_SHOW_DELAY_MS);
 
         function clearGalleryAutoplayTimer() {
             if (gallerySlideshowTimer) {
