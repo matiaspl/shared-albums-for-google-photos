@@ -10,7 +10,7 @@
  * - Stores only base photo URLs (without dimensions) in cache
  * - Tracks cache expiration separately in wp_options
  * - Allows same album to be reused across multiple posts
- * - Invalidates cache if cache-refresh interval changes
+ * - Invalidates cache if album-cache-refresh interval changes
  *
  * @package JZSA_Shared_Albums
  */
@@ -28,7 +28,7 @@ class JZSA_Shared_Albums {
 
 	/**
 	 * Default cache refresh interval in hours (7 days).
-	 * Can be overridden per shortcode via the cache-refresh attribute.
+	 * Can be overridden per shortcode via the album-cache-refresh attribute.
 	 *
 	 * @var int
 	 */
@@ -342,7 +342,7 @@ class JZSA_Shared_Albums {
 		$cache_duration   = $config['cache-refresh'] * 3600; // convert hours to seconds
 		$should_refresh   = false;
 
-		// Refresh if no cache OR if cache-refresh interval changed
+		// Refresh if no cache OR if album-cache-refresh interval changed
 		if ( false === $cached_data || (int) $stored_expiry !== $cache_duration ) {
 			$should_refresh = true;
 		}
@@ -503,7 +503,7 @@ class JZSA_Shared_Albums {
 			'slideshow-autoresume' => $slideshow_autoresume,
 			'fullscreen-slideshow-autoresume' => $fullscreen_slideshow_autoresume,
 
-			// Cache refresh interval in minutes (default: 1440 = 24 hours)
+			// Cache refresh interval in hours (default: 168 = 7 days)
 			'cache-refresh' => $this->parse_cache_refresh( $atts ),
 
 				// Display
@@ -953,16 +953,24 @@ class JZSA_Shared_Albums {
 	}
 
 	/**
-	 * Parse cache-refresh attribute.
+	 * Parse album-cache-refresh attribute.
 	 * Returns the number of hours before the album data is re-fetched from Google Photos.
 	 * Defaults to DEFAULT_CACHE_REFRESH (168 hours = 7 days).
+	 *
+	 * Accepts 'album-cache-refresh' (preferred) with 'cache-refresh' as a
+	 * backward-compatible fallback for shortcodes written before v2.1.3.
 	 *
 	 * @param array $atts Shortcode attributes.
 	 * @return int Hours between cache refreshes.
 	 */
 	private function parse_cache_refresh( $atts ) {
-		if ( isset( $atts['cache-refresh'] ) ) {
-			$value = intval( $atts['cache-refresh'] );
+		// Preferred name first, then legacy fallback.
+		$raw = isset( $atts['album-cache-refresh'] )
+			? $atts['album-cache-refresh']
+			: ( isset( $atts['cache-refresh'] ) ? $atts['cache-refresh'] : null );
+
+		if ( null !== $raw ) {
+			$value = intval( $raw );
 			if ( $value >= 1 ) {
 				return $value;
 			}
@@ -2383,7 +2391,7 @@ class JZSA_Shared_Albums {
 		}
 
 		// Update the transient cache with fresh URLs.
-		// Use the stored expiry duration for this album so we respect its cache-refresh setting.
+		// Use the stored expiry duration for this album so we respect its album-cache-refresh setting.
 		$cache_key     = $this->get_cache_key( $album_url );
 		$expiry_key    = $this->get_expiration_key( $album_url );
 		$cache_duration = (int) get_option( $expiry_key, self::DEFAULT_CACHE_REFRESH * 3600 );

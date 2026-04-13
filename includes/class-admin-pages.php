@@ -546,10 +546,22 @@ class JZSA_Admin_Pages {
 					<details class="jzsa-cache-explainer">
 						<summary><?php esc_html_e( 'How the cache works', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 						<div class="jzsa-cache-explainer__body">
-							<p><strong><?php esc_html_e( 'Album cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong> &mdash; <?php esc_html_e( 'Stores the photo list and album title. Lifetime is controlled by the cache-refresh shortcode attribute (default: 7 days). When it expires the plugin re-fetches the list from Google Photos, picking up any new or removed photos.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-							<p><strong><?php esc_html_e( 'Metadata cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong> &mdash; <?php esc_html_e( 'Stores per-photo data (filename, description, camera, EXIF) with a fixed 30-day lifetime, independent of the album cache. Populated lazily on the first visit; all subsequent requests — even after an album cache refresh — are served from this cache. The heavier EXIF fetch only ever happens once per photo.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-							<p><?php esc_html_e( 'If you use a page caching plugin (e.g. WP Fastest Cache, WP Super Cache), clear that separately — this section only covers the server-side plugin cache. Your browser cache is separate too.', 'janzeman-shared-albums-for-google-photos' ); ?></p>
-							<p><em><?php esc_html_e( 'Tip: Lowering cache-refresh makes new photos appear sooner without triggering metadata re-fetches for already-cached photos.', 'janzeman-shared-albums-for-google-photos' ); ?></em></p>
+							<p>
+								<strong><?php esc_html_e( 'Album cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong> - <?php esc_html_e( 'Stores the album\'s photo list and title. Lifetime is controlled by the album-cache-refresh shortcode attribute (default: 7 days) and refreshes automatically when it expires.', 'janzeman-shared-albums-for-google-photos' ); ?><br>
+								<strong><?php esc_html_e( 'If cleared:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'The plugin re-fetches the full photo list from Google Photos on the next page load, picking up any added or removed photos. Per-photo metadata is not affected.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							</p>
+							<p>
+								<strong><?php esc_html_e( 'Metadata cache', 'janzeman-shared-albums-for-google-photos' ); ?></strong> - <?php esc_html_e( 'Stores per-photo data, filename, description, camera, and EXIF (aperture, shutter, ISO, focal length). Fixed 30-day lifetime, fully independent of the album cache. Populated lazily - metadata is fetched the first time a photo is viewed, then served from cache on all later visits.', 'janzeman-shared-albums-for-google-photos' ); ?><br>
+								<strong><?php esc_html_e( 'If cleared:', 'janzeman-shared-albums-for-google-photos' ); ?></strong> <?php esc_html_e( 'Each photo\'s metadata is re-fetched from Google Photos on the next visit. Use this when you have updated photo descriptions in Google Photos and want the changes reflected in the gallery. Avoid clearing this routinely as re-fetching metadata for large albums is heavier.', 'janzeman-shared-albums-for-google-photos' ); ?>
+							</p>
+							<p>
+								<?php esc_html_e( 'This section describes the server-side', 'janzeman-shared-albums-for-google-photos' ); ?> <strong><?php esc_html_e( 'plugin cache.', 'janzeman-shared-albums-for-google-photos' ); ?></strong>
+								<ul style="margin: 6px 0 0 16px; list-style: disc;">
+									<li><?php esc_html_e( 'It is not about WP caching plugins (e.g. WP Fastest Cache, WP Super Cache) - clear those separately via their own recommendations if needed.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+									<li><?php esc_html_e( 'Neither is it about your local browser cache - that is something you manage through your browser settings.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
+								</ul>
+							</p>
+							<p><em><?php esc_html_e( 'Tip: Lowering album-cache-refresh makes newly added photos appear sooner, without re-fetching metadata for photos already in the metadata cache.', 'janzeman-shared-albums-for-google-photos' ); ?></em></p>
 						</div>
 					</details>
 			</div>

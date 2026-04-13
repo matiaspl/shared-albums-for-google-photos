@@ -434,8 +434,8 @@
 						</thead>
 						<tbody>
 							<tr>
-								<td><code>cache-refresh</code></td>
-								<td>How often the album data is re-fetched from Google Photos, in hours. Useful for albums that are updated frequently (e.g. live event albums). Example: cache-refresh="1" to refresh every hour.</td>
+								<td><code>album-cache-refresh</code></td>
+								<td>How often the album's photo list is re-fetched from Google Photos, in hours. Only the album listing is affected — per-photo metadata (EXIF, filename, etc.) is cached separately and is not cleared by this setting. Useful for albums that are updated frequently (e.g. live event albums). Example: album-cache-refresh="1" to refresh every hour. The old name <code>cache-refresh</code> still works for backward compatibility.</td>
 								<td>168 (7 days)</td>
 							</tr>
 							<tr>
