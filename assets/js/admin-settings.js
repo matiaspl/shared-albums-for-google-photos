@@ -145,6 +145,18 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, opt
 			if ( window.SharedGooglePhotos ) {
 				var album = previewContainer.querySelector( '.jzsa-album' );
 				if ( album ) {
+					// The AJAX render runs in a separate PHP request so
+					// wp_unique_id() resets its counter, producing IDs that
+					// already exist on the page. Reassign unique IDs before
+					// Swiper init so CSS selectors (e.g. '#id-mosaic') resolve
+					// to the newly injected elements, not the originals.
+					var uniqueId = 'jzsa-preview-' + Date.now() + '-' + Math.floor( Math.random() * 1000 );
+					album.id = uniqueId;
+					var mosaicEl = previewContainer.querySelector( '.jzsa-mosaic' );
+					if ( mosaicEl ) {
+						mosaicEl.id = uniqueId + '-mosaic';
+					}
+
 					var mode = album.getAttribute( 'data-mode' ) || 'slider';
 					if ( mode === 'gallery' && typeof window.SharedGooglePhotos.initializeGallery === 'function' ) {
 						window.SharedGooglePhotos.initializeGallery( album );
