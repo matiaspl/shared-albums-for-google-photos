@@ -89,10 +89,8 @@ function jzsaHighlightPlaceholders( codeEl ) {
 	} catch ( e ) { /* ignore */ }
 }
 
-function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, options ) {
+function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
 	var shortcode = ( codeEl.textContent || '' ).trim();
-	var opts = options || {};
-	var silent = !! opts.silent;
 	var ajaxConfig = ( typeof jzsaAjax !== 'undefined' && jzsaAjax && jzsaAjax.ajaxUrl && jzsaAjax.previewNonce ) ? jzsaAjax : jzsaAdminAjax;
 	if ( ! shortcode ) {
 		return;
@@ -105,9 +103,7 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, opt
 	var savedLabel = triggerBtn ? triggerBtn.textContent : '';
 	if ( triggerBtn ) {
 		triggerBtn.disabled = true;
-		if ( ! silent ) {
-			triggerBtn.textContent = 'Applying\u2026';
-		}
+		triggerBtn.textContent = 'Applying\u2026';
 	}
 	previewContainer.style.opacity = '0.5';
 
@@ -138,7 +134,7 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, opt
 
 			previewContainer.innerHTML = data.data.html;
 
-			if ( triggerBtn && ! silent ) {
+			if ( triggerBtn ) {
 				jzsaFlashButton( triggerBtn, flashLabel || 'Applied!' );
 			}
 
@@ -174,17 +170,6 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel, opt
 			previewContainer.style.opacity = '';
 			previewContainer.innerHTML = '<div class="jzsa-playground-error">Request failed.</div>';
 		} );
-}
-
-function jzsaSchedulePlaygroundInitialPreview( codeEl, previewContainer, applyBtn ) {
-	if ( ! codeEl || ! previewContainer ) {
-		return;
-	}
-
-	var scheduleLoad = function () {
-		jzsaApplyPreview( codeEl, applyBtn, previewContainer, '', { silent: true } );
-	};
-	window.setTimeout( scheduleLoad, 250 );
 }
 
 /**
@@ -340,14 +325,4 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 	}
 
-	var playgroundCode = document.getElementById( 'jzsa-playground-shortcode' );
-	if ( playgroundCode ) {
-		var playgroundSection = playgroundCode.closest( '.jzsa-playground-section' );
-		var playgroundPreview = playgroundSection ? playgroundSection.querySelector( '.jzsa-playground-preview' ) : null;
-		var playgroundBlock = playgroundCode.closest( '.jzsa-code-block' );
-		var playgroundApply = playgroundBlock ? playgroundBlock.querySelector( '[data-jzsa-action="apply"]' ) : null;
-		if ( playgroundPreview && playgroundPreview.hasAttribute( 'data-initial-shortcode' ) ) {
-			jzsaSchedulePlaygroundInitialPreview( playgroundCode, playgroundPreview, playgroundApply );
-		}
-	}
 } );

@@ -510,12 +510,12 @@ class JZSA_Admin_Pages {
 
 					<div
 						class="jzsa-preview-container jzsa-playground-preview"
-						data-initial-shortcode="<?php echo esc_attr( $sample_shortcode ); ?>"
 						aria-live="polite"
 					>
-						<div class="jzsa-playground-placeholder">
-							<?php esc_html_e( 'Preparing preview...', 'janzeman-shared-albums-for-google-photos' ); ?>
-						</div>
+						<?php
+							// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							echo do_shortcode( $sample_shortcode );
+						?>
 					</div>
 				</div>
 
