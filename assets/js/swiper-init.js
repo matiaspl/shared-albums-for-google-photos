@@ -65,6 +65,26 @@
 	}
 
 	var swipers = {};
+	var galleryInitObserver = null;
+
+	function ensureGalleryId($gallery, fallbackIndex) {
+		if (!$gallery || !$gallery.length || $gallery.attr('id')) {
+			return;
+		}
+
+		var suffix = fallbackIndex || (Date.now() + '-' + Math.floor(Math.random() * 1000));
+		$gallery.attr('id', 'jzsa-album-' + suffix);
+	}
+
+	function isGalleryInitialized($gallery) {
+		return !!($gallery && $gallery.length && $gallery.attr('data-jzsa-initialized') === 'true');
+	}
+
+	function markGalleryInitialized($gallery) {
+		if ($gallery && $gallery.length) {
+			$gallery.attr('data-jzsa-initialized', 'true');
+		}
+	}
 
     // Stop and reset all managed videos on the page. Used when switching
     // between inline and fullscreen so no hidden/orphan playback continues.
@@ -4847,6 +4867,11 @@
         var SPACING_DESKTOP = 20;
 
         var $container = $(container);
+        ensureGalleryId($container);
+        if (isGalleryInitialized($container)) {
+            return swipers[$container.attr('id')] || null;
+        }
+        markGalleryInitialized($container);
         var galleryId = $container.attr('id');
         var progressiveSettings = getProgressiveSliderSettings($container);
         var progressiveSliderEnabled = mode === 'slider' && progressiveSettings.enabled;
@@ -7274,6 +7299,11 @@
      */
     function initializeGallery(container) {
         var $container = $(container);
+        ensureGalleryId($container);
+        if (isGalleryInitialized($container)) {
+            return;
+        }
+        markGalleryInitialized($container);
         var $shell = ensureGalleryShell($container);
         var layout     = readGalleryAttr($container, 'layout') || 'grid';
 
@@ -8445,24 +8475,62 @@
     // GALLERY INITIALIZATION
     // ============================================================================
 
+    function initializeGalleryElement(element, fallbackIndex) {
+        var $gallery = $(element);
+        if (!$gallery.length || isGalleryInitialized($gallery)) {
+            return;
+        }
+
+        ensureGalleryId($gallery, fallbackIndex);
+
+        var mode = $gallery.attr('data-mode') || 'gallery';
+        if (mode === 'gallery') {
+            initializeGallery(element);
+        } else {
+            initializeSwiper(element, mode);
+        }
+    }
+
     function initializeAllGalleries() {
-        $('.jzsa-album').not('.jzsa-gallery-slideshow, .jzsa-gallery-controls').each(function(index) {
-            var $gallery = $(this);
+        var $galleries = $('.jzsa-album')
+            .not('.jzsa-gallery-slideshow, .jzsa-gallery-controls')
+            .filter(function() {
+                return !isGalleryInitialized($(this));
+            });
 
-            // Generate unique ID if not present
-            if (!$gallery.attr('id')) {
-                $gallery.attr('id', 'jzsa-album-' + (index + 1));
-            }
+        if (!$galleries.length) {
+            return;
+        }
 
-            // Get mode
-            var mode = $gallery.attr('data-mode') || 'gallery';
+        $galleries.each(function(index) {
+            ensureGalleryId($(this), index + 1);
+        });
 
-            // Dispatch to the correct initializer
-            if (mode === 'gallery') {
-                initializeGallery(this);
-            } else {
-                initializeSwiper(this, mode);
-            }
+        if (typeof IntersectionObserver === 'undefined') {
+            $galleries.each(function(index) {
+                initializeGalleryElement(this, index + 1);
+            });
+            return;
+        }
+
+        if (!galleryInitObserver) {
+            galleryInitObserver = new IntersectionObserver(function(entries) {
+                entries.forEach(function(entry) {
+                    if (!entry.isIntersecting) {
+                        return;
+                    }
+
+                    galleryInitObserver.unobserve(entry.target);
+                    initializeGalleryElement(entry.target);
+                });
+            }, {
+                rootMargin: '300px 0px',
+                threshold: 0.01
+            });
+        }
+
+        $galleries.each(function() {
+            galleryInitObserver.observe(this);
         });
     }
 

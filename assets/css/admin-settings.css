@@ -147,6 +147,36 @@
     margin-top: 24px;
 }
 
+.jzsa-lazy-preview {
+    min-height: 220px;
+    width: min(100%, 800px);
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.jzsa-lazy-preview .jzsa-loader {
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    visibility: visible;
+    color: inherit;
+}
+
+.jzsa-lazy-preview--loading {
+}
+
+.jzsa-lazy-preview--error {
+    background: #fcf0f1;
+}
+
 /* Keep the Playground preview from collapsing while loading or when
  * showing error messages, so the layout does not jump when clicking
  * "Update preview". The height roughly matches the default sample

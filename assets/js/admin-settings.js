@@ -36,6 +36,51 @@ function jzsaCopyToClipboard( button, text ) {
 	jzsaFlashButton( button, 'Copied!' );
 }
 
+function jzsaGetPreviewAjaxConfig() {
+	if ( typeof jzsaAjax !== 'undefined' && jzsaAjax && jzsaAjax.ajaxUrl && jzsaAjax.previewNonce ) {
+		return jzsaAjax;
+	}
+
+	if ( typeof jzsaAdminAjax !== 'undefined' && jzsaAdminAjax && jzsaAdminAjax.ajaxUrl && jzsaAdminAjax.previewNonce ) {
+		return jzsaAdminAjax;
+	}
+
+	return null;
+}
+
+var jzsaLazyPreviewObserver = null;
+var jzsaLazyPreviewBackgroundStarted = false;
+
+function jzsaInitializeInjectedPreview( mountEl ) {
+	if ( ! mountEl || ! window.SharedGooglePhotos ) {
+		return;
+	}
+
+	var album = mountEl.querySelector( '.jzsa-album' );
+	if ( ! album ) {
+		return;
+	}
+
+	// The AJAX render runs in a separate PHP request so wp_unique_id()
+	// resets its counter, producing IDs that already exist on the page.
+	// Reassign unique IDs before Swiper init so selectors resolve to the
+	// newly injected elements, not previously rendered samples.
+	var uniqueId = 'jzsa-preview-' + Date.now() + '-' + Math.floor( Math.random() * 1000 );
+	album.id = uniqueId;
+
+	var mosaicEl = mountEl.querySelector( '.jzsa-mosaic' );
+	if ( mosaicEl ) {
+		mosaicEl.id = uniqueId + '-mosaic';
+	}
+
+	var mode = album.getAttribute( 'data-mode' ) || 'slider';
+	if ( mode === 'gallery' && typeof window.SharedGooglePhotos.initializeGallery === 'function' ) {
+		window.SharedGooglePhotos.initializeGallery( album );
+	} else if ( typeof window.SharedGooglePhotos.initialize === 'function' ) {
+		window.SharedGooglePhotos.initialize( album, mode );
+	}
+}
+
 /**
  * Shared Apply handler: sends a shortcode from a code element to the AJAX
  * preview endpoint and replaces the preview container HTML.
@@ -91,7 +136,7 @@ function jzsaHighlightPlaceholders( codeEl ) {
 
 function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
 	var shortcode = ( codeEl.textContent || '' ).trim();
-	var ajaxConfig = ( typeof jzsaAjax !== 'undefined' && jzsaAjax && jzsaAjax.ajaxUrl && jzsaAjax.previewNonce ) ? jzsaAjax : jzsaAdminAjax;
+	var ajaxConfig = jzsaGetPreviewAjaxConfig();
 	if ( ! shortcode ) {
 		return;
 	}
@@ -133,33 +178,10 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
 			}
 
 			previewContainer.innerHTML = data.data.html;
+			jzsaInitializeInjectedPreview( previewContainer );
 
 			if ( triggerBtn ) {
 				jzsaFlashButton( triggerBtn, flashLabel || 'Applied!' );
-			}
-
-			if ( window.SharedGooglePhotos ) {
-				var album = previewContainer.querySelector( '.jzsa-album' );
-				if ( album ) {
-					// The AJAX render runs in a separate PHP request so
-					// wp_unique_id() resets its counter, producing IDs that
-					// already exist on the page. Reassign unique IDs before
-					// Swiper init so CSS selectors (e.g. '#id-mosaic') resolve
-					// to the newly injected elements, not the originals.
-					var uniqueId = 'jzsa-preview-' + Date.now() + '-' + Math.floor( Math.random() * 1000 );
-					album.id = uniqueId;
-					var mosaicEl = previewContainer.querySelector( '.jzsa-mosaic' );
-					if ( mosaicEl ) {
-						mosaicEl.id = uniqueId + '-mosaic';
-					}
-
-					var mode = album.getAttribute( 'data-mode' ) || 'slider';
-					if ( mode === 'gallery' && typeof window.SharedGooglePhotos.initializeGallery === 'function' ) {
-						window.SharedGooglePhotos.initializeGallery( album );
-					} else if ( typeof window.SharedGooglePhotos.initialize === 'function' ) {
-						window.SharedGooglePhotos.initialize( album, mode );
-					}
-				}
 			}
 		} )
 		.catch( function () {
@@ -170,6 +192,154 @@ function jzsaApplyPreview( codeEl, triggerBtn, previewContainer, flashLabel ) {
 			previewContainer.style.opacity = '';
 			previewContainer.innerHTML = '<div class="jzsa-playground-error">Request failed.</div>';
 		} );
+}
+
+function jzsaLoadLazyPreview( lazyPreviewEl ) {
+	if ( ! lazyPreviewEl || ! lazyPreviewEl.isConnected ) {
+		return Promise.resolve();
+	}
+
+	var state = lazyPreviewEl.getAttribute( 'data-lazy-state' );
+	if ( 'loading' === state || 'loaded' === state ) {
+		return Promise.resolve();
+	}
+
+	var shortcode = lazyPreviewEl.getAttribute( 'data-initial-shortcode' ) || '';
+	var ajaxConfig = jzsaGetPreviewAjaxConfig();
+	if ( ! shortcode || ! ajaxConfig || ! ajaxConfig.ajaxUrl || ! ajaxConfig.previewNonce ) {
+		return Promise.resolve();
+	}
+
+	lazyPreviewEl.setAttribute( 'data-lazy-state', 'loading' );
+	lazyPreviewEl.classList.add( 'jzsa-lazy-preview--loading' );
+	lazyPreviewEl.style.opacity = '0.5';
+
+	var params = new URLSearchParams();
+	params.append( 'action', 'jzsa_shortcode_preview' );
+	params.append( 'nonce', ajaxConfig.previewNonce );
+	params.append( 'shortcode', shortcode );
+
+	return window.fetch( ajaxConfig.ajaxUrl, {
+		method: 'POST',
+		credentials: 'same-origin',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8' },
+		body: params.toString(),
+	} )
+		.then( function ( response ) { return response.json(); } )
+		.then( function ( data ) {
+			if ( ! lazyPreviewEl.isConnected ) {
+				return;
+			}
+
+			lazyPreviewEl.style.opacity = '';
+
+			if ( ! data || ! data.success || ! data.data || ! data.data.html ) {
+				var msg = ( data && data.data && typeof data.data === 'string' ) ? data.data : 'Preview failed.';
+				lazyPreviewEl.setAttribute( 'data-lazy-state', 'failed' );
+				lazyPreviewEl.classList.remove( 'jzsa-lazy-preview--loading' );
+				lazyPreviewEl.classList.add( 'jzsa-lazy-preview--error' );
+				lazyPreviewEl.innerHTML = '<div class="jzsa-playground-error">' + msg + '</div>';
+				return;
+			}
+
+			lazyPreviewEl.removeAttribute( 'data-initial-shortcode' );
+			lazyPreviewEl.setAttribute( 'data-lazy-state', 'loaded' );
+			lazyPreviewEl.classList.remove( 'jzsa-lazy-preview', 'jzsa-lazy-preview--loading', 'jzsa-lazy-preview--error' );
+			lazyPreviewEl.innerHTML = data.data.html;
+			jzsaInitializeInjectedPreview( lazyPreviewEl );
+		} )
+		.catch( function () {
+			if ( ! lazyPreviewEl.isConnected ) {
+				return;
+			}
+
+			lazyPreviewEl.style.opacity = '';
+			lazyPreviewEl.setAttribute( 'data-lazy-state', 'failed' );
+			lazyPreviewEl.classList.remove( 'jzsa-lazy-preview--loading' );
+			lazyPreviewEl.classList.add( 'jzsa-lazy-preview--error' );
+			lazyPreviewEl.innerHTML = '<div class="jzsa-playground-error">Request failed.</div>';
+		} );
+}
+
+function jzsaStartBackgroundLazyPreviewQueue() {
+	if ( jzsaLazyPreviewBackgroundStarted ) {
+		return;
+	}
+
+	jzsaLazyPreviewBackgroundStarted = true;
+
+	var initialDelayMs = 1200;
+	var betweenLoadsMs = 700;
+
+	var loadNext = function () {
+		var nextPreview = document.querySelector( '.jzsa-lazy-preview[data-initial-shortcode][data-lazy-state="pending"]' );
+		if ( ! nextPreview ) {
+			return;
+		}
+
+		if ( jzsaLazyPreviewObserver ) {
+			jzsaLazyPreviewObserver.unobserve( nextPreview );
+		}
+
+		jzsaLoadLazyPreview( nextPreview ).finally( function () {
+			window.setTimeout( loadNext, betweenLoadsMs );
+		} );
+	};
+
+	window.setTimeout( loadNext, initialDelayMs );
+}
+
+function jzsaScheduleBackgroundLazyPreviews() {
+	var startQueue = function () {
+		if ( 'requestIdleCallback' in window ) {
+			window.requestIdleCallback( function () {
+				jzsaStartBackgroundLazyPreviewQueue();
+			}, { timeout: 4000 } );
+			return;
+		}
+
+		jzsaStartBackgroundLazyPreviewQueue();
+	};
+
+	if ( document.readyState === 'complete' ) {
+		startQueue();
+		return;
+	}
+
+	window.addEventListener( 'load', startQueue, { once: true } );
+}
+
+function jzsaSetupLazyPreviews() {
+	var lazyPreviews = document.querySelectorAll( '.jzsa-lazy-preview[data-initial-shortcode]' );
+	if ( ! lazyPreviews.length ) {
+		return;
+	}
+
+	if ( 'IntersectionObserver' in window ) {
+		jzsaLazyPreviewObserver = new IntersectionObserver( function ( entries ) {
+			entries.forEach( function ( entry ) {
+				if ( ! entry.isIntersecting ) {
+					return;
+				}
+
+				jzsaLazyPreviewObserver.unobserve( entry.target );
+				jzsaLoadLazyPreview( entry.target );
+			} );
+		}, {
+			rootMargin: '300px 0px',
+			threshold: 0.01,
+		} );
+
+		lazyPreviews.forEach( function ( lazyPreview ) {
+			jzsaLazyPreviewObserver.observe( lazyPreview );
+		} );
+		jzsaScheduleBackgroundLazyPreviews();
+		return;
+	}
+
+	lazyPreviews.forEach( function ( lazyPreview ) {
+		jzsaLoadLazyPreview( lazyPreview );
+	} );
 }
 
 /**
@@ -325,4 +495,5 @@ document.addEventListener( 'DOMContentLoaded', function () {
 		} );
 	}
 
+	jzsaSetupLazyPreviews();
 } );

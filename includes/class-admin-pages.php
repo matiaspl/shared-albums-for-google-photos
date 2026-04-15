@@ -22,6 +22,14 @@ class JZSA_Admin_Pages {
 	const PLACEHOLDERS_SLUG = 'janzeman-shared-albums-for-google-photos-placeholders';
 
 	/**
+	 * Whether Guide-page sample shortcodes should emit lazy placeholders instead
+	 * of rendering full previews immediately.
+	 *
+	 * @var bool
+	 */
+	private $lazy_sample_previews = false;
+
+	/**
 	 * Constructor
 	 */
 	public function __construct() {
@@ -29,6 +37,37 @@ class JZSA_Admin_Pages {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_menu_icon_style' ) );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
 		add_action( 'admin_init', array( $this, 'redirect_from_settings_alias' ) );
+		add_filter( 'pre_do_shortcode_tag', array( $this, 'maybe_render_lazy_sample_placeholder' ), 10, 4 );
+	}
+
+	/**
+	 * Replace Guide-page sample shortcode output with a lightweight placeholder.
+	 *
+	 * This keeps the Guide markup unchanged while avoiding eager sample renders.
+	 *
+	 * @param mixed  $return Short-circuit return value.
+	 * @param string $tag    Shortcode tag.
+	 * @param array  $attr   Parsed shortcode attributes.
+	 * @param array  $match  Regex match data from do_shortcode_tag().
+	 * @return mixed
+	 */
+	public function maybe_render_lazy_sample_placeholder( $return, $tag, $attr, $match ) {
+		unset( $attr );
+
+		if ( ! $this->lazy_sample_previews || 'jzsa-album' !== $tag ) {
+			return $return;
+		}
+
+		$shortcode = isset( $match[0] ) ? trim( $match[0] ) : '';
+		if ( '' === $shortcode ) {
+			return $return;
+		}
+
+		return sprintf(
+			'<div class="jzsa-lazy-preview" data-initial-shortcode="%1$s" data-lazy-state="pending"><div class="jzsa-loader jzsa-loader-text-visible" role="status" aria-live="polite" aria-atomic="true" aria-label="%2$s"><div class="jzsa-loader-inner"><div class="jzsa-loader-spinner"></div><div class="jzsa-loader-text" aria-hidden="true">%2$s</div></div></div></div>',
+			esc_attr( $shortcode ),
+			esc_html__( 'Preview loads as you scroll.', 'janzeman-shared-albums-for-google-photos' )
+		);
 	}
 
 	/**
@@ -325,6 +364,7 @@ class JZSA_Admin_Pages {
 		$album_sample_link = 'https://photos.google.com/share/AF1QipOg3EA51ATc_YWHyfcffDCzNZFsVTU_uBqSEKFix7LY80DIgH3lMkLwt4QDTHd8EQ?key=RGwySFNhbmhqMFBDbnZNUUtwY0stNy1XV1JRbE9R';
 		$video_sample_link = 'https://photos.google.com/share/AF1QipM-v19vtjd5NEiD6w40U7XqZoqwMUX4FyPr6p9U-9Ixjw2jy7oYFs7m7vgvvpm3PA?key=ZjhXZDNkc1ZrNmFvZ2tIOW16QXlGal94Y2g2cGJB';
 		$info_sample_link   = 'https://photos.google.com/share/AF1QipP01V2WM2fQU0yULcm5tnV4zi-9XEO2Qg7idoHWvD2_bU8aKnrDignNSucfRaMy_w?key=LUlWRm9YdEhnSEtMUGI2MnFIcDRyVElweTJkS0FR';
+		$this->lazy_sample_previews = true;
 		?>
 		<div class="wrap jzsa-settings-wrap">
 			<h1>
@@ -543,6 +583,8 @@ class JZSA_Admin_Pages {
 							</div>
 						</div>
 
+					<p class="jzsa-help-text" style="margin: 16px 0 0 0;"><em><?php esc_html_e( 'Tip: Lowering album-cache-refresh makes newly added photos appear sooner, without re-fetching metadata for photos already in the metadata cache.', 'janzeman-shared-albums-for-google-photos' ); ?></em></p>
+
 					<details class="jzsa-cache-explainer">
 						<summary><?php esc_html_e( 'How the cache works', 'janzeman-shared-albums-for-google-photos' ); ?></summary>
 						<div class="jzsa-cache-explainer__body">
@@ -561,7 +603,6 @@ class JZSA_Admin_Pages {
 									<li><?php esc_html_e( 'Neither is it about your local browser cache - that is something you manage through your browser settings.', 'janzeman-shared-albums-for-google-photos' ); ?></li>
 								</ul>
 							</p>
-							<p><em><?php esc_html_e( 'Tip: Lowering album-cache-refresh makes newly added photos appear sooner, without re-fetching metadata for photos already in the metadata cache.', 'janzeman-shared-albums-for-google-photos' ); ?></em></p>
 						</div>
 					</details>
 			</div>
@@ -1793,5 +1834,6 @@ class JZSA_Admin_Pages {
 			</div>
 		</div>
 		<?php
+		$this->lazy_sample_previews = false;
 	}
 }
