@@ -141,7 +141,9 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 2.1.5 =
-* Progressively loaded Guide page
+* Reworked Guide page loading to reduce blocking and improve responsiveness
+* Improved cache/help guidance on the settings page
+* Thanks to `@naveenbachwani` for detailed testing, UX observations, and support-thread feedback
 
 = 2.1.4 =
 * Screenshots added
