@@ -947,6 +947,7 @@
                     : 0;
                 window.setTimeout(function() {
                     $container.removeData('jzsaProgressiveBootstrap');
+                    $container.removeAttr('data-jzsa-initialized');
                     initializeSwiper($container[0], mode);
                 }, minVisibleRemaining);
             })

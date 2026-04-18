@@ -140,6 +140,9 @@ The plugin provides clear feedback:
 
 == Changelog ==
 
+= 2.1.6 =
+* Fixed slider mode getting stuck on loading spinner (regression from 2.1.5)
+
 = 2.1.5 =
 * Reworked Guide page loading to reduce blocking and improve responsiveness
 * Improved cache/help guidance on the settings page
