@@ -2879,24 +2879,9 @@ body.jzsa-no-scroll {
     --jzsa-fs-mosaic-bottom-offset: calc(var(--jzsa-fullscreen-mosaic-strip-height) + 12px + 8px);
 }
 
-/* Outer layout reserves dedicated space, so top/bottom overlay offsets must stay disabled. */
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-position="top"][data-fullscreen-mosaic-layout="outer"].jzsa-is-fullscreen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-position="top"][data-fullscreen-mosaic-layout="outer"].jzsa-pseudo-fullscreen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-position="top"][data-fullscreen-mosaic-layout="outer"]:fullscreen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-position="top"][data-fullscreen-mosaic-layout="outer"]:-webkit-full-screen {
-    --jzsa-fs-mosaic-top-offset: 0px;
-}
-
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-position="bottom"][data-fullscreen-mosaic-layout="outer"].jzsa-is-fullscreen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-position="bottom"][data-fullscreen-mosaic-layout="outer"].jzsa-pseudo-fullscreen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-position="bottom"][data-fullscreen-mosaic-layout="outer"]:fullscreen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-position="bottom"][data-fullscreen-mosaic-layout="outer"]:-webkit-full-screen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-layout="outer"]:not([data-fullscreen-mosaic-position]).jzsa-is-fullscreen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-layout="outer"]:not([data-fullscreen-mosaic-position]).jzsa-pseudo-fullscreen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-layout="outer"]:not([data-fullscreen-mosaic-position]):fullscreen,
-.jzsa-album[data-fullscreen-mosaic="true"][data-fullscreen-mosaic-layout="outer"]:not([data-fullscreen-mosaic-position]):-webkit-full-screen {
-    --jzsa-fs-mosaic-bottom-offset: 0px;
-}
+/* Outer layout reserves dedicated space via padding, but text overlays are absolutely
+   positioned from the container border edge and ignore padding. The top/bottom offsets
+   must therefore remain active in outer mode so overlays clear the strip. */
 
 .jzsa-album[data-fullscreen-mosaic="true"].jzsa-is-fullscreen .jzsa-fullscreen-mosaic .jzsa-mosaic-arrow,
 .jzsa-album[data-fullscreen-mosaic="true"].jzsa-pseudo-fullscreen .jzsa-fullscreen-mosaic .jzsa-mosaic-arrow,
