@@ -4185,12 +4185,14 @@
 				var cursor = isLeft ? CURSOR_PREV : CURSOR_NEXT;
 				// Two-frame kick: set 'none' first, then the real cursor on the
 				// next animation frame to force a browser cursor repaint.
+				// Exclude mosaic thumbnail slides so they keep cursor: pointer.
+				var slideSelector = '#' + containerId + ' .swiper-slide:not(.jzsa-mosaic .swiper-slide):not(.jzsa-fullscreen-mosaic .swiper-slide)';
 				cursorStyleEl.textContent =
-					'#' + containerId + ' .swiper-slide { cursor: none !important; }';
+					slideSelector + ' { cursor: none !important; }';
 				if (cursorKickTimer) cancelAnimationFrame(cursorKickTimer);
 				cursorKickTimer = requestAnimationFrame(function() {
 					cursorStyleEl.textContent =
-						'#' + containerId + ' .swiper-slide { cursor: ' + cursor + ' !important; }';
+						slideSelector + ' { cursor: ' + cursor + ' !important; }';
 				});
 				navCursorActive = true;
 			}
@@ -5427,6 +5429,7 @@
                 fullscreenMosaicThumbSize = thumbSize;
                 $fullscreenMosaic.toggleClass('jzsa-mosaic-vertical', vertical);
                 $fullscreenMosaic[0].style.setProperty('--jzsa-fullscreen-mosaic-thumb-size', thumbSize + 'px');
+                $container[0].style.setProperty('--jzsa-fullscreen-mosaic-strip-height', thumbSize + 'px');
                 applyFullscreenMosaicSlideSize(thumbSize, vertical);
                 if (vertical) {
                     $fullscreenMosaic.css({
