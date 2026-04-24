@@ -4979,6 +4979,7 @@
             mosaicOpacity: mosaicOpacitySetting,
             mosaicBackground: $container.attr('data-mosaic-background') || '',
             fullscreenMosaicPosition: $container.attr('data-fullscreen-mosaic-position') || 'bottom',
+            fullscreenMosaicLayout: $container.attr('data-fullscreen-mosaic-layout') || 'outer',
             fullscreenMosaicCount: parseInt($container.attr('data-fullscreen-mosaic-count'), 10) || 0,
             fullscreenMosaicGap: parseInt($container.attr('data-fullscreen-mosaic-gap'), 10) || 8,
             fullscreenMosaicOpacity: fullscreenMosaicOpacitySetting,

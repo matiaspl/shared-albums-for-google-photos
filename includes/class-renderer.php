@@ -359,6 +359,10 @@ class JZSA_Renderer {
 			$attrs[] = sprintf( 'data-fullscreen-mosaic-position="%s"', esc_attr( $config['fullscreen-mosaic-position'] ) );
 		}
 
+		if ( ! empty( $config['fullscreen-mosaic-layout'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-layout="%s"', esc_attr( $config['fullscreen-mosaic-layout'] ) );
+		}
+
 		if ( isset( $config['fullscreen-mosaic-count'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-mosaic-count="%d"', intval( $config['fullscreen-mosaic-count'] ) );
 		}
@@ -668,6 +672,9 @@ class JZSA_Renderer {
 
 		if ( ! empty( $config['fullscreen-mosaic-position'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-mosaic-position="%s"', esc_attr( $config['fullscreen-mosaic-position'] ) );
+		}
+		if ( ! empty( $config['fullscreen-mosaic-layout'] ) ) {
+			$attrs[] = sprintf( 'data-fullscreen-mosaic-layout="%s"', esc_attr( $config['fullscreen-mosaic-layout'] ) );
 		}
 		if ( isset( $config['fullscreen-mosaic-count'] ) ) {
 			$attrs[] = sprintf( 'data-fullscreen-mosaic-count="%d"', intval( $config['fullscreen-mosaic-count'] ) );

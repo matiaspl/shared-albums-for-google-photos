@@ -557,6 +557,7 @@ class JZSA_Shared_Albums {
 			'mosaic-background'  => $this->parse_color( $atts, 'mosaic-background', '' ),
 			'fullscreen-mosaic'          => $this->parse_fullscreen_mosaic_enabled( $atts ),
 			'fullscreen-mosaic-position' => $this->parse_mosaic_position( $atts, 'fullscreen-mosaic-position' ),
+			'fullscreen-mosaic-layout'   => $this->parse_fullscreen_mosaic_layout( $atts ),
 			'fullscreen-mosaic-count'    => $this->parse_mosaic_count( $atts, 'fullscreen-mosaic-count' ),
 			'fullscreen-mosaic-gap'      => $this->parse_mosaic_gap( $atts, 'fullscreen-mosaic-gap' ),
 			'fullscreen-mosaic-opacity'  => $this->parse_mosaic_opacity( $atts, 'fullscreen-mosaic-opacity' ),
@@ -1214,6 +1215,26 @@ class JZSA_Shared_Albums {
 		}
 
 		return 'right';
+	}
+
+	/**
+	 * Parse fullscreen mosaic layout attribute.
+	 *
+	 * @param array $atts Shortcode attributes.
+	 * @return string 'outer' or 'overlay'.
+	 */
+	private function parse_fullscreen_mosaic_layout( $atts ) {
+		if ( ! isset( $atts['fullscreen-mosaic-layout'] ) ) {
+			return 'outer';
+		}
+
+		$value = strtolower( trim( (string) $atts['fullscreen-mosaic-layout'] ) );
+
+		if ( in_array( $value, array( 'overlay', 'outer' ), true ) ) {
+			return $value;
+		}
+
+		return 'outer';
 	}
 
 	/**

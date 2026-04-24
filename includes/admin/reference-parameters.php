@@ -421,6 +421,11 @@
 								<td>bottom</td>
 							</tr>
 							<tr>
+								<td><code>fullscreen-mosaic-layout</code></td>
+							<td><?php esc_html_e( 'Fullscreen strip layout: "outer" reserves separate space for the strip outside the photo (supported for "top" and "bottom" positions only), while "overlay" keeps the strip on top of the photo. "outer" is the default.', 'janzeman-shared-albums-for-google-photos' ); ?></td>
+							<td>outer</td>
+							</tr>
+							<tr>
 								<td><code>fullscreen-mosaic-count</code></td>
 								<td><?php esc_html_e( 'Number of thumbnails visible at once in the fullscreen strip. Use an integer or "auto".', 'janzeman-shared-albums-for-google-photos' ); ?></td>
 								<td>auto</td>
