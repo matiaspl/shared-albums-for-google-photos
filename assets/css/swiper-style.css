@@ -550,7 +550,7 @@ background-color: var(--gallery-bg-color, #FFFFFF);
 .jzsa-album.jzsa-is-fullscreen[data-slideshow="auto"] .swiper-button-play-pause,
 .jzsa-album.jzsa-is-fullscreen[data-slideshow="manual"] .swiper-button-play-pause {
     display: flex;
-    bottom: calc(var(--jzsa-fs-play-visual-bottom) - 3px + var(--jzsa-fs-mosaic-bottom-offset));
+    bottom: calc(var(--jzsa-fs-play-visual-bottom) - 10px + var(--jzsa-fs-mosaic-bottom-offset));
 }
 .jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="auto"][data-has-active-bottom-center="false"] .swiper-button-play-pause,
 .jzsa-album.jzsa-is-fullscreen[data-fullscreen-slideshow="manual"][data-has-active-bottom-center="false"] .swiper-button-play-pause,
@@ -1514,7 +1514,7 @@ body.jzsa-no-scroll {
 .jzsa-album.jzsa-is-fullscreen[data-slideshow="auto"] .jzsa-info-stack-bottom,
 .jzsa-album.jzsa-is-fullscreen[data-slideshow="manual"] .jzsa-info-stack-bottom {
     bottom: calc(
-        var(--jzsa-fs-play-visual-bottom) - 3px +
+        var(--jzsa-fs-play-visual-bottom) - 10px +
         var(--jzsa-controls-circle-size-fs) +
         var(--jzsa-safe-stack-gap) +
         var(--jzsa-fs-mosaic-bottom-offset)
