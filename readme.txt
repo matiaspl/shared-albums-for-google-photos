@@ -135,8 +135,10 @@ The plugin provides clear feedback:
 4. Carousel mode (also shows the video capability)
 5. Fullscreen mode with description and EXIF info overlay
 6. From low- to high-resolution image support
-7. Shortcode example in page editor (with preview)
-8. Descripton with custom font
+7. Every sample includes a live preview - edit and see the result immediately
+8. Description with custom font
+9. Fullscreen mosaic support
+10. Mosaic strip in the overlay mode
 
 == Changelog ==
 
