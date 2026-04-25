@@ -70,6 +70,35 @@ git clone https://github.com/JanZeman/shared-albums-for-google-photos.git
 
 ---
 
+## ⚠️ Important Limitation: Google Photos Description Truncation
+
+**Google Photos limits photo descriptions to 100 characters.** Any description longer than this will be automatically truncated by Google Photos itself, not by this plugin.
+
+### What This Means
+
+- If your photos have long descriptions (captions) in Google Photos
+- Only the first 100 characters will be available when using the `{description}` placeholder
+- **This is a Google Photos limitation**, not a plugin limitation
+- There is no way to retrieve longer descriptions from public shared albums
+
+### Recommended Workaround
+
+If you need to display descriptions longer than 100 characters, you have two options:
+
+1. **Edit your shortcode** to include the full description text directly (bypassing Google Photos):
+
+   ```shortcode
+   [jzsa-album link="..." info-bottom="{date} | Full description text here can be as long as you want"]
+   ```
+
+2. **Use info-wrap="true"** to allow the truncated 100-character description to wrap to multiple lines:
+
+   ```shortcode
+   [jzsa-album link="..." info-wrap="true" info-bottom="{description} | {date}"]
+   ```
+
+---
+
 ## Development
 
 ### File Structure

@@ -141,7 +141,8 @@ The plugin provides clear feedback:
 == Changelog ==
 
 = 2.1.8 =
-* Fullscreen support of mosaic. Thanks you `@luisbenitez777` for sharing the idea!
+* Fullscreen support of mosaic. Many thanks `@luisbenitez777` for sharing the idea.
+* Warning added: Google truncates descriptions to 100 chars. Thanks `@naveenbachwani` for the detailed repro steps.
 
 = 2.1.7 =
 * Fixed info-wrap bug
