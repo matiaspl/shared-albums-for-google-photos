@@ -1704,6 +1704,13 @@ function jzsaSetupMigrationTool() {
 						html += '<p>No syntax changes were needed. This shortcode already uses the current syntax.</p>';
 					}
 					html += '</div>';
+					if ( /(^|\s)viewer\s*=/.test( payload.shortcode ) ) {
+						html += '<p class="jzsa-help-text">This shortcode sets <code>viewer</code> explicitly, so it always wins. ' +
+							'The Default Viewer setting on the Settings page does not affect it.</p>';
+					} else {
+						html += '<p class="jzsa-help-text">This shortcode does not set <code>viewer</code>, so it follows the site Default Viewer setting. ' +
+							'That setting is only a fallback for shortcodes that omit the parameter; it never overrides a shortcode that sets it.</p>';
+					}
 					if ( generatedValidation && ( generatedValidation.errors.length || generatedValidation.warnings.length ) ) {
 						html += '<div class="jzsa-code-validation jzsa-code-validation--' + jzsaEscapeHtml( generatedValidation.state ) + '"><strong>Migrated shortcode validation:</strong><ul class="jzsa-code-validation__list">';
 						generatedValidation.errors.concat( generatedValidation.warnings ).forEach( function ( message ) {

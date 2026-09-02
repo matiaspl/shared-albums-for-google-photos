@@ -192,6 +192,7 @@ class JZSA_Admin_Pages {
 						<div>
 							<h3><?php esc_html_e( 'Recommended Migration Path', 'janzeman-shared-albums-for-google-photos' ); ?></h3>
 							<p><?php echo wp_kses_post( __( 'Paste your existing shortcode into the <strong>Shortcode Migration Tool</strong> below. It will guide you safely through the process. We recommend migrating even if you want to keep the gallery working exactly as it does now. Select that option to update only the shortcode syntax without changing the viewer experience. Never update a live page until you have verified its shortcode with this tool, the <strong>Playground</strong> below, or both.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
+							<p><?php echo wp_kses_post( __( '<strong>Why migrate if nothing looks broken?</strong> Nothing is broken and nothing will break in this release. Older shortcodes keep working through a compatibility layer that translates them at runtime. That layer is meant to be temporary and will be removed in a future major version, so a shortcode written in the current syntax is the one that keeps working without translation. The migrated shortcode is also explicit: it states which viewer it uses instead of depending on a site-wide default that an administrator can change later.', 'janzeman-shared-albums-for-google-photos' ) ); ?></p>
 						</div>
 					</div>
 					<div class="jzsa-shortcode-migrator">
@@ -213,7 +214,7 @@ class JZSA_Admin_Pages {
 					<p>
 						<?php
 						/* translators: 1: default viewer name, 2: settings page URL. */
-						echo wp_kses_post( sprintf( __( 'For the sake of simplicity, we recommend always setting the <code>viewer</code> parameter explicitly in each shortcode. If it is omitted, the site default is used: <strong>%1$s</strong>. <a href="%2$s">Change it in Settings</a>.', 'janzeman-shared-albums-for-google-photos' ), 'lightbox' === $default_viewer ? __( 'Lightbox', 'janzeman-shared-albums-for-google-photos' ) : __( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ), esc_url( self::get_settings_page_url() ) ) );
+						echo wp_kses_post( sprintf( __( 'For the sake of simplicity, we recommend always setting the <code>viewer</code> parameter explicitly in each shortcode. A shortcode that sets it always wins and is unaffected by the site setting, so its behavior cannot change later without you editing it. If it is omitted, the site default is used: <strong>%1$s</strong>. <a href="%2$s">Change it in Settings</a>.', 'janzeman-shared-albums-for-google-photos' ), 'lightbox' === $default_viewer ? __( 'Lightbox', 'janzeman-shared-albums-for-google-photos' ) : __( 'Fullscreen', 'janzeman-shared-albums-for-google-photos' ), esc_url( self::get_settings_page_url() ) ) );
 						?>
 					</p>
 				<?php if ( $should_open ) : ?>
