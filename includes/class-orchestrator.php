@@ -784,6 +784,9 @@ class JZSA_Shared_Albums {
 	 * @return array Configuration
 	 */
 	private function parse_shortcode_config( $atts, $url ) {
+		// Collected before normalization, which adds resolved keys of its own.
+		$unknown_attributes = $this->collect_unknown_attributes( $atts );
+
 		$viewer_model = $this->classify_viewer_attributes( $atts );
 		$atts = $this->normalize_legacy_viewer_attributes( $atts );
 		if ( 'implicit' === $viewer_model ) {
@@ -1030,7 +1033,46 @@ class JZSA_Shared_Albums {
 			// Backward compat: show-name="true" maps to ="{name}".
 		) + $this->build_info_box_config( $atts, $mode );
 
+		$config['unknown-attributes'] = $unknown_attributes;
+
 		return $config;
+	}
+
+	/**
+	 * Collect shortcode attribute names the plugin does not recognize.
+	 *
+	 * Unknown attributes are dropped silently while parsing, so a typo such as
+	 * "viewer-display-max-widht" renders a gallery that simply ignores the
+	 * setting, with nothing anywhere to explain why. The names collected here
+	 * drive an administrator-only notice in the rendered output.
+	 *
+	 * The canonical order is the same set of names the Playground validator
+	 * accepts, and a unit test keeps the two in sync, so this notice and the
+	 * Playground always agree on what counts as a known parameter.
+	 *
+	 * @param array $atts Raw shortcode attributes, before any normalization.
+	 * @return array Unknown attribute names, in the order they were written.
+	 */
+	private function collect_unknown_attributes( $atts ) {
+		if ( ! is_array( $atts ) ) {
+			return array();
+		}
+
+		$known   = JZSA_Shortcode_Tools::canonical_attribute_order();
+		$unknown = array();
+
+		foreach ( array_keys( $atts ) as $name ) {
+			// Positional attributes arrive under integer keys and carry the album link.
+			if ( ! is_string( $name ) ) {
+				continue;
+			}
+			if ( in_array( $name, $known, true ) || in_array( $name, $unknown, true ) ) {
+				continue;
+			}
+			$unknown[] = $name;
+		}
+
+		return $unknown;
 	}
 
 	/**

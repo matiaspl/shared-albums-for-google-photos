@@ -38,6 +38,11 @@ class JZSA_Renderer {
 			$html .= $this->render_mosaic_mode_notice();
 		}
 
+		// Warn privileged users about parameters that were silently ignored.
+		if ( ! empty( $config['unknown-attributes'] ) && is_user_logged_in() && current_user_can( jzsa_get_admin_capability() ) ) {
+			$html .= $this->render_unknown_attribute_notice( $config['unknown-attributes'] );
+		}
+
 		// Gallery mode: plain thumbnail gallery, no Swiper structure
 		if ( isset( $config['mode'] ) && 'gallery' === $config['mode'] ) {
 			$html .= $this->build_thumbnail_gallery_container( $gallery_id, $config );
@@ -116,6 +121,49 @@ class JZSA_Renderer {
 			esc_html__( 'Warning (visible to administrators only):', 'janzeman-shared-albums-for-google-photos' ),
 			esc_html__( 'Mosaic Requires Slider or Carousel Mode', 'janzeman-shared-albums-for-google-photos' ),
 			esc_html__( 'The mosaic="true" parameter only works with mode="slider" or mode="carousel". It is ignored in the default gallery mode. Please add mode="slider" or mode="carousel" to your shortcode.', 'janzeman-shared-albums-for-google-photos' )
+		);
+	}
+
+	/**
+	 * Render unknown shortcode parameter warning (admins only)
+	 *
+	 * Unknown parameters are dropped without any error, so this notice is the
+	 * only place a typo becomes visible on the page itself. It always points to
+	 * the Playground, which validates every parameter while the shortcode is
+	 * still being written and is the recommended place to fix one.
+	 *
+	 * @param array $names Unrecognized attribute names.
+	 * @return string HTML
+	 */
+	private function render_unknown_attribute_notice( $names ) {
+		$quoted = array();
+		foreach ( $names as $name ) {
+			$quoted[] = '<code>' . esc_html( $name ) . '</code>';
+		}
+
+		$playground_url = JZSA_Admin_Pages::get_guide_page_url() . '#jzsa-playground-shortcode';
+
+		return sprintf(
+			'<div class="jzsa-warning" style="border: 2px solid #f0ad4e; border-radius: 4px; padding: 12px; margin: 8px; background: #fff9e6; font-family: -apple-system, BlinkMacSystemFont, \'Segoe UI\', Roboto, sans-serif;">' .
+			'<p style="margin: 0 0 6px 0; color: #856404; font-size: 13px; font-weight: 600;">%1$s %2$s</p>' .
+			'<p style="margin: 0 0 6px 0; color: #856404; font-size: 12px;">%3$s %4$s</p>' .
+			'<p style="margin: 0; color: #856404; font-size: 12px;"><a href="%5$s" style="color: #856404;">%6$s</a> %7$s</p>' .
+			'</div>',
+			esc_html__( 'Warning (visible to administrators only):', 'janzeman-shared-albums-for-google-photos' ),
+			sprintf(
+				/* translators: %d: number of unrecognized parameters. */
+				esc_html( _n( '%d Parameter Was Ignored', '%d Parameters Were Ignored', count( $names ), 'janzeman-shared-albums-for-google-photos' ) ),
+				count( $names )
+			),
+			sprintf(
+				/* translators: %s: comma-separated list of unrecognized parameter names. */
+				wp_kses_post( __( 'The gallery works, but these parameters do not exist and did nothing: %s.', 'janzeman-shared-albums-for-google-photos' ) ),
+				implode( ', ', $quoted )
+			),
+			esc_html__( 'Most likely a typo.', 'janzeman-shared-albums-for-google-photos' ),
+			esc_url( $playground_url ),
+			esc_html__( 'Fix the shortcode in the Playground on the Guide page.', 'janzeman-shared-albums-for-google-photos' ),
+			esc_html__( 'It checks every parameter while you type. We recommend always building shortcodes there first.', 'janzeman-shared-albums-for-google-photos' )
 		);
 	}
 

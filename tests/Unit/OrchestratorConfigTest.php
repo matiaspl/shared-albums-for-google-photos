@@ -738,4 +738,51 @@ class OrchestratorConfigTest extends TestCase {
         $this->assertTrue( $true );
         $this->assertFalse( $false );
     }
+
+    public function test_unknown_attributes_are_collected_in_written_order(): void {
+        $config = $this->config(
+            array(
+                'viewer'           => 'lightbox',
+                'viewer-max-widht' => '800',
+                'gallry-rows'      => '3',
+            )
+        );
+
+        $this->assertSame( array( 'viewer-max-widht', 'gallry-rows' ), $config['unknown-attributes'] );
+    }
+
+    public function test_known_and_obsolete_attributes_are_never_reported_as_unknown(): void {
+        // Obsolete but still accepted names have a real effect, so reporting them
+        // as ignored would be wrong. Only names the plugin drops are collected.
+        $config = $this->config(
+            array(
+                'viewer'                       => 'lightbox',
+                'viewer-max-width'             => '800',
+                'viewer-display-max-width'     => '800',
+                'fullscreen-display-max-width' => '800',
+                'expanded-toggle'              => 'click',
+            )
+        );
+
+        $this->assertSame( array(), $config['unknown-attributes'] );
+    }
+
+    public function test_positional_attributes_are_not_reported_as_unknown(): void {
+        // WordPress passes a bare album link under an integer key.
+        $config = $this->config( array( 0 => 'https://photos.google.com/share/AF1QipTest', 'mode' => 'slider' ) );
+
+        $this->assertSame( array(), $config['unknown-attributes'] );
+    }
+
+    public function test_every_canonical_parameter_is_accepted_by_the_unknown_check(): void {
+        // Guards against the notice crying wolf over a documented parameter.
+        $atts = array();
+        foreach ( \JZSA_Shortcode_Tools::canonical_attribute_order() as $name ) {
+            $atts[ $name ] = '';
+        }
+
+        $config = $this->config( $atts );
+
+        $this->assertSame( array(), $config['unknown-attributes'] );
+    }
 }
