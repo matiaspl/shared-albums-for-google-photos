@@ -8101,6 +8101,14 @@
     }
 
     /**
+     * Pointer travel, in pixels, that turns a press into a drag.  Below this
+     * the gesture still counts as a click, so a small hand tremble on a
+     * scrollable gallery does not swallow the click that opens the viewer.
+     * Matches TOUCH_REVEAL_MOVE_TOLERANCE_PX used for touch reveal.
+     */
+    var GALLERY_DRAG_MOVE_TOLERANCE_PX = 8;
+
+    /**
      * Enable desktop mouse drag behavior for gallery pagination/scrolling.
      *
      * @param {jQuery} $container Gallery album element.
@@ -8240,7 +8248,10 @@
             state.lastDeltaX = deltaX;
             state.lastDeltaY = deltaY;
 
-            if (Math.abs(deltaX) > 3 || Math.abs(deltaY) > 3) {
+            if (
+                Math.abs(deltaX) > GALLERY_DRAG_MOVE_TOLERANCE_PX ||
+                Math.abs(deltaY) > GALLERY_DRAG_MOVE_TOLERANCE_PX
+            ) {
                 state.moved = true;
             }
 
