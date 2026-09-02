@@ -2288,6 +2288,18 @@ html.jzsa-lightbox-open body {
     scrollbar-gutter: stable;
 }
 
+/* Touch devices: let the scroll chain out of the gallery again.  With
+   `contain` a swipe that reaches the end of a scrollable gallery stops there
+   and never continues to the page, so on a phone a tall gallery traps the
+   visitor and they have to find page area outside it to swipe on.  `contain`
+   is kept for mouse pointers, where a wheel over the gallery should not run
+   away with the page. */
+@media (hover: none) and (pointer: coarse) {
+    .jzsa-gallery-album.jzsa-gallery-scrollable {
+        overscroll-behavior: auto;
+    }
+}
+
 /* Scroll hint badge - appears near the top of the scrollable gallery,
    fades out after 3 seconds or on first scroll. */
 @keyframes jzsa-scroll-hint-bounce {
