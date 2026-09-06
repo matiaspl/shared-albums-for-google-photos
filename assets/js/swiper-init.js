@@ -8101,12 +8101,10 @@
     }
 
     /**
-     * Pointer travel, in pixels, that turns a press into a drag.  Below this
-     * the gesture still counts as a click, so a small hand tremble on a
-     * scrollable gallery does not swallow the click that opens the viewer.
-     * Matches TOUCH_REVEAL_MOVE_TOLERANCE_PX used for touch reveal.
+     * Pointer travel, in pixels, below which a mouse press still counts as a
+     * click rather than a drag.
      */
-    var GALLERY_DRAG_MOVE_TOLERANCE_PX = 8;
+    var GALLERY_DRAG_MOVE_TOLERANCE_PX = 5;
 
     /**
      * Enable desktop mouse drag behavior for gallery pagination/scrolling.

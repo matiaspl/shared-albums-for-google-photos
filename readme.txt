@@ -108,9 +108,8 @@ No. This plugin is not affiliated with or endorsed by Google LLC. Google Photosâ
 == Changelog ==
 
 = 2.4.6 =
-* Fixed a gallery click sometimes being ignored if the pointer moved slightly while clicking.
-* Fixed a scrollable gallery trapping the page scroll on touch devices.
 * Better guard of shortcode typos.
+* Fixed a scrollable gallery trapping the page scroll on touch devices.
 
 = 2.4.5 =
 * Bug fixes
