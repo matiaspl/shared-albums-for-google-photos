@@ -4,7 +4,7 @@ Tags: google-photos, album, gallery, embed, swiper
 Requires at least: 5.5
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 2.4.5
+Stable tag: 2.4.6
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -106,6 +106,11 @@ Yes. The gallery is responsive and supports touch gestures, fullscreen viewing, 
 No. This plugin is not affiliated with or endorsed by Google LLC. Google Photos™ is a trademark of Google LLC.
 
 == Changelog ==
+
+= 2.4.6 =
+* Fixed a gallery click sometimes being ignored if the pointer moved slightly while clicking.
+* Fixed a scrollable gallery trapping the page scroll on touch devices.
+* Better guard of shortcode typos.
 
 = 2.4.5 =
 * Bug fixes
