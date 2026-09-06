@@ -190,18 +190,6 @@ fi
 
 echo -e "${GREEN}✓ All version references verified at ${REQUESTED_VERSION}${NC}"
 
-if [ "$RELEASE_MODE" = "prod" ]; then
-    echo ""
-    echo -e "${YELLOW}Production release requested.${NC}"
-    echo "This will push git changes/tags and publish to WordPress.org SVN if all checks pass."
-    echo "To continue, type exactly: ypsonova"
-    read -r -p "> " PROD_CONFIRMATION
-    if [ "$PROD_CONFIRMATION" != "ypsonova" ]; then
-        echo -e "${RED}Production release cancelled.${NC}"
-        exit 1
-    fi
-fi
-
 # ---------------------------------------------------------------------------
 # Git checks and tag preflight (only with --prod)
 # ---------------------------------------------------------------------------
@@ -257,6 +245,16 @@ if [ "$RELEASE_MODE" = "prod" ]; then
     echo -e "${YELLOW}Running the full test suite before production release...${NC}"
     "${SCRIPT_DIR}/test.sh"
     echo -e "${GREEN}✓ Full test suite passed${NC}"
+
+    echo ""
+    echo -e "${YELLOW}Production release requested.${NC}"
+    echo "This will push git changes/tags and publish to WordPress.org SVN if all checks pass."
+    echo "To continue, type exactly: ypsonova"
+    read -r -p "> " PROD_CONFIRMATION
+    if [ "$PROD_CONFIRMATION" != "ypsonova" ]; then
+        echo -e "${RED}Production release cancelled.${NC}"
+        exit 1
+    fi
 fi
 
 echo -e "${BLUE}================================================================${NC}"
